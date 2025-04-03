@@ -5,9 +5,11 @@ import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.jwt.JwtUtil;
 import com.hsp.fitu.repository.UserRepository;
 import com.hsp.fitu.util.KakaoUtil;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +20,13 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
+
+    @PostConstruct
+    public void printDbUrl() {
+        System.out.println("✅ 현재 적용된 DB URL: " + dbUrl);
+    }
     @Override
     public void oAuthLogin(String accessCode, HttpServletResponse httpServletResponse) {
         KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
