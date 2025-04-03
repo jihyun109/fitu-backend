@@ -25,6 +25,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void oAuthLogin(String accessCode, HttpServletResponse httpServletResponse) {
+        log.warn("✅ 현재 적용된 DB URL: " + dbUrl);
         KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         String kakaoEmail = kakaoProfile.getKakao_account().getEmail();
@@ -34,8 +35,6 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtUtil.createAccessToken(userEntity.getKakaoEmail());
         httpServletResponse.setHeader("Authorization", "Bearer " + token);
-
-        log.warn("✅ 현재 적용된 DB URL: " + dbUrl);
     }
 
     private UserEntity createNewUser(KakaoDTO.KakaoProfile kakaoProfile) {
