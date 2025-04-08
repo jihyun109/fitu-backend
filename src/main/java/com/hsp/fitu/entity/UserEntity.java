@@ -22,4 +22,11 @@ public class UserEntity {
     private int height;
     private int weight;
     private Gender gender;
+
+    public void updateProfile(int height, int weight, Gender gender) {
+        this.height = height;
+        this.weight = weight;
+        this.gender = gender;
+
+    }
 }
