@@ -19,7 +19,8 @@ public class SecurityConfig {
             "/api/v1/posts/**",
             "/api/v1/replies/**",
             "/login",
-            "/auth/login/kakao"
+            "/auth/login/kakao",
+            "/user/**" //테스트를 위한 코드 허용
     };
 
     @Bean

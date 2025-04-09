@@ -6,5 +6,5 @@ import com.hsp.fitu.entity.UserEntity;
 
 public interface UserProfileService {
     UserProfileResponseDTO inputProfileOnce(UserProfileRequestDTO dto);
-    UserEntity getUserById(Long userId);
+    UserEntity getUserById(Long id);
 }

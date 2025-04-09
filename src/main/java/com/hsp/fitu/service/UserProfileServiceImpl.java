@@ -28,8 +28,8 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
-    public UserEntity getUserById(Long userId) {
-        return userProfileRepository.findById(userId)
+    public UserEntity getUserById(Long id) {
+        return userProfileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
     }
 }
