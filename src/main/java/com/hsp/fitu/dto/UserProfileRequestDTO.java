@@ -9,8 +9,8 @@ import lombok.Getter;
 @AllArgsConstructor
 
 public class UserProfileRequestDTO {
-    private Long userId;
-    private int Height;
+    private String kakaoEmail;
+    private int height;
     private int weight;
     private Gender gender;
 

@@ -1,7 +1,6 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.UserStatusDTO;
-import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.service.UserProfileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -9,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user/status")
+
 @Slf4j
 public class UserStatusController {
 
@@ -18,17 +18,15 @@ public class UserStatusController {
         this.userProfileService = userProfileService;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserStatusDTO> checkUserProfileStatus(@PathVariable Long id) {
-        UserEntity users = userProfileService.getUserById(id);
+    @GetMapping("/{kakaoEmail}")
+    public ResponseEntity<UserStatusDTO> checkUserProfileStatus(@PathVariable String kakaoEmail) {
+        UserStatusDTO status = userProfileService.checkUserStatus(kakaoEmail);
 
-        boolean hasProfile = users.getHeight() > 0 && users.getWeight() > 0 && users.getGender() != null;
+        HttpStatus httpStatus = status.isHasProfile() ? HttpStatus.OK : HttpStatus.CREATED;
+        
+        log.info("카카오 이메일 '{}' 존재 확인 -> {}", kakaoEmail,
+                status.isHasProfile() ? "기존 가입자 : 200" : "신규 가입자 : 201");
 
-        HttpStatus status = hasProfile ? HttpStatus.OK : HttpStatus.CREATED;
-
-        log.info("User ID {} 프로필 상태 체크 -> 상태 코드: {}", id, status.value());
-
-
-        return ResponseEntity.status(status).body(new UserStatusDTO(hasProfile));
+        return ResponseEntity.status(status.getStatusCode()).body(status);
     }
 }

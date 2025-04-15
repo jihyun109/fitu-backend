@@ -9,9 +9,17 @@ import lombok.Setter;
 
 public class UserStatusDTO {
     private boolean hasProfile;
+    private int statusCode;
 
-    public UserStatusDTO(boolean hasProfile) {
+    public UserStatusDTO(boolean hasProfile, int statusCode) {
         this.hasProfile = hasProfile;
+        this.statusCode = statusCode;
     }
 
+    public boolean isHasProfile() {
+        return hasProfile;
+    }
+    public int getStatusCode() {
+        return statusCode;
+    }
 }
