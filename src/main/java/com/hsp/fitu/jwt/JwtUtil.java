@@ -18,8 +18,8 @@ public class JwtUtil {
 
     public JwtUtil(
             // 해당 @Value 값들은 yml에서 설정할 수 있다
-            @Value("${spring.jwt.secret}") String secret,
-            @Value("${spring.jwt.token.access-expiration-time}") Long access) {
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.token.access-expiration-time}") Long access) {
         secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         accessExpMs = access;
     }
