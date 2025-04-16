@@ -19,7 +19,5 @@ public class UserEntity {
     @Id
     private long id;
     private String kakaoEmail;
-    private int height;
-    private int weight;
     private Gender gender;
 }
