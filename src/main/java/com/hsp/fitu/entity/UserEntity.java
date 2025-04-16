@@ -19,8 +19,6 @@ public class UserEntity {
     @Id
     private long id;
     private String kakaoEmail;
-    private int height;
-    private int weight;
     private Gender gender;
 
     public void updateProfile(int height, int weight, Gender gender) {
