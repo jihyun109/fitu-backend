@@ -3,6 +3,7 @@ package com.hsp.fitu.entity;
 import com.hsp.fitu.entity.enums.Gender;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,9 +22,7 @@ public class UserEntity {
     private String kakaoEmail;
     private Gender gender;
 
-    public void updateProfile(int height, int weight, Gender gender) {
-        this.height = height;
-        this.weight = weight;
+    public void updateProfile( Gender gender) {
         this.gender = gender;
 
     }
