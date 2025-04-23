@@ -1,52 +1,62 @@
 package com.hsp.fitu.config;
 
+import com.hsp.fitu.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import static org.springframework.security.config.Customizer.withDefaults;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     public static final String[] ALLOW_URLS = {
             "/v3/api-docs/**",
             "/api/v1/posts/**",
             "/api/v1/replies/**",
             "/login",
-            "/auth/login/kakao",
-            "/physical-infos/**"
+            "/auth/login/kakao/**"
     };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // CSRF 설정 Disable
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(ALLOW_URLS).permitAll()  // /login, /signup 경로는 인증 없이 접근 가능
-                        .anyRequest().authenticated())
-                .cors(withDefaults())
+                        .requestMatchers(ALLOW_URLS).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/**").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        ;  // 그 외 모든 요청은 인증된 사용자만 접근 가능
-
-        return http.build();  // 필터 체인 빌드
+        return http.build();
     }
 
-//    //    커스텀 필터 추가를 여기서 처리하기
-//    public class MyCustomDsl extends AbstractHttpConfigurer<MyCustomDsl, HttpSecurity> {
-//        @Override
-//        public void configure(HttpSecurity http) throws Exception {
-//            AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-//            http
-////            cors 오류를 해결하기 위해 Controller 에 @CrossOrigin 을 붙여주는 방법도 있지만
-////				이 방식은 필터 추가와 다르게 인증이 필요 없는 url 만 처리해줌
-//                    .addFilter(corsConfig.corsFilter()) // cors 에 대해 허락하는 필터
-//                    .addFilter(new JwtAuthorizationFilter(authenticationManager));
-//        }
-//    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of("*")); // "*" 허용 시에는 addAllowedOrigin 대신 이걸 사용
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }
