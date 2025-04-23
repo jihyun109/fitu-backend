@@ -1,7 +1,6 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.UserProfileRequestDTO;
-import com.hsp.fitu.dto.UserProfileResponseDTO;
 import com.hsp.fitu.service.UserProfileService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +16,10 @@ public class UserProfileController {
     }
 
     @PostMapping("/profile")
-    public ResponseEntity<UserProfileResponseDTO> inputProfile(@RequestBody UserProfileRequestDTO dto) {
-        UserProfileResponseDTO response = userProfileService.inputProfileOnce(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<String> inputProfile(
+            @RequestParam("userId") long userId,
+            @RequestBody UserProfileRequestDTO dto) {
+        userProfileService.inputProfileOnce(userId, dto);
+        return ResponseEntity.ok("추가정보 입력 완료");
     }
 }
