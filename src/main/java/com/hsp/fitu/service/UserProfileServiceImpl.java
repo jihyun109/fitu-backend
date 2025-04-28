@@ -20,7 +20,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     // 프로필 저장
     @Override
     public void inputProfileOnce(long userId, UserProfileRequestDTO dto) {
-        UserEntity user = userRepository.findById(dto.getUserId())
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
         // UserEntity(gender) 수정
