@@ -9,7 +9,6 @@ import lombok.Getter;
 @AllArgsConstructor
 
 public class UserProfileRequestDTO {
-    private long userId;
     private int height;
     private int weight;
     private Gender gender;
