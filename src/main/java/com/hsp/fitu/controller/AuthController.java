@@ -1,13 +1,12 @@
 package com.hsp.fitu.controller;
 
+import com.hsp.fitu.dto.LoginDTO;
+import com.hsp.fitu.dto.LoginResponseDTO;
 import com.hsp.fitu.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -16,14 +15,16 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @GetMapping("/login/kakao")
-    public ResponseEntity<String> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
-        boolean isNewUser = authService.oAuthLogin(accessCode, httpServletResponse);
+    @PostMapping("/login/kakao")
+    public ResponseEntity<LoginResponseDTO> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
+        LoginDTO loginDTO = authService.oAuthLogin(accessCode, httpServletResponse);
 
-        if (isNewUser) {
-            return ResponseEntity.status(201).body("카카오 회원가입 완료");
+        LoginResponseDTO loginResponseDTO = LoginResponseDTO.builder().token(loginDTO.getToken()).build();
+
+        if (loginDTO.isNewUser()) {
+            return ResponseEntity.status(201).body(loginResponseDTO);
         } else {
-            return ResponseEntity.ok("카카오 로그인 완료");
+            return ResponseEntity.ok(loginResponseDTO);
         }
     }
 }
