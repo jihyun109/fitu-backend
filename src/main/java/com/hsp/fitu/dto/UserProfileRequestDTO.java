@@ -1,6 +1,7 @@
 package com.hsp.fitu.dto;
 
 import com.hsp.fitu.entity.enums.Gender;
+import com.hsp.fitu.entity.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,6 +11,6 @@ import lombok.Getter;
 
 public class UserProfileRequestDTO {
     private int height;
-    private int weight;
     private Gender gender;
+    private Role role;
 }
