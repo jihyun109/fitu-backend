@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private SecretKey secretKey;
@@ -59,18 +61,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         System.out.println("claims:" + claims);
 
-        String userName = String.valueOf(claims.get("userName"));
+        Number userIdNumber = (Number)claims.get("userId");
+        Long userId = userIdNumber.longValue();
+        String role = (String) claims.get("role");
 
         // SecurityContext 에 추가할 Authentication 인스턴스 생성
-        GrantedAuthority a = new SimpleGrantedAuthority("user");
-        var auth = new UsernamePasswordAuthentication(
-                userName,
-                null,
-                List.of(a));
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+        CustomUserDetails userDetails = new CustomUserDetails(userId, claims.getSubject(), authorities);
+
+        UsernamePasswordAuthentication authentication = new UsernamePasswordAuthentication(userDetails, null, authorities);
 
         // SecurityContext에 Authentication 객체 추가
         SecurityContextHolder.getContext()
-                .setAuthentication(auth);
+                .setAuthentication(authentication);
         filterChain.doFilter(request, response);    // 필터 체인의 다음 필터 호룿
     }
 }

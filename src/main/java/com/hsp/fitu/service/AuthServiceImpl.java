@@ -26,22 +26,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginDTO oAuthLogin(String accessCode, HttpServletResponse httpServletResponse) {
         boolean isNewUser = false;
-        log.info("현재 적용된 DB URL: " + dbUrl);
         KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         String kakaoEmail = kakaoProfile.getKakao_account().getEmail();
 
         UserEntity userEntity = userRepository.findByKakaoEmail(kakaoEmail)
                 .orElse(null);
-//                .orElseGet(() -> createNewUser(kakaoProfile));
 
         if (userEntity == null) {
             isNewUser = true;
-            log.warn("hi");
             userEntity = createNewUser(kakaoProfile);
         }
 
-        String token = jwtUtil.createAccessToken(userEntity.getId());
+        String token = jwtUtil.createAccessToken(userEntity.getId(), userEntity.getRole());
         httpServletResponse.setHeader("Authorization", "Bearer " + token);
 
         return LoginDTO.builder()
