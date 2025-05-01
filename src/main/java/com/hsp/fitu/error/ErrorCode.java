@@ -2,6 +2,7 @@ package com.hsp.fitu.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.http.HttpStatus;
 
 // 에러코드 정리
 @AllArgsConstructor
@@ -22,7 +23,8 @@ public enum ErrorCode {
     INVALID_FILE_EXTENSION(400, "COMMON-ERR-400", "The file extension is not valid. Please upload a file with a valid extension (e.g., .jpg, .png, gif, jpeg)"),
     IO_EXCEPTION_ON_IMAGE_UPLOAD(500,"COMMON-ERR-500","An error occurred while uploading the image."),
     INVALID_IMAGE_FILE(400, "COMMON-ERR-400", "Invalid image file."),
-    S3_UPLOAD_FAILED(500, "COMMON-ERR-500", "Failed to upload image to S3.");
+    S3_UPLOAD_FAILED(500, "COMMON-ERR-500", "Failed to upload image to S3."),
+    UNAUTHORIZED(HttpStatus.SC_UNAUTHORIZED, "COMMON-ERR-401", "Invalid refresh token.");
 
     private int status;
     private String errorCode;
