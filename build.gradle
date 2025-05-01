@@ -38,6 +38,9 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+	// aws
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
 	// swagger
 //	implementation 'org springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 }
