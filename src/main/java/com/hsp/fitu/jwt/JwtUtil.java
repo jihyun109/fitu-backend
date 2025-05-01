@@ -1,10 +1,10 @@
 package com.hsp.fitu.jwt;
 
+import com.hsp.fitu.entity.enums.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -25,13 +25,14 @@ public class JwtUtil {
         accessExpMs = access;
     }
 
-    public String createAccessToken(long userId) {
+    public String createAccessToken(long userId, Role role) {
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(accessExpMs); // 예: 30분
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
-                .setClaims(Map.of("userId", userId))
+                .addClaims(Map.of("userId", userId,
+                        "role", role.toString()))
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(expiration))
                 .signWith(secretKey)
