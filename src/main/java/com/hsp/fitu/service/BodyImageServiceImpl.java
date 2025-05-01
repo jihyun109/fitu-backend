@@ -24,7 +24,6 @@ public class BodyImageServiceImpl implements BodyImageService {
 
     @Override
     public List<BodyImageEntity> getBodyImages(long userId) {
-        log.info("userID:" + userId);
 
         return bodyImageRepository.findByUserIdOrderByRecordedAtDesc(userId);
     }
