@@ -1,5 +1,6 @@
 package com.hsp.fitu.controller;
 
+import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
 import com.hsp.fitu.dto.BodyImageMainResponseDTO;
 import com.hsp.fitu.dto.BodyImageUploadResponseDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
@@ -47,8 +48,8 @@ public class BodyImageController {
     }
 
     @DeleteMapping()
-    public ResponseEntity<?> s3delete(@RequestParam String addr) {
-        s3ImageService.deleteImageFromS3(addr);
+    public ResponseEntity<?> s3delete(@RequestBody BodyImageDeleteRequestDTO dto) {
+        s3ImageService.deleteImageFromS3(dto);
         return ResponseEntity.ok("body image 삭제 완료");
     }
 }
