@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.util.IOUtils;
+import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
 import com.hsp.fitu.error.customExceptions.EmptyFileException;
 import com.hsp.fitu.error.ErrorCode;
@@ -110,7 +111,8 @@ public class S3ImageServiceImpl implements S3ImageService {
     }
 
     @Override
-    public void deleteImageFromS3(String imageUrl) {
+    public void deleteImageFromS3(BodyImageDeleteRequestDTO dto) {
+        String imageUrl = dto.getImageUrl();
         String key = getKeyFromImageAddress(imageUrl);
         try {
             amazonS3.deleteObject(new DeleteObjectRequest(bucketName, key));

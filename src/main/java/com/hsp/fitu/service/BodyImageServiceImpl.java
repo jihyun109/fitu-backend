@@ -17,9 +17,9 @@ public class BodyImageServiceImpl implements BodyImageService {
 
     @Override
     public BodyImageMainResponseDTO getMainBodyImage(long userId) {
-        String imageUrl = bodyImageRepository.findMainImageUrlByUserIdAndOOrderByRecordedAtDesc(userId);
-        BodyImageMainResponseDTO bodyImageMainResponseDTO = new BodyImageMainResponseDTO(imageUrl);
-        return bodyImageMainResponseDTO;
+        BodyImageEntity entity = bodyImageRepository.findFirstUrlByUserIdOrderByRecordedAtDesc(userId);
+        String imageUrl = entity.getUrl();
+        return new BodyImageMainResponseDTO(imageUrl);
     }
 
     @Override
