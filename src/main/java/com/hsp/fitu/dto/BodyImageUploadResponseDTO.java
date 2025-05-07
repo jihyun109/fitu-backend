@@ -7,6 +7,6 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 @Getter
-public class BodyImageMainResponseDTO {
+public class BodyImageUploadResponseDTO {
     private String imageUrl;
 }
