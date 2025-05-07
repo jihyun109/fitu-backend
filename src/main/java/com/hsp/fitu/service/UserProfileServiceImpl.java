@@ -24,12 +24,12 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
         // UserEntity(gender) 수정
+        user.updateRole(dto.getRole());
         user.updateProfile(dto.getGender());
 
         // PhysicalInfoEntity(height, weight) 업데이트
         PhysicalInfoEntity entity = PhysicalInfoEntity.builder()
                 .userId(userId)
-                .weight(dto.getWeight())
                 .height(dto.getHeight())
                 .build();
 

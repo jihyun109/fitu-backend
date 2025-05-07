@@ -1,6 +1,7 @@
 package com.hsp.fitu.entity;
 
 import com.hsp.fitu.entity.enums.Gender;
+import com.hsp.fitu.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,9 +21,14 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     public void updateProfile( Gender gender) {
         this.gender = gender;
+    }
 
+    public void updateRole(Role role) {
+        this.role = role;
     }
 }

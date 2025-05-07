@@ -28,7 +28,8 @@ public class SecurityConfig {
             "/api/v1/posts/**",
             "/api/v1/replies/**",
             "/login",
-            "/auth/login/kakao/**"
+            "/auth/login/kakao/**",
+            "/auth/reissue"
     };
 
     @Bean

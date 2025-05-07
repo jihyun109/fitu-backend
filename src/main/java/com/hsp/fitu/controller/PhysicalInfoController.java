@@ -4,9 +4,11 @@ import com.hsp.fitu.dto.PhysicalInfoResponseDTO;
 import com.hsp.fitu.dto.PhysicalInfoUpdateRequestDTO;
 import com.hsp.fitu.dto.PhysicalInfoWeightHeightResponseDTO;
 import com.hsp.fitu.dto.PhysicalInfosRequestDTO;
+import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.PhysicalInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,18 +20,21 @@ import java.util.List;
 public class PhysicalInfoController {
     private final PhysicalInfoService physicalInfoService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<PhysicalInfoResponseDTO> getPhysicsInfos(@PathVariable long userId) {
+    @GetMapping()
+    public ResponseEntity<PhysicalInfoResponseDTO> getPhysicsInfos(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getId();
         return ResponseEntity.ok(physicalInfoService.getPhysicalInfo(userId));
     }
 
-    @GetMapping("/{userId}/muscle-bodyfat")
-    public ResponseEntity<List<PhysicalInfoWeightHeightResponseDTO>> getWeightsAndHeights(@PathVariable long userId, @RequestBody PhysicalInfosRequestDTO physicalInfosRequestDTO) {
+    @GetMapping("/muscle-bodyfat")
+    public ResponseEntity<List<PhysicalInfoWeightHeightResponseDTO>> getWeightsAndHeights(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PhysicalInfosRequestDTO physicalInfosRequestDTO) {
+        Long userId = userDetails.getId();
         return ResponseEntity.ok(physicalInfoService.getMuscleAndBodyFat(userId, physicalInfosRequestDTO));
     }
 
-    @PostMapping("/{userId}")
-    public ResponseEntity<String> updatePhysicalInfo(@PathVariable long userId, @RequestBody PhysicalInfoUpdateRequestDTO physicalInfoUpdateRequestDTO) {
+    @PostMapping()
+    public ResponseEntity<String> updatePhysicalInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PhysicalInfoUpdateRequestDTO physicalInfoUpdateRequestDTO) {
+        Long userId = userDetails.getId();
         physicalInfoService.updatePhysicalInfo(userId, physicalInfoUpdateRequestDTO);
         return ResponseEntity.ok("physical info 업데이트 완료");
     }
