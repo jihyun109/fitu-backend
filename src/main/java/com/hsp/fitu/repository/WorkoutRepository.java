@@ -1,8 +1,10 @@
 package com.hsp.fitu.repository;
 
 import com.hsp.fitu.entity.WorkoutEntity;
+import com.hsp.fitu.entity.enums.Workout;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface WorkoutRepository extends JpaRepository< WorkoutEntity, Long> {
-
+import java.util.Optional;
+public interface WorkoutRepository extends JpaRepository<WorkoutEntity, Long> {
+    Optional<WorkoutEntity> findByName(Workout name);
 }
