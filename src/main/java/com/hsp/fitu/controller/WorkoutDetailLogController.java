@@ -1,9 +1,11 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.WorkoutLogRequestDTO;
+import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.WorkoutDetailLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,17 +17,11 @@ public class WorkoutDetailLogController {
 
     @PostMapping
     public ResponseEntity<String> createWorkoutDetailLog(
-            @RequestParam("userId") long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody WorkoutLogRequestDTO requestDTO) {
 
+        Long userId = userDetails.getId();
         workoutDetailLogService.saveWorkoutDetailLog(userId, requestDTO);
         return ResponseEntity.ok("운동 기록 저장 완료");
     }
 }
-
-//        for (WorkoutDetailLogRequestDTO dto : workoutList) {
-//        System.out.println("Weight: " + dto.getWeight()
-//                    + ", Sets: " + dto.getNumOfSets()
-//                    + ", Reps: " + dto.getRepsPerSet());
-//        }
-//workoutlog, detail entity에 둘다 저장.

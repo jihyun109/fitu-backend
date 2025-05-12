@@ -49,4 +49,3 @@ public class WorkoutDetailLogServiceImpl implements WorkoutDetailLogService {
         }
     }
 }
-//운동명, 무게, 세트, 세트당 횟수 리스트로 받아. 운동명을 번호로 내가 바꿔서 넣어줘야함.
