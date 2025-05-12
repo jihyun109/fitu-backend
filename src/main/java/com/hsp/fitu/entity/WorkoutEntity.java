@@ -1,15 +1,17 @@
 package com.hsp.fitu.entity;
 
 import com.hsp.fitu.entity.enums.Workout;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
+@Getter
 @Table(name = "workouts")
 public class WorkoutEntity {
     @Id
     private long id;
     private long categoryId;
+
+    @Enumerated(EnumType.STRING)
     private Workout name;
 }
