@@ -1,8 +1,6 @@
 package com.hsp.fitu.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WorkoutDetailLogEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private long workoutLogId;
     private long workoutId;

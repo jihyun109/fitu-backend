@@ -1,15 +1,11 @@
 package com.hsp.fitu.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,12 +16,16 @@ import java.time.LocalDateTime;
 @Table(name = "workout_logs")
 public class WorkoutLogEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private long userId;
+
+    @Column(name="date")
     private LocalDateTime recordedAt;
 
     @PrePersist
     protected void onCreate() {
         this.recordedAt = LocalDateTime.now();
     }
+
 }
