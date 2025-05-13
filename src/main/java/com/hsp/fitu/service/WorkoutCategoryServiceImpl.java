@@ -16,7 +16,6 @@ public class WorkoutCategoryServiceImpl implements WorkoutCategoryService{
     @Override
     @Transactional(readOnly = true)
     public List<WorkoutCategoryNameOnly> getWorkoutCategories() {
-        workoutCategoryRepository.findAllBy();
-        return null;
+        return workoutCategoryRepository.findAllBy();
     }
 }
