@@ -1,8 +1,11 @@
 package com.hsp.fitu.service;
 
+import com.hsp.fitu.dto.AdditionalInfoResponseDTO;
 import com.hsp.fitu.dto.UserProfileRequestDTO;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
+import com.hsp.fitu.entity.enums.Role;
+import com.hsp.fitu.jwt.JwtUtil;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,15 +19,17 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     private final UserRepository userRepository;
     private final PhysicalInfoRepository physicalInfoRepository;
+    private final JwtUtil jwtUtil;
 
     // 프로필 저장
     @Override
-    public void inputProfileOnce(long userId, UserProfileRequestDTO dto) {
+    public AdditionalInfoResponseDTO inputProfileOnce(long userId, UserProfileRequestDTO dto) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
         // UserEntity(gender) 수정
-        user.updateRole(dto.getRole());
+        Role role = dto.getRole();
+        user.updateRole(role);
         user.updateProfile(dto.getGender());
 
         // PhysicalInfoEntity(height, weight) 업데이트
@@ -34,5 +39,11 @@ public class UserProfileServiceImpl implements UserProfileService {
                 .build();
 
         physicalInfoRepository.save(entity);
+
+        // role 이 포함된 토큰 발급
+        String newToken = jwtUtil.createAccessToken(userId, role);
+        return AdditionalInfoResponseDTO.builder()
+                .token(newToken)
+                .build();
     }
 }
