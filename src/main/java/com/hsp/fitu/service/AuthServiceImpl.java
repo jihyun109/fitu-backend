@@ -38,14 +38,21 @@ public class AuthServiceImpl implements AuthService {
 
         UserEntity userEntity = userRepository.findByKakaoEmail(kakaoEmail)
                 .orElse(null);
+        Role role;
 
+        // new user 인 경우
         if (userEntity == null) {
             isNewUser = true;
             userEntity = createNewUser(kakaoProfile);
+            role = null;
+            log.info("userId4: " + userEntity.getId());
+        } else {
+            role = userEntity.getRole();
         }
 
         Long userId = userEntity.getId();
-        String accessToken = jwtUtil.createAccessToken(userId, userEntity.getRole());
+        log.info("userId3: " + userId);
+        String accessToken = jwtUtil.createAccessToken(userId, role);
         String refreshToken = jwtUtil.createRefreshToken(userId);
         httpServletResponse.setHeader("Authorization", "Bearer " + accessToken);
 
@@ -81,10 +88,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private UserEntity createNewUser(KakaoDTO.KakaoProfile kakaoProfile) {
+        String kakaoEmail = kakaoProfile.getKakao_account().getEmail();
         UserEntity newUser = UserEntity.builder()
-                .kakaoEmail(kakaoProfile.getKakao_account().getEmail())
+                .kakaoEmail(kakaoEmail)
                 .build();
         userRepository.save(newUser);
-        return newUser;
+        return userRepository.findByKakaoEmail(kakaoEmail).orElse(null);
     }
 }
