@@ -19,6 +19,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -66,7 +67,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String role = (String) claims.get("role");
 
         // SecurityContext 에 추가할 Authentication 인스턴스 생성
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (role != null && !role.isBlank()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+        }
+
+//        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
         CustomUserDetails userDetails = new CustomUserDetails(userId, claims.getSubject(), authorities);
 
         UsernamePasswordAuthentication authentication = new UsernamePasswordAuthentication(userDetails, null, authorities);
