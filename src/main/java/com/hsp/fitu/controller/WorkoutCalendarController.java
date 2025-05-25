@@ -1,9 +1,11 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.WorkoutCalendarFullDTO;
+import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.WorkoutCalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,9 +22,10 @@ public class WorkoutCalendarController {
 
     @GetMapping("/full")
     public ResponseEntity<List<WorkoutCalendarFullDTO>> getFullWorkoutCalendar(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam int year,
             @RequestParam int month) {
+        Long userId = userDetails.getId();
         return ResponseEntity.ok(
                 workoutCalendarService.getFullWorkoutCalendar(userId, year, month)
         );
