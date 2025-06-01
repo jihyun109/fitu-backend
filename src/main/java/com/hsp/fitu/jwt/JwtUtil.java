@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.Date;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class JwtUtil {
     private final SecretKey secretKey;
     private final Long accessExpMs;
@@ -34,10 +36,17 @@ public class JwtUtil {
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(accessExpMs); // 예: 30분
 
+        // claim
+        Claims claims = Jwts.claims();
+        claims.put("userId", userId);
+        log.info("userId2 : " + userId);
+        if (role != null) {
+            claims.put("role", role.toString());
+        }
+
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
-                .addClaims(Map.of("userId", userId,
-                        "role", role.toString()))
+                .addClaims(claims)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(expiration))
                 .signWith(secretKey)
