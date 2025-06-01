@@ -18,7 +18,11 @@ public interface WorkoutRepository extends JpaRepository<WorkoutEntity, Long> {
     SELECT w.name
     FROM workouts w
     JOIN workout_categories c ON w.category_id = c.id
-    WHERE c.name = :categoryName
+    WHERE c.id = :categoryId
     """, nativeQuery = true)
-    List<Workout> findNamesByCategory(@Param("categoryName") WorkoutCategory workoutCategory);
+    List<Workout> findNamesByCategory(@Param("categoryId") Long categoryId);
+
+    @Query("SELECT w.name FROM WorkoutEntity w WHERE w.categoryId = :categoryId AND w.name <> :mainWorkoutName")
+    List<Workout> findSimilarWorkouts(@Param("mainWorkoutName") Workout mainWorkoutName, @Param("categoryId") Long categoryId);
+
 }
