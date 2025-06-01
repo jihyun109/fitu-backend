@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface WorkoutCategoryRepository extends JpaRepository<WorkoutCategoryEntity, Long> {
     List<WorkoutCategoryNameOnly> findAllBy();
-    List<WorkoutCategory> findByNameInOrderByPriority(List<WorkoutCategory> workoutCategory);
+    List<WorkoutCategoryEntity> findByNameInOrderByPriority(List<WorkoutCategory> workoutCategory);
 
 
 }
