@@ -23,10 +23,10 @@ public enum Workout {
     PULL_UP,
 
     CABLE_ROPE_PUSHDOWN,
+    BARBELL_LUNGE,
     DUMBBELL_CURL,
     BARBELL_CURL,
     BENCH_DIP,
-
     V_SQUAT,
     LEG_EXTENSION,
     BACK_EXTENSION,
@@ -34,5 +34,4 @@ public enum Workout {
     LYING_LEG_CURL,
     DUMBBELL_SQUAT,
     BARBELL_SQUAT,
-    BARBELL_LUNGE
 }
