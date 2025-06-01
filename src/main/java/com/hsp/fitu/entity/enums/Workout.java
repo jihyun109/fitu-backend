@@ -1,7 +1,7 @@
 package com.hsp.fitu.entity.enums;
 
 public enum Workout {
-    EZ_Bar_Front_Raise,
+    EZ_BAR_FRONT_RAISE,
     ARNOLD_PRESS,
     SHOULDER_PRESS,
     SIDE_LATERAL_RAISE,
