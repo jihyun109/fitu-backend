@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -27,9 +28,12 @@ public class PhysicalInfoController {
     }
 
     @GetMapping("/muscle-bodyfat")
-    public ResponseEntity<List<PhysicalInfoWeightHeightResponseDTO>> getWeightsAndHeights(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PhysicalInfosRequestDTO physicalInfosRequestDTO) {
+    public ResponseEntity<List<PhysicalInfoWeightHeightResponseDTO>> getWeightsAndHeights(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam LocalDate startDate, @RequestParam LocalDate endDate) {
         Long userId = userDetails.getId();
-        return ResponseEntity.ok(physicalInfoService.getMuscleAndBodyFat(userId, physicalInfosRequestDTO));
+        return ResponseEntity.ok(physicalInfoService.getMuscleAndBodyFat(userId, PhysicalInfosRequestDTO.builder()
+                .startDate(startDate)
+                .endDate(endDate)
+                .build()));
     }
 
     @PostMapping()
