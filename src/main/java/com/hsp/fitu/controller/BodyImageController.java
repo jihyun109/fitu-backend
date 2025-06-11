@@ -50,6 +50,6 @@ public class BodyImageController {
     @DeleteMapping()
     public ResponseEntity<?> s3delete(@RequestBody BodyImageDeleteRequestDTO dto) {
         s3ImageService.deleteImageFromS3(dto);
-        return ResponseEntity.ok("body image 삭제 완료");
+        return ResponseEntity.ok("Body image deleted successfully.");
     }
 }

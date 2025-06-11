@@ -48,6 +48,6 @@ public class AuthController {
                 .sameSite("None")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
-        return ResponseEntity.ok("로그아웃  완료");
+        return ResponseEntity.ok("Logout completed.");
     }
 }

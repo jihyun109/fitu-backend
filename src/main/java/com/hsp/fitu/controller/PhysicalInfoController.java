@@ -40,6 +40,6 @@ public class PhysicalInfoController {
     public ResponseEntity<String> updatePhysicalInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody PhysicalInfoUpdateRequestDTO physicalInfoUpdateRequestDTO) {
         Long userId = userDetails.getId();
         physicalInfoService.updatePhysicalInfo(userId, physicalInfoUpdateRequestDTO);
-        return ResponseEntity.ok("physical info 업데이트 완료");
+        return ResponseEntity.ok("Physical information successfully updated.");
     }
 }
