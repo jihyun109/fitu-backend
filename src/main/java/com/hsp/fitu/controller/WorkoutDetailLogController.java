@@ -22,6 +22,6 @@ public class WorkoutDetailLogController {
 
         Long userId = userDetails.getId();
         workoutDetailLogService.saveWorkoutDetailLog(userId, requestDTO);
-        return ResponseEntity.ok("운동 기록 저장 완료");
+        return ResponseEntity.ok("Workout log saved successfully.");
     }
 }
