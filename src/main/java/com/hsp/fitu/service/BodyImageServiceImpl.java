@@ -18,6 +18,9 @@ public class BodyImageServiceImpl implements BodyImageService {
     @Override
     public BodyImageMainResponseDTO getMainBodyImage(long userId) {
         BodyImageEntity entity = bodyImageRepository.findFirstUrlByUserIdOrderByRecordedAtDesc(userId);
+        if (entity == null) {
+            return new BodyImageMainResponseDTO("https://fitu-bucket.s3.ap-northeast-2.amazonaws.com/fitu_default_image.png");
+        }
         String imageUrl = entity.getUrl();
         return new BodyImageMainResponseDTO(imageUrl);
     }
