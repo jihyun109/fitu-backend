@@ -58,14 +58,14 @@ public class WorkoutServiceImpl implements WorkoutService {
                         .filter(alt -> !alt.equals(workout))
                         .limit(4)
                         .map(alt -> WorkoutWithImageDTO.builder()
-                                .workout(alt.getName())
+                                .name(alt.getName())
                                 .imageUrl(alt.getImageUrl()) // 이미지 URL 조회
                                 .build())
                         .toList();
 
                 responseList.add(RoutineRecommendationResponseDTO.builder()
                         .mainWorkout(WorkoutWithImageDTO.builder()
-                                .workout(mainWorkout)
+                                .name(mainWorkout)
                                 .imageUrl(mainImageUrl).build())
                         .similarWorkouts(similarList)
                         .build());
