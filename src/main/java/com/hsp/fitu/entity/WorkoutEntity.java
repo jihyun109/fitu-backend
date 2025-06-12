@@ -14,4 +14,6 @@ public class WorkoutEntity {
 
     @Enumerated(EnumType.STRING)
     private Workout name;
+    private String imageUrl;
+    private String gifUrl;
 }
