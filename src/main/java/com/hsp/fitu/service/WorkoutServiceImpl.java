@@ -1,8 +1,6 @@
 package com.hsp.fitu.service;
 
-import com.hsp.fitu.dto.RoutineRecommendationRequestDTO;
-import com.hsp.fitu.dto.RoutineRecommendationResponseDTO;
-import com.hsp.fitu.dto.WorkoutWithImageDTO;
+import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.WorkoutCategoryEntity;
 import com.hsp.fitu.entity.WorkoutEntity;
 import com.hsp.fitu.entity.enums.Workout;
@@ -77,6 +75,35 @@ public class WorkoutServiceImpl implements WorkoutService {
         }
 
         return responseList;
+    }
+
+    @Override
+    public List<WorkoutGifResponseDTO> getWorkoutGifs(WorkoutGifRequestDTO requestDTO) {
+        List<Workout> workouts = requestDTO.getWorkouts();
+
+//        return workouts.stream()
+//                .map(workout -> workoutRepository.findByName(workout)
+//                        .map(entity -> WorkoutGifResponseDTO.builder()
+//                                .workoutName(entity.getName())
+//                                .gif(entity.getGifUrl())
+//                                .build())
+//                        .orElseThrow(() -> new IllegalArgumentException("운동을 찾을 수 없습니다: " + workout)))
+//                .toList();
+
+        return workouts.stream()
+                .map(workout -> {
+                    WorkoutEntity entity = workoutRepository.findByName(workout);
+
+                    if (entity == null) {
+                        throw new RuntimeException("운동을 찾을 수 없습니다: " + workout);
+                    }
+
+                    return WorkoutGifResponseDTO.builder()
+                            .workoutName(entity.getName())
+                            .gif(entity.getImageUrl())
+                            .build();
+                })
+                .toList();
     }
 
     private Map<WorkoutCategory, Integer> allocateWorkoutCounts(List<WorkoutCategoryEntity> sortedCategories) {
