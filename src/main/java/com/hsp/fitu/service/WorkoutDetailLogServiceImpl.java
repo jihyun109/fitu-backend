@@ -34,8 +34,7 @@ public class WorkoutDetailLogServiceImpl implements WorkoutDetailLogService {
         for (WorkoutDetailLogRequestDTO detailDTO : requestDTO.getWorkoutList()) {
             Workout workoutEnum = Workout.valueOf(detailDTO.getWorkoutName().toUpperCase());//enum변환
 
-            WorkoutEntity workoutEntity = workoutRepository.findByName(workoutEnum) //enum이름으로 id 조회
-                    .orElseThrow(() -> new IllegalArgumentException("운동 이름이 존재하지 않습니다: " + detailDTO.getWorkoutName()));
+            WorkoutEntity workoutEntity = workoutRepository.findByName(workoutEnum); //enum이름으로 id 조회
 
             WorkoutDetailLogEntity detail = WorkoutDetailLogEntity.builder()
                     .workoutLogId(savedLog.getId())
