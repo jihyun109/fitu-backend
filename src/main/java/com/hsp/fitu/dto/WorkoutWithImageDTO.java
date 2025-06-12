@@ -9,6 +9,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Builder
 public class WorkoutWithImageDTO {
-    private Workout workout;
+    private Workout name;
     private String imageUrl;
 }
