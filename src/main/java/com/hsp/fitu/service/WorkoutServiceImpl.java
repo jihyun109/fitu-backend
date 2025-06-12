@@ -81,15 +81,6 @@ public class WorkoutServiceImpl implements WorkoutService {
     public List<WorkoutGifResponseDTO> getWorkoutGifs(WorkoutGifRequestDTO requestDTO) {
         List<Workout> workouts = requestDTO.getWorkouts();
 
-//        return workouts.stream()
-//                .map(workout -> workoutRepository.findByName(workout)
-//                        .map(entity -> WorkoutGifResponseDTO.builder()
-//                                .workoutName(entity.getName())
-//                                .gif(entity.getGifUrl())
-//                                .build())
-//                        .orElseThrow(() -> new IllegalArgumentException("운동을 찾을 수 없습니다: " + workout)))
-//                .toList();
-
         return workouts.stream()
                 .map(workout -> {
                     WorkoutEntity entity = workoutRepository.findByName(workout);
@@ -100,7 +91,7 @@ public class WorkoutServiceImpl implements WorkoutService {
 
                     return WorkoutGifResponseDTO.builder()
                             .workoutName(entity.getName())
-                            .gif(entity.getImageUrl())
+                            .gif(entity.getGifUrl())
                             .build();
                 })
                 .toList();
