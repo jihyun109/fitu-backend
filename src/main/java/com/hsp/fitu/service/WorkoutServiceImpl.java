@@ -2,7 +2,9 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.RoutineRecommendationRequestDTO;
 import com.hsp.fitu.dto.RoutineRecommendationResponseDTO;
+import com.hsp.fitu.dto.WorkoutWithImageDTO;
 import com.hsp.fitu.entity.WorkoutCategoryEntity;
+import com.hsp.fitu.entity.WorkoutEntity;
 import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.entity.enums.WorkoutCategory;
 import com.hsp.fitu.repository.WorkoutCategoryRepository;
@@ -26,7 +28,6 @@ public class WorkoutServiceImpl implements WorkoutService {
                 workoutCategoryRepository.findByNameInOrderByPriority(requestDTO.getWorkoutCategoryList());
 
         Map<WorkoutCategory, Integer> workoutCountMap = allocateWorkoutCounts(sortedCategories);
-        log.info(workoutCountMap.toString());
 
         Set<Workout> selectedMainWorkouts = new HashSet<>();
         List<RoutineRecommendationResponseDTO> responseList = new ArrayList<>();
@@ -36,27 +37,38 @@ public class WorkoutServiceImpl implements WorkoutService {
             WorkoutCategory categoryName = category.getName();
             int count = workoutCountMap.get(categoryName);
 
-            List<Workout> allWorkouts = workoutRepository.findNamesByCategory(category.getId());
+            List<WorkoutEntity> allWorkouts = workoutRepository.findAllByCategoryId(category.getId());
             Collections.shuffle(allWorkouts);
 
             int added = 0;
 
-            for (Workout workout : allWorkouts) {
-                if (selectedMainWorkouts.contains(workout)) continue;
+            // mainWorkout 선정
+            for (WorkoutEntity workout : allWorkouts) {
+                Workout mainWorkout = workout.getName();
+                if (selectedMainWorkouts.contains(mainWorkout)) continue;
 
-                // mainWorkout 선정
-                List<Workout> similarCandidates = workoutRepository.findSimilarWorkouts(workout, category.getId());
+                // similar workout 선정
+                List<WorkoutEntity> similarCandidates = workoutRepository.findSimilarWorkouts(mainWorkout, category.getId());
                 Collections.shuffle(similarCandidates);
 
-                List<Workout> similarList = similarCandidates.stream()
+                selectedMainWorkouts.add(mainWorkout);
+
+                // response 생성
+                String mainImageUrl = workout.getImageUrl();
+
+                List<WorkoutWithImageDTO> similarList = similarCandidates.stream()
                         .filter(alt -> !alt.equals(workout))
                         .limit(4)
+                        .map(alt -> WorkoutWithImageDTO.builder()
+                                .workout(alt.getName())
+                                .imageUrl(alt.getImageUrl()) // 이미지 URL 조회
+                                .build())
                         .toList();
 
-                selectedMainWorkouts.add(workout);
-
                 responseList.add(RoutineRecommendationResponseDTO.builder()
-                        .mainWorkout(workout)
+                        .mainWorkout(WorkoutWithImageDTO.builder()
+                                .workout(mainWorkout)
+                                .imageUrl(mainImageUrl).build())
                         .similarWorkouts(similarList)
                         .build());
 
@@ -65,7 +77,6 @@ public class WorkoutServiceImpl implements WorkoutService {
         }
 
         return responseList;
-
     }
 
     private Map<WorkoutCategory, Integer> allocateWorkoutCounts(List<WorkoutCategoryEntity> sortedCategories) {
