@@ -56,6 +56,11 @@ public class WorkoutServiceImpl implements WorkoutService {
 
                 selectedMainWorkouts.add(mainWorkout);
 
+                // body part 받아오기
+                long bodyPartId = workout.getCategoryId();
+                Optional<WorkoutCategoryEntity> workoutCategoryEntity = workoutCategoryRepository.findById(bodyPartId);
+                WorkoutCategory bodyPart = workoutCategoryEntity.get().getName();
+
                 // response 생성
                 String mainImageUrl = workout.getImageUrl();
 
@@ -73,6 +78,7 @@ public class WorkoutServiceImpl implements WorkoutService {
                                 .name(mainWorkout)
                                 .imageUrl(mainImageUrl).build())
                         .similarWorkouts(similarList)
+                        .bodyPart(bodyPart)
                         .build());
 
                 if (++added == count) break;
