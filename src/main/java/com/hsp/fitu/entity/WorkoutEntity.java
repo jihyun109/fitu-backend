@@ -16,4 +16,12 @@ public class WorkoutEntity {
     private Workout name;
     private String imageUrl;
     private String gifUrl;
+
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void updateGifUrl(String gifUrl) {
+        this.gifUrl = gifUrl;
+    }
 }
