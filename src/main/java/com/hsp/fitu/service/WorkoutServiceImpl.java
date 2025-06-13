@@ -5,11 +5,15 @@ import com.hsp.fitu.entity.WorkoutCategoryEntity;
 import com.hsp.fitu.entity.WorkoutEntity;
 import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.entity.enums.WorkoutCategory;
+import com.hsp.fitu.error.ErrorCode;
+import com.hsp.fitu.error.customExceptions.EmptyFileException;
 import com.hsp.fitu.repository.WorkoutCategoryRepository;
 import com.hsp.fitu.repository.WorkoutRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -19,6 +23,7 @@ import java.util.*;
 public class WorkoutServiceImpl implements WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final WorkoutCategoryRepository workoutCategoryRepository;
+    private final S3ImageService s3ImageService;
 
     @Override
     public List<RoutineRecommendationResponseDTO> suggestRoutine(RoutineRecommendationRequestDTO requestDTO) {
@@ -96,6 +101,35 @@ public class WorkoutServiceImpl implements WorkoutService {
                 })
                 .toList();
     }
+
+    @Transactional
+    @Override
+    public void updateWorkoutImage(long workoutId, MultipartFile image) {
+        WorkoutEntity workout = workoutRepository.findById(workoutId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid workout ID"));
+
+        if (image.isEmpty()) {
+            throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
+        }
+
+        String newImageUrl = s3ImageService.uploadImage(image, "workouts/images/");
+        workout.updateImageUrl(newImageUrl);
+    }
+
+    @Transactional
+    @Override
+    public void updateWorkoutGif(long workoutId, MultipartFile gif) {
+        WorkoutEntity workout = workoutRepository.findById(workoutId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid workout ID"));
+
+        if (gif.isEmpty()) {
+            throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
+        }
+
+        String newGifUrl = s3ImageService.uploadImage(gif, "workouts/gifs/");
+        workout.updateGifUrl(newGifUrl);
+    }
+
 
     private Map<WorkoutCategory, Integer> allocateWorkoutCounts(List<WorkoutCategoryEntity> sortedCategories) {
         Map<WorkoutCategory, Integer> workoutCountMap = new HashMap<>();
