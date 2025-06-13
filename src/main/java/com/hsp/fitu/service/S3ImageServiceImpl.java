@@ -48,7 +48,7 @@ public class S3ImageServiceImpl implements S3ImageService {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
         }
 
-        String imageUrl = this.uploadImage(image);
+        String imageUrl = this.uploadImage(image, "/body-image");
         bodyImageRepository.save(BodyImageEntity.builder()
                 .url(imageUrl)
                 .userId(userId)
@@ -57,10 +57,11 @@ public class S3ImageServiceImpl implements S3ImageService {
         return imageUrl;
     }
 
-    private String uploadImage(MultipartFile image) {
+    @Override
+    public String uploadImage(MultipartFile image, String folder) {
         this.validateImageFileExtention(image.getOriginalFilename());
         try {
-            return this.uploadImageToS3(image);
+            return this.uploadImageToS3(image, folder);
         } catch (IOException e) {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
         }
@@ -80,11 +81,11 @@ public class S3ImageServiceImpl implements S3ImageService {
         }
     }
 
-    private String uploadImageToS3(MultipartFile image) throws IOException {
+    private String uploadImageToS3(MultipartFile image, String folder) throws IOException {
         String originalFilename = image.getOriginalFilename(); //원본 파일 명
         String extention = originalFilename.substring(originalFilename.lastIndexOf(".")); //확장자 명
 
-        String s3FileName = UUID.randomUUID().toString().substring(0, 10) + originalFilename; //변경된 파일 명
+        String s3FileName = folder + UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename; //변경된 파일 명
 
         InputStream is = image.getInputStream();
         byte[] bytes = IOUtils.toByteArray(is);
@@ -100,7 +101,7 @@ public class S3ImageServiceImpl implements S3ImageService {
                             .withCannedAcl(CannedAccessControlList.PublicRead);
             amazonS3.putObject(putObjectRequest); // put image to S3
         } catch (Exception e) {
-            log.error("S3 Upload failed: {}", e.getMessage(), e);  // ← 이 로그가 핵심!
+            log.error("S3 Upload failed: {}", e.getMessage(), e);
             throw new S3UploadFailException(ErrorCode.S3_UPLOAD_FAILED.getMessage(), ErrorCode.S3_UPLOAD_FAILED);
         } finally {
             byteArrayInputStream.close();
