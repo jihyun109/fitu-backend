@@ -48,7 +48,7 @@ public class S3ImageServiceImpl implements S3ImageService {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
         }
 
-        String imageUrl = this.uploadImage(image, "/body-image");
+        String imageUrl = this.uploadImage(image, "body-image");
         bodyImageRepository.save(BodyImageEntity.builder()
                 .url(imageUrl)
                 .userId(userId)
