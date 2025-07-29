@@ -45,7 +45,7 @@ public class S3ImageServiceImpl implements S3ImageService {
     @Override
     public String upload(MultipartFile image, long userId) {
         if (image.isEmpty() || Objects.isNull(image.getOriginalFilename())) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
+            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
         String imageUrl = this.uploadImage(image, "body-image");
@@ -63,21 +63,21 @@ public class S3ImageServiceImpl implements S3ImageService {
         try {
             return this.uploadImageToS3(image, folder);
         } catch (IOException e) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
+            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
     }
 
     private void validateImageFileExtention(String filename) {
         int lastDotIndex = filename.lastIndexOf(".");
         if (lastDotIndex == -1) {
-            throw new EmptyFileException(ErrorCode.INVALID_IMAGE_FILE.getMessage(), ErrorCode.INVALID_IMAGE_FILE);
+            throw new EmptyFileException(ErrorCode.INVALID_IMAGE_FILE);
         }
 
         String extention = filename.substring(lastDotIndex + 1).toLowerCase();
         List<String> allowedExtentionList = Arrays.asList("jpg", "jpeg", "png", "gif");
 
         if (!allowedExtentionList.contains(extention)) {
-            throw new EmptyFileException(ErrorCode.INVALID_IMAGE_FILE.getMessage(), ErrorCode.INVALID_IMAGE_FILE);
+            throw new EmptyFileException(ErrorCode.INVALID_IMAGE_FILE);
         }
     }
 
@@ -119,7 +119,7 @@ public class S3ImageServiceImpl implements S3ImageService {
             amazonS3.deleteObject(new DeleteObjectRequest(bucketName, key));
             bodyImageRepository.deleteByUrl(imageUrl);
         } catch (Exception e) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
+            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
     }
 
@@ -129,7 +129,7 @@ public class S3ImageServiceImpl implements S3ImageService {
             String decodingKey = URLDecoder.decode(url.getPath(), "UTF-8");
             return decodingKey.substring(1); // 맨 앞의 '/' 제거
         } catch (MalformedURLException | UnsupportedEncodingException e) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
+            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
     }
 }
