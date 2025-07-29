@@ -5,8 +5,7 @@ import com.hsp.fitu.error.ErrorCode;
 
 public class EmptyFileException extends RuntimeException{
     private ErrorCode errorCode;
-    public EmptyFileException(String message, ErrorCode errorCode){
-        super(message);
+    public EmptyFileException(ErrorCode errorCode){
         this.errorCode = errorCode;
     }
 }

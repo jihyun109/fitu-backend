@@ -7,6 +7,7 @@ import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.entity.enums.WorkoutCategory;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.error.customExceptions.EmptyFileException;
+import com.hsp.fitu.error.customExceptions.WorkoutNotFoundException;
 import com.hsp.fitu.repository.WorkoutCategoryRepository;
 import com.hsp.fitu.repository.WorkoutRepository;
 import lombok.RequiredArgsConstructor;
@@ -97,7 +98,7 @@ public class WorkoutServiceImpl implements WorkoutService {
                     WorkoutEntity entity = workoutRepository.findByName(workout);
 
                     if (entity == null) {
-                        throw new RuntimeException("운동을 찾을 수 없습니다: " + workout);
+                        throw new WorkoutNotFoundException("운동을 찾을 수 없습니다: " + workout, ErrorCode.WORKOUT_NOT_FOUND);
                     }
 
                     return WorkoutGifResponseDTO.builder()
@@ -112,10 +113,10 @@ public class WorkoutServiceImpl implements WorkoutService {
     @Override
     public void updateWorkoutImage(long workoutId, MultipartFile image) {
         WorkoutEntity workout = workoutRepository.findById(workoutId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid workout ID"));
+                .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.INVALID_WORKOUT_ID));
 
         if (image.isEmpty()) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
+            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
         String newImageUrl = s3ImageService.uploadImage(image, "workouts/images/");
@@ -126,10 +127,10 @@ public class WorkoutServiceImpl implements WorkoutService {
     @Override
     public void updateWorkoutGif(long workoutId, MultipartFile gif) {
         WorkoutEntity workout = workoutRepository.findById(workoutId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid workout ID"));
+                .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.INVALID_WORKOUT_ID));
 
         if (gif.isEmpty()) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE.getMessage(), ErrorCode.EMPTY_FILE);
+            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
         String newGifUrl = s3ImageService.uploadImage(gif, "workouts/gifs/");
