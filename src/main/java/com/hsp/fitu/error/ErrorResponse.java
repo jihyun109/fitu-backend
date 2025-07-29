@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -13,6 +14,7 @@ public class ErrorResponse {
     private int status;
     private String message;
     private String code;
+    private LocalDateTime timestamp;
     // 필드별 오류
     @Setter
     private Map<String, String> fieldErrors;
@@ -21,6 +23,6 @@ public class ErrorResponse {
         this.status = errorCode.getStatus();
         this.message = errorCode.getMessage();
         this.code = errorCode.getErrorCode();
+        this.timestamp = LocalDateTime.now();
     }
-
 }
