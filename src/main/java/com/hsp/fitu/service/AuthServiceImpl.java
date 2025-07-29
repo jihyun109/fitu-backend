@@ -75,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public TokenResponseDTO reissue(String refreshToken) {
         if (!jwtUtil.validateToken(refreshToken)) {
-            throw new UnauthorizedException(ErrorCode.UNAUTHORIZED.getMessage(), ErrorCode.EMPTY_FILE);
+            throw new UnauthorizedException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         Long userId = jwtUtil.getUserId(refreshToken);
