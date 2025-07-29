@@ -1,11 +1,14 @@
 package com.hsp.fitu.error.customExceptions;
 
 import com.hsp.fitu.error.ErrorCode;
+import lombok.Getter;
 
-public class InvalidImageFileException extends RuntimeException{
-    private ErrorCode errorCode;
-    public InvalidImageFileException(String message, ErrorCode errorCode){
-        super(message);
+@Getter
+public class InvalidImageFileException extends RuntimeException {
+    private final ErrorCode errorCode;
+
+    public InvalidImageFileException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
 }
