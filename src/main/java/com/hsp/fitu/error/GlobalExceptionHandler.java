@@ -1,9 +1,6 @@
 package com.hsp.fitu.error;
 
-import com.hsp.fitu.error.customExceptions.EmptyFileException;
-import com.hsp.fitu.error.customExceptions.InvalidImageFileException;
-import com.hsp.fitu.error.customExceptions.S3UploadFailException;
-import com.hsp.fitu.error.customExceptions.UnauthorizedException;
+import com.hsp.fitu.error.customExceptions.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -104,6 +101,22 @@ public class GlobalExceptionHandler {
         log.warn("Unauthorized access: {}", ex.getMessage(), ex);
         ErrorResponse response = new ErrorResponse(ErrorCode.UNAUTHORIZED);
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    // 운동 관련 예외 처리
+    @ExceptionHandler(WorkoutNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWorkoutNotFoundException(WorkoutNotFoundException ex) {
+        log.warn("Workout not found: {}", ex.getMessage(), ex);
+        ErrorResponse response = new ErrorResponse(ex.getErrorCode());
+        return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
+    }
+
+    // 사용자 관련 예외 처리
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        log.warn("User not found: {}", ex.getMessage(), ex);
+        ErrorResponse response = new ErrorResponse(ex.getErrorCode());
+        return new ResponseEntity<>(response, HttpStatus.valueOf(ex.getErrorCode().getStatus()));
     }
 
     // 기타 예외 처리
