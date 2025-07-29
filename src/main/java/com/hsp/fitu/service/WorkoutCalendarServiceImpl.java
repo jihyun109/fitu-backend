@@ -5,6 +5,8 @@ import com.hsp.fitu.dto.WorkoutCalendarDetailDTO;
 import com.hsp.fitu.entity.WorkoutDetailLogEntity;
 import com.hsp.fitu.entity.WorkoutEntity;
 import com.hsp.fitu.entity.WorkoutLogEntity;
+import com.hsp.fitu.error.ErrorCode;
+import com.hsp.fitu.error.customExceptions.WorkoutNotFoundException;
 import com.hsp.fitu.repository.WorkoutDetailLogRepository;
 import com.hsp.fitu.repository.WorkoutLogRepository;
 import com.hsp.fitu.repository.WorkoutRepository;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-//import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,7 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
 
             List<WorkoutCalendarDetailDTO> detailDTOs = details.stream().map(d -> {
                 WorkoutEntity workoutEntity = workoutRepository.findById(d.getWorkoutId())
-                        .orElseThrow(() -> new RuntimeException("운동 정보 없음"));
+                        .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.WORKOUT_NOT_FOUND));
 
                 return new WorkoutCalendarDetailDTO(
                         workoutEntity.getName(),
