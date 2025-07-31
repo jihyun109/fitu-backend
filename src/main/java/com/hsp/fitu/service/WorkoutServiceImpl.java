@@ -98,7 +98,7 @@ public class WorkoutServiceImpl implements WorkoutService {
                     WorkoutEntity entity = workoutRepository.findByName(workout);
 
                     if (entity == null) {
-                        throw new WorkoutNotFoundException("운동을 찾을 수 없습니다: " + workout, ErrorCode.WORKOUT_NOT_FOUND);
+                        throw new WorkoutNotFoundException(ErrorCode.WORKOUT_NOT_FOUND);
                     }
 
                     return WorkoutGifResponseDTO.builder()
