@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
@@ -35,9 +36,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
+        AntPathMatcher pathMatcher = new AntPathMatcher();
 
         // 특정 경로를 필터에서 제외
-        if (path.equals("/login") || path.equals("/signup") || path.equals("/auth/login/kakao") || path.equals("/auth/reissue")) {
+        if (path.equals("/login") || path.equals("/signup") || path.equals("/auth/login/kakao") || path.equals("/auth/reissue") || pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/v3/api-docs/**", path)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -62,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         System.out.println("claims:" + claims);
 
-        Number userIdNumber = (Number)claims.get("userId");
+        Number userIdNumber = (Number) claims.get("userId");
         Long userId = userIdNumber.longValue();
         String role = (String) claims.get("role");
 
