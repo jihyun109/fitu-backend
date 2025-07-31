@@ -1,11 +1,5 @@
 package com.hsp.fitu.service;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.util.IOUtils;
 import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
 import com.hsp.fitu.error.customExceptions.EmptyFileException;
@@ -17,13 +11,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -36,11 +34,14 @@ import java.util.UUID;
 @Slf4j
 public class S3ImageServiceImpl implements S3ImageService {
 
-    private final AmazonS3 amazonS3;
+    private final S3Client s3Client;
     private final BodyImageRepository bodyImageRepository;
 
     @Value("${cloud.aws.s3.bucket-name}")
     private String bucketName;
+
+    @Value("${cloud.aws.region.static}")
+    private String region;
 
     @Override
     public String upload(MultipartFile image, long userId) {
@@ -88,27 +89,23 @@ public class S3ImageServiceImpl implements S3ImageService {
         String s3FileName = folder + UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename; //변경된 파일 명
 
         InputStream is = image.getInputStream();
-        byte[] bytes = IOUtils.toByteArray(is);
+        byte[] bytes = image.getBytes();
 
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(image.getContentType());
-        metadata.setContentLength(bytes.length);
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(s3FileName)
+                .acl(ObjectCannedACL.PUBLIC_READ) // Public 권한
+                .contentType(image.getContentType())
+                .build();
 
         try {
-            PutObjectRequest putObjectRequest =
-                    new PutObjectRequest(bucketName, s3FileName, byteArrayInputStream, metadata)
-                            .withCannedAcl(CannedAccessControlList.PublicRead);
-            amazonS3.putObject(putObjectRequest); // put image to S3
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
         } catch (Exception e) {
             log.error("S3 Upload failed: {}", e.getMessage(), e);
             throw new S3UploadFailException(ErrorCode.S3_UPLOAD_FAILED);
-        } finally {
-            byteArrayInputStream.close();
-            is.close();
         }
 
-        return amazonS3.getUrl(bucketName, s3FileName).toString();
+        return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + s3FileName;
     }
 
     @Override
@@ -116,7 +113,12 @@ public class S3ImageServiceImpl implements S3ImageService {
         String imageUrl = dto.getImageUrl();
         String key = getKeyFromImageAddress(imageUrl);
         try {
-            amazonS3.deleteObject(new DeleteObjectRequest(bucketName, key));
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
             bodyImageRepository.deleteByUrl(imageUrl);
         } catch (Exception e) {
             throw new EmptyFileException(ErrorCode.S3_DELETE_FAILED);

@@ -2,7 +2,6 @@ package com.hsp.fitu.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.http.HttpStatus;
 
 // 에러코드 정리
 @AllArgsConstructor
