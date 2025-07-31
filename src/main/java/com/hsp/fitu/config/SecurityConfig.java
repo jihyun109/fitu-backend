@@ -29,7 +29,9 @@ public class SecurityConfig {
             "/api/v1/replies/**",
             "/login",
             "/auth/login/kakao/**",
-            "/auth/reissue"
+            "/auth/reissue",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
     };
 
     @Bean
