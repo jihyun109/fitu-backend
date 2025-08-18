@@ -23,8 +23,9 @@ public class UserEntity {
     private Gender gender;
     @Enumerated(EnumType.STRING)
     private Role role;
+    private String friendCode;
 
-    public void updateProfile( Gender gender) {
+    public void updateProfile(Gender gender) {
         this.gender = gender;
     }
 
