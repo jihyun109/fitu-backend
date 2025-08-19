@@ -1,22 +1,26 @@
 package com.hsp.fitu.service;
 
+import com.hsp.fitu.dto.FriendAddRequestDTO;
 import com.hsp.fitu.entity.FriendshipEntity;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.error.customExceptions.CustomException;
 import com.hsp.fitu.repository.FriendshipRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
+@Service
 public class FriendServiceImpl implements FriendService {
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
 
     @Override
     @Transactional
-    public void addFriend(String code, Long userId) {
+    public void addFriend(FriendAddRequestDTO dto, Long userId) {
         // code로 사용자 id 검색
+        String code = dto.getCode();
         Long userIdToAdd = userRepository.findIdByFriendCode(code);
 
         Long userIdA = Math.min(userId, userIdToAdd);
