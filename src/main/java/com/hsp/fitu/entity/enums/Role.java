@@ -1,5 +1,5 @@
 package com.hsp.fitu.entity.enums;
 
 public enum Role {
-    TRAINER, MEMBER
+    TRAINER, MEMBER, USER, ADMIN
 }
