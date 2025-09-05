@@ -23,7 +23,6 @@ public class JwtUtil {
     private final Long refreshExpMs;
 
     public JwtUtil(
-            // 해당 @Value 값들은 yml에서 설정할 수 있다
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.token.access-expiration-time}") Long access,
             @Value("${jwt.token.refresh-expiration-time}") Long refresh) {
@@ -34,12 +33,12 @@ public class JwtUtil {
 
     public String createAccessToken(long userId, Role role) {
         Instant now = Instant.now();
-        Instant expiration = now.plusMillis(accessExpMs); // 예: 30분
+        Instant expiration = now.plusMillis(accessExpMs);
+
 
         // claim
         Claims claims = Jwts.claims();
         claims.put("userId", userId);
-        log.info("userId2 : " + userId);
         if (role != null) {
             claims.put("role", role.toString());
         }

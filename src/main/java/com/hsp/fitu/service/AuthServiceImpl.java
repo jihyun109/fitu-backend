@@ -45,13 +45,12 @@ public class AuthServiceImpl implements AuthService {
             isNewUser = true;
             userEntity = createNewUser(kakaoProfile);
             role = null;
-            log.info("userId4: " + userEntity.getId());
         } else {
             role = userEntity.getRole();
         }
 
         Long userId = userEntity.getId();
-        log.info("userId3: " + userId);
+
         String accessToken = jwtUtil.createAccessToken(userId, role);
         String refreshToken = jwtUtil.createRefreshToken(userId);
         httpServletResponse.setHeader("Authorization", "Bearer " + accessToken);
