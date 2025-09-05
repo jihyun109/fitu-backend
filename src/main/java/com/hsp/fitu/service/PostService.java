@@ -5,12 +5,11 @@ import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.dto.PostUpdateRequestDTO;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface PostService {
+    PostResponseDTO createPost(PostCreateRequestDTO requestDTO);
     List<PostResponseDTO> getAllPosts();
-    Optional<PostResponseDTO> getPostById(Long id);
-    PostResponseDTO createPost(PostCreateRequestDTO postCreateRequestDTO);
+    PostResponseDTO getPost(Long id);
     PostResponseDTO updatePost(Long id, PostUpdateRequestDTO postUpdateRequestDTO);
     void deletePost(Long id);
 }
