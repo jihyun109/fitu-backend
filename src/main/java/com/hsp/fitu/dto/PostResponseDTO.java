@@ -1,21 +1,19 @@
 package com.hsp.fitu.dto;
 
 import com.hsp.fitu.entity.enums.PostCategory;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
+@Data
+@Builder
 public class PostResponseDTO {
     private Long id;
     private PostCategory category;
     private Long universityId;
     private Long writerId;
     private String title;
-    private String content;
+    private String contents;
     private LocalDateTime createdAt;
 }

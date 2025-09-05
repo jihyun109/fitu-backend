@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -13,9 +14,11 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "posts")
 public class PostEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
@@ -24,19 +27,22 @@ public class PostEntity {
     private Long universityId;
     private Long writerId;
     private String title;
-    private String content;
+    private String contents;
+
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Builder
-    public PostEntity(PostCategory category, Long universityId, Long writerId, String title, String content) {
 
-    }
-
-    // 게시글 업데이트 로직을 엔티티 자체에 캡슐화
-    public void update(PostCategory category, Long universityId, String title, String content) {
-        this.category = category;
-        this.universityId = universityId;
+    public PostEntity(String title, String contents) {
         this.title = title;
-        this.content = content;
+        this.contents = contents;
+    }
+    public void update(String title, String contents) {
+        if(title != null) {
+            this.title = title;
+        }
+        if (contents != null) {
+            this.contents = contents;
+        }
     }
 }

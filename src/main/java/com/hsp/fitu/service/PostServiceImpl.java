@@ -5,82 +5,67 @@ import com.hsp.fitu.dto.PostCreateRequestDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.dto.PostUpdateRequestDTO;
 import com.hsp.fitu.entity.PostEntity;
+import com.hsp.fitu.mapper.PostMapper;
 import com.hsp.fitu.repository.PostRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
 
-    private PostResponseDTO convertToDto(PostEntity post) {
-        if(post == null) {
-            return null;
-        }
-        return new PostResponseDTO(
-                post.getId(),
-                post.getCategory(),
-                post.getUniversityId(),
-                post.getWriterId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getCreatedAt()
-        );
-    }
-
-    @Transactional
-    @Override //게시글 조회
-    public List<PostResponseDTO> getAllPosts() {
-        return postRepository.findAll().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
-    // ID로 게시글 조회
-    @Transactional
     @Override
-    public Optional<PostResponseDTO> getPostById(Long id) {
-        Optional<PostEntity> postOptional = postRepository.findById(id);
-        return postOptional.map(this::convertToDto);
-    }
-
-    @Override //게시글 생성
-    public PostResponseDTO createPost(PostCreateRequestDTO postCreateRequestDTO) {
+    public PostResponseDTO createPost(PostCreateRequestDTO requestDTO) {
         PostEntity post = PostEntity.builder()
-                .category(postCreateRequestDTO.getCategory())
-                .universityId(postCreateRequestDTO.getUniversityId())
-                .writerId(postCreateRequestDTO.getWriterId())
-                .title(postCreateRequestDTO.getTitle())
-                .content(postCreateRequestDTO.getContent())
+                .universityId(requestDTO.getUniversityId())
+                .writerId(requestDTO.getWriterId())
+                .category(requestDTO.getCategory())
+                .title(requestDTO.getTitle())
+                .contents(requestDTO.getContents())
                 .build();
 
-        PostEntity savedPost = postRepository.save(post);
-        return convertToDto(savedPost);
+        PostEntity saved  = postRepository.save(post);
+        return PostMapper.postToDTO(saved);
     }
 
-    @Override //게시글 수정
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostResponseDTO> getAllPosts() {
+        return postRepository.findAll()
+                .stream()
+                .map(PostMapper::postToDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public PostResponseDTO getPost(Long id) {
+        PostEntity postEntity = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        PostEntity updatedPost = postRepository.save(postEntity);
+        return PostMapper.postToDTO(updatedPost);
+    }
+
+    @Override
+    @Transactional
     public PostResponseDTO updatePost(Long id, PostUpdateRequestDTO postUpdateRequestDTO) {
-        return postRepository.findById(id).map(post -> {
-            post.update(
-                    postUpdateRequestDTO.getCategory(),
-                    postUpdateRequestDTO.getUniversityId(),
-                    postUpdateRequestDTO.getTitle(),
-                    postUpdateRequestDTO.getContent()
-            );
-            PostEntity savedPost = postRepository.save(post);
-            return convertToDto(savedPost);
-        }).orElse(null);
+        PostEntity postEntity = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+        postEntity.update(
+                postUpdateRequestDTO.getTitle(),
+                postUpdateRequestDTO.getContents()
+        );
+        return PostMapper.postToDTO(postEntity);
     }
 
-    @Override //게시글 삭제
+    @Override
     public void deletePost(Long id) {
         postRepository.deleteById(id);
     }
-    
+
 }
