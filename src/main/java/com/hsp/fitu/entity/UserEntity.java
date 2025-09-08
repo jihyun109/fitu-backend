@@ -2,7 +2,7 @@ package com.hsp.fitu.entity;
 
 import com.hsp.fitu.entity.enums.Gender;
 import com.hsp.fitu.entity.enums.Role;
-import com.hsp.fitu.enums.AccountStatus;
+import com.hsp.fitu.entity.enums.AccountStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

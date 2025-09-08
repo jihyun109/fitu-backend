@@ -1,4 +1,4 @@
-package com.hsp.fitu.enums;
+package com.hsp.fitu.entity.enums;
 
 public enum AccountStatus {
     ACTIVE,
