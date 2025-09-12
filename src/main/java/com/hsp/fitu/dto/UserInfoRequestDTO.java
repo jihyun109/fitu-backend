@@ -4,7 +4,7 @@ import com.hsp.fitu.entity.enums.Gender;
 import lombok.Getter;
 
 @Getter
-public class UserAdditionalInfoRequestDTO {
+public class UserInfoRequestDTO {
     private String name;
     private String universityEmail;
     private int height;
