@@ -1,5 +1,6 @@
 package com.hsp.fitu.entity;
 
+import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.entity.enums.Gender;
 import com.hsp.fitu.entity.enums.Role;
 import com.hsp.fitu.entity.enums.AccountStatus;
@@ -46,11 +47,24 @@ public class UserEntity {
 
     private boolean profileVisibility;
 
+    private int height;
+
     public void updateProfile(Gender gender) {
         this.gender = gender;
     }
 
     public void updateRole(Role role) {
         this.role = role;
+    }
+
+    public void updateInfo(UserInfoRequestDTO userInfoRequestDTO) {
+        this.name = userInfoRequestDTO.getName();
+        this.universityEmail = userInfoRequestDTO.getUniversityEmail();
+        this.height = userInfoRequestDTO.getHeight();
+        this.gender = userInfoRequestDTO.getGender();
+    }
+
+    public void assignCode(String code) {
+        this.friendCode = code;
     }
 }
