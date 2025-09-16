@@ -15,35 +15,18 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
 
     private static final Duration CODE_TTL = Duration.ofMinutes(5);
     private static final int CODE_LEN = 6;
-    private static final int DAILY_LIMIT = 10;
 
     @Override
     public void sendVerificationCode(String email) {
-        // 1) 일일 횟수 제한
-        String day = java.time.LocalDate.now().toString(); // yyyy-MM-dd
-        String cntKey = "email:verify:cnt:" + email + ":" + day;
-        Long cnt = redisTemplate.opsForValue().increment(cntKey);
-        if (cnt != null && cnt == 1) {
-            // 첫 증가 시 하루 만료 설정
-            long secondsLeftToday = java.time.Duration.between(
-                    java.time.LocalDateTime.now(),
-                    java.time.LocalDate.now().plusDays(1).atStartOfDay()
-            ).getSeconds();
-            redisTemplate.expire(cntKey, Duration.ofSeconds(secondsLeftToday));
-        }
-        if (cnt != null && cnt > DAILY_LIMIT) {
-            throw new IllegalStateException("하루 발송 한도를 초과했습니다.");
-        }
-
-        // 2) 코드 생성 및 저장
+        // 1) 코드 생성 및 저장
         String code = generateCode(CODE_LEN);
         String key = "email:verify:" + email;
         redisTemplate.opsForValue().set(key, code, CODE_TTL);
 
-        // 3) 메일 전송 (단순 텍스트)
+        // 2) 메일 전송 (단순 텍스트)
         String subject = "[Fitu] 이메일 인증코드";
         String text = String.format(
-                "인증코드: %s\n유효시간: %d분\n",
+                "인증코드: %s\n",
                 code, CODE_TTL.toMinutes()
         );
         sendMail(email, subject, text);
