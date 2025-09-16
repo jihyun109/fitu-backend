@@ -43,7 +43,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
         // 3) 메일 전송 (단순 텍스트)
         String subject = "[Fitu] 이메일 인증코드";
         String text = String.format(
-                "인증코드: %s\n유효시간: %d분\n\n잘못 요청하셨다면 이 메일은 무시하셔도 됩니다.",
+                "인증코드: %s\n유효시간: %d분\n",
                 code, CODE_TTL.toMinutes()
         );
         sendMail(email, subject, text);
