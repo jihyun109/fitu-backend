@@ -4,11 +4,11 @@ import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
+import com.hsp.fitu.repository.UniversityRepository;
 import com.hsp.fitu.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 
@@ -17,43 +17,48 @@ import java.security.SecureRandom;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PhysicalInfoRepository physicalInfoRepository;
+    private final UniversityRepository universityRepository;
 
     @Override
     @Transactional
     public void saveInfo(Long userId, UserInfoRequestDTO userInfoRequestDTO) {
-        UserEntity userEntity = userRepository.findById(userId).orElse(null);
-
-        assert userEntity != null : "User must be loaded before mapping";
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
         // friend code 부여
-        assignFriendCode(userEntity);
+        String friendCode = assignFriendCode();
 
         // user info 저장
-        userEntity.updateInfo(userInfoRequestDTO);
+        userEntity.updateInfo(userInfoRequestDTO, friendCode);
+
+        userRepository.save(userEntity);
 
         // 신체 정보 저장
         PhysicalInfoEntity physicalInfoEntity = PhysicalInfoEntity.builder()
+                .userId(userId)
                 .weight(userInfoRequestDTO.getWeight())
                 .muscle(userInfoRequestDTO.getMuscle())
                 .bodyFat(userInfoRequestDTO.getBodyFat())
                 .build();
         physicalInfoRepository.save(physicalInfoEntity);
+
+        // 학교 정보 저장
+        saveUniversityInfo(userInfoRequestDTO.getUniversityEmail(), userId);
     }
 
     // friend code 부여
-    private void assignFriendCode(UserEntity userEntity) {
+    private String assignFriendCode() {
         // 코드 부여 10회 시도
         for (int i = 0; i < 10; i++) {
             String friendCode = generateFriendCode();
 
-            try {
-                userEntity.assignCode(friendCode);
-                userRepository.flush();
-                break;
-            } catch (DataIntegrityViolationException ignored) {
+            Long id = userRepository.findIdByFriendCode(friendCode);
 
+            if (id == null) {
+                return friendCode;
             }
         }
+        return null;
     }
 
     // 코드 생성
@@ -71,5 +76,9 @@ public class UserServiceImpl implements UserService {
         }
 
         return new String(buf);
+    }
+
+    private void saveUniversityInfo(String universityEmail, Long userId) {
+//        String domain
     }
 }
