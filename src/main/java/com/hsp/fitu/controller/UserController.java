@@ -16,7 +16,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/info")
-    public ResponseEntity<String> saveUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails, UserInfoRequestDTO userInfoRequestDTO) {
+    public ResponseEntity<String> saveUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody UserInfoRequestDTO userInfoRequestDTO) {
         Long userId = userDetails.getId();
         userService.saveInfo(userId, userInfoRequestDTO);
         return ResponseEntity.ok().body("success save user info");
