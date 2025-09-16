@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -22,9 +23,12 @@ public class PostCommentEntity {
     private Long writerId;
     private Long rootId;
     private String contents;
+
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     public void update(String contents) {
         this.contents = contents;
     }
+    public void setRootId(Long rootId) { this.rootId = rootId; }
 }
