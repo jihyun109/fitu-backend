@@ -28,9 +28,11 @@ public class UserServiceImpl implements UserService {
         // friend code 부여
         String friendCode = assignFriendCode();
 
-        // user info 저장
-        userEntity.updateInfo(userInfoRequestDTO, friendCode);
+        // 학교 id get
+        Long universityId = findUniversityId(userInfoRequestDTO.getUniversityEmail());
 
+        // user info 저장
+        userEntity.updateInfo(userInfoRequestDTO, friendCode, universityId);
         userRepository.save(userEntity);
 
         // 신체 정보 저장
@@ -42,8 +44,6 @@ public class UserServiceImpl implements UserService {
                 .build();
         physicalInfoRepository.save(physicalInfoEntity);
 
-        // 학교 정보 저장
-        saveUniversityInfo(userInfoRequestDTO.getUniversityEmail(), userId);
     }
 
     // friend code 부여
@@ -78,7 +78,9 @@ public class UserServiceImpl implements UserService {
         return new String(buf);
     }
 
-    private void saveUniversityInfo(String universityEmail, Long userId) {
-//        String domain
+    private Long findUniversityId(String universityEmail) {
+        String[] emailArray = universityEmail.split("@");
+
+        return universityRepository.findIdByDomainName(emailArray[1]);
     }
 }
