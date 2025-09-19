@@ -31,14 +31,14 @@ public class JwtUtil {
         refreshExpMs = refresh;
     }
 
-    public String createAccessToken(long userId, Role role) {
+    public String createAccessToken(long userId, Role role, Long universityId) {
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(accessExpMs);
-
 
         // claim
         Claims claims = Jwts.claims();
         claims.put("userId", userId);
+        claims.put("universityId", universityId);
         if (role != null) {
             claims.put("role", role.toString());
         }
