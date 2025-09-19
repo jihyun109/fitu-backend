@@ -23,7 +23,6 @@ public class UserProfileController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody UserProfileRequestDTO dto) {
         Long userId = userDetails.getId();
-        log.info("userId: " + userId);
 
         AdditionalInfoResponseDTO additionalInfoResponseDTO = userProfileService.inputProfileOnce(userId, dto);
         return ResponseEntity.ok(additionalInfoResponseDTO);

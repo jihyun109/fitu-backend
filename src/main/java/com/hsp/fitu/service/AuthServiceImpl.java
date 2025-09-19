@@ -12,7 +12,6 @@ import com.hsp.fitu.repository.UserRepository;
 import com.hsp.fitu.util.KakaoUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AuthServiceImpl implements AuthService {
     private final KakaoUtil kakaoUtil;
     private final UserRepository userRepository;
@@ -50,8 +48,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Long userId = userEntity.getId();
+        Long universityId = userEntity.getUniversityId();
 
-        String accessToken = jwtUtil.createAccessToken(userId, role);
+        String accessToken = jwtUtil.createAccessToken(userId, role, universityId);
         String refreshToken = jwtUtil.createRefreshToken(userId);
         httpServletResponse.setHeader("Authorization", "Bearer " + accessToken);
 
@@ -78,9 +77,16 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Long userId = jwtUtil.getUserId(refreshToken);
-        Role role = userRepository.findById(userId).get().getRole();
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
 
-        String newAccessToken = jwtUtil.createAccessToken(userId, role);
+        Role role = null;
+        Long universityId = null;
+        if (userEntity != null) {
+            role = userEntity.getRole();
+            universityId = userEntity.getUniversityId();
+        }
+
+        String newAccessToken = jwtUtil.createAccessToken(userId, role, universityId);
         return TokenResponseDTO.builder()
                 .token(newAccessToken)
                 .build();

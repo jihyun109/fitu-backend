@@ -13,6 +13,7 @@ public class CustomUserDetails implements UserDetails {
     private Long id;
     private String username;
     private Collection<? extends GrantedAuthority> authorities;
+    private Long universityId;
 
     @Override
     public String getPassword() {

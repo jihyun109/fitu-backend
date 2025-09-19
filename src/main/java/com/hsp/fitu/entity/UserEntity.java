@@ -1,8 +1,9 @@
 package com.hsp.fitu.entity;
 
+import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.entity.enums.Gender;
 import com.hsp.fitu.entity.enums.Role;
-import com.hsp.fitu.enums.AccountStatus;
+import com.hsp.fitu.entity.enums.AccountStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,11 +47,22 @@ public class UserEntity {
 
     private boolean profileVisibility;
 
+    private Integer height;
+
     public void updateProfile(Gender gender) {
         this.gender = gender;
     }
 
     public void updateRole(Role role) {
         this.role = role;
+    }
+
+    public void updateInfo(UserInfoRequestDTO userInfoRequestDTO, String friendCode, Long universityId) {
+        this.name = userInfoRequestDTO.getName();
+        this.universityEmail = userInfoRequestDTO.getUniversityEmail();
+        this.height = userInfoRequestDTO.getHeight();
+        this.gender = userInfoRequestDTO.getGender();
+        this.friendCode = friendCode;
+        this.universityId = universityId;
     }
 }
