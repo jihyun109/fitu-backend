@@ -11,12 +11,10 @@ import com.hsp.fitu.jwt.JwtUtil;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UserProfileServiceImpl implements UserProfileService {
 
     private final UserRepository userRepository;
@@ -43,7 +41,8 @@ public class UserProfileServiceImpl implements UserProfileService {
         physicalInfoRepository.save(entity);
 
         // role 이 포함된 토큰 발급
-        String newToken = jwtUtil.createAccessToken(userId, role);
+        Long universityId = user.getUniversityId();
+        String newToken = jwtUtil.createAccessToken(userId, role, universityId);
         return AdditionalInfoResponseDTO.builder()
                 .token(newToken)
                 .build();
