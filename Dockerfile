@@ -8,6 +8,7 @@ WORKDIR /build
 COPY gradlew gradlew
 COPY gradle gradle
 COPY build.gradle settings.gradle ./
+RUN chmod +x gradlew
 
 # BuildKit 캐시를 /root/.gradle에 마운트 → Gradle 의존성 다운로드 캐시
 # 테스트 제외(-x test). 실패해도 캐시만 채워지도록 || true
@@ -20,11 +21,9 @@ RUN --mount=type=cache,target=/root/.gradle \
 FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /build
 
-# deps 단계에서 다운로드한 Gradle 캐시를 복사해 재사용
-COPY --from=deps /root/.gradle /root/.gradle
-
 # 나머지 전체 소스 복사
 COPY . .
+RUN chmod +x gradlew
 
 # Gradle 빌드 수행 (BuildKit 캐시 적용)
 # - clean bootJar 실행, test는 제외
