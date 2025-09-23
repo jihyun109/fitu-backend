@@ -102,9 +102,11 @@ jobs:
               sudo apt-get install -y docker-compose-plugin
             fi
             
+            sudo usermod -aG docker $USER
+            newgrp docker || true
+            
             sudo docker version
             sudo docker compose version || true
-            sudo usermod -aG docker $USER
             
             cd ~/deploy/${STACK_NAME}
             
