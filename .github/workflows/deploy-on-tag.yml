@@ -54,7 +54,7 @@ jobs:
           echo "GOOGLE_USERNAME=${{ secrets.GOOGLE_USERNAME }}" >> .env
           echo "GOOGLE_PASSWORD=${{ secrets.GOOGLE_PASSWORD }}" >> .env
           
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" > .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "JWT_SIGNING_KEY=${{ secrets.JWT_SIGNING_KEY }}" >> .env
           
           echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> .env
