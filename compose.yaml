@@ -13,7 +13,7 @@ services:
         condition: on-failure
 
   app:
-    image: ${IMAGE:-${DOCKER_USER:-jihyun923}/fitu:latest}
+    image: ${IMAGE}:${VERSION}
     env_file:
       - .env
     deploy:
