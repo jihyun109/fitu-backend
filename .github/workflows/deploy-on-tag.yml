@@ -80,7 +80,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}     # 서버 주소
           username: ${{ secrets.SSH_USER }} # 서버 유저명
           key: ${{ secrets.SSH_KEY }}       # SSH 개인키
-          source: "docker-compose.yml,.env,nginx.conf" # 업로드할 파일 목록
+          source: "compose.yaml,.env,nginx.conf" # 업로드할 파일 목록
           target: "~/deploy/${{ env.STACK_NAME }}"      # 서버 내 저장 경로
 
       - name: Deploy                       # Swarm 배포 실행
@@ -112,4 +112,4 @@ jobs:
             if ! docker info | grep -q "Swarm: active"; then
               docker swarm init
             fi && \
-            docker stack deploy -c docker-compose.yml --with-registry-auth ${{ env.STACK_NAME }}
+            docker stack deploy -c compose.yaml --with-registry-auth ${{ env.STACK_NAME }}
