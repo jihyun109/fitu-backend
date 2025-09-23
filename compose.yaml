@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/nginx.conf
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  app:
+    image: ${IMAGE:-${DOCKER_USER:-jihyun923}/fitu:latest}
+    deploy:
+      replicas: 2               # 백엔드 인스턴스 수
+      update_config:
+        parallelism: 1          # 롤링업데이트 시 한 번에 1개씩만 교체
+        delay: 5s               # 각 단계 사이 지연
+        failure_action: rollback
+        order: start-first      # 새 컨테이너 먼저 띄우고, 그 다음 기존 것 내림
+      restart_policy:
+        condition: on-failure
+
+    # health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - fitu-prod-web
+
+networks:
+  fitu-prod-web:
+
+configs:
+  nginx_conf:
+    file: ./nginx.conf
