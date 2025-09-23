@@ -80,6 +80,15 @@ jobs:
             sudo mkdir -p /srv/redis-data
             sudo chown 1000:1000 /srv/redis-data
 
+      - name: Copy .env to Swarm manager  # Swarm 매니저 노드에 배포 관련 파일 업로드
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}     # 서버 주소
+          username: ${{ secrets.SSH_USER }} # 서버 유저명
+          key: ${{ secrets.SSH_KEY }}       # SSH 개인키
+          source: ".env" # 업로드할 파일 목록
+          target: "~/deploy/${{ env.STACK_NAME }}"      # 서버 내 저장 경로
+
       - name: Copy files to Swarm manager  # Swarm 매니저 노드에 배포 관련 파일 업로드
         uses: appleboy/scp-action@v0.1.7
         with:
