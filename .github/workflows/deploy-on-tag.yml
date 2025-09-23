@@ -47,6 +47,9 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             mkdir -p ~/deploy/${STACK_NAME}
+            
+            sudo mkdir -p /srv/redis-data
+            sudo chown 1000:1000 /srv/redis-data
 
       - name: Copy files to Swarm manager  # Swarm 매니저 노드에 배포 관련 파일 업로드
         uses: appleboy/scp-action@v0.1.7
