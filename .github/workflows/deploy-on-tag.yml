@@ -2,7 +2,7 @@ name: deploy-on-tag.yml
 on:
   push:
     tags:
-      - "**"
+      - "v*"
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/fitu
