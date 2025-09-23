@@ -64,6 +64,22 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            set -e
+            
+            if ! command -v docker >/dev/null 2>&1; then
+              curl -fsSL https://get.docker.com | sudo sh
+              sudo systemctl enable --now docker
+            fi
+            
+            if ! docker compose version >/dev/null 2>&1; then
+              sudo apt-get update
+              sudo apt-get install -y docker-compose-plugin
+            fi
+            
+            sudo docker version
+            sudo docker compose version || true
+            sudo usermod -aG docker $USER
+            
             cd ~/deploy/${STACK_NAME}
             
             docker swarm init || true
