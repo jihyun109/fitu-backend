@@ -39,6 +39,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4  # 저장소 코드 다시 체크아웃
 
+      - name: Create .env file from secrets
+        run: |
+          echo "DB_URL"=${{ secrets.DB_URL }}" > .env
+          echo "DB_USERNAME"=${{ secrets.DB_USERNAME }}" > .env
+          echo "DB_PASSWORD"=${{ secrets.DB_PASSWORD }}" > .env
+          
+          echo "REDIS_PASSWORD"=${{ secrets.REDIS_PASSWORD }}" > .env
+          
+          echo "KAKAO_REDIRECT_API_KEY"=${{ secrets.KAKAO_REDIRECT_API_KEY }}" > .env
+          echo "KAKAO_REDIRECT_URI"=${{ secrets.KAKAO_REDIRECT_URI }}" > .env
+          echo "KAKAO_CLIENT_SECRET"=${{ secrets.KAKAO_CLIENT_SECRET }}" > .env
+          
+          echo "GOOGLE_USERNAME"=${{ secrets.GOOGLE_USERNAME }}" > .env
+          echo "GOOGLE_PASSWORD"=${{ secrets.GOOGLE_PASSWORD }}" > .env
+          
+          echo "JWT_SECRET"=${{ secrets.JWT_SECRET }}" > .env
+          echo "JWT_SIGNING_KEY"=${{ secrets.JWT_SIGNING_KEY }}" > .env
+          
+          echo "AWS_ACCESS_KEY"=${{ secrets.AWS_ACCESS_KEY }}" > .env
+          echo "AWS_SECRET_KEY"=${{ secrets.AWS_SECRET_KEY }}" > .env
+          echo "S3_BUCKET_NAME"=${{ secrets.S3_BUCKET_NAME }}" > .env
+          echo "AWS_REGION"=${{ secrets.AWS_REGION }}" > .env
+
       - name: Ensure remote dir     # 원격 배포 디렉터리 생성 (없으면 생성)
         uses: appleboy/ssh-action@v1.2.0
         with:
