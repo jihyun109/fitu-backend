@@ -105,6 +105,8 @@ jobs:
             sudo usermod -aG docker $USER
             newgrp docker || true
             
+            echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            
             sudo docker version
             sudo docker compose version || true
             
