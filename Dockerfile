@@ -39,6 +39,12 @@ RUN --mount=type=cache,target=/root/.gradle \
 # -------------------------------
 FROM eclipse-temurin:17-jre-jammy AS final
 
+# health check를 위해 curl 설치
+USER root
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
 # 런타임 컨테이너는 비루트(non-root) 유저로 실행하기 위해 UID 지정
 ARG UID=10001
 RUN adduser --disabled-password --gecos "" \
