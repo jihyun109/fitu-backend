@@ -112,4 +112,4 @@ jobs:
             
             docker swarm init || true
             
-            docker stack deploy -c docker-compose.yml --with-registry-auth ${STACK_NAME}
+            docker stack deploy -c docker-compose.yml --with-registry-auth ${{ env.STACK_NAME }}
