@@ -33,9 +33,26 @@ services:
     networks:
       - fitu-prod-web
 
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - /srv/redis-data:/data
+    configs:
+      - source: redis_conf
+        target: /usr/local/etc/redis/redis.conf
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - backend
+
 networks:
   fitu-prod-web:
 
 configs:
   nginx_conf:
     file: ./nginx.conf
+  redis_conf:
+    file: ./redis.conf
