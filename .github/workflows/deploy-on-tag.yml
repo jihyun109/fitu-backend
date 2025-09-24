@@ -100,7 +100,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}     # 서버 주소
           username: ${{ secrets.SSH_USER }} # 서버 유저명
           key: ${{ secrets.SSH_KEY }}       # SSH 개인키
-          source: "compose.yaml,nginx.conf" # 업로드할 파일 목록
+          source: "compose.yaml, nginx.conf, redis.conf" # 업로드할 파일 목록
           target: "~/deploy/${{ env.STACK_NAME }}"      # 서버 내 저장 경로
 
       - name: Deploy                       # Swarm 배포 실행
