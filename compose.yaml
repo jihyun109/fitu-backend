@@ -48,7 +48,7 @@ services:
       restart_policy:
         condition: on-failure
     networks:
-      - backend
+      - fitu-prod-web
 
 networks:
   fitu-prod-web:
