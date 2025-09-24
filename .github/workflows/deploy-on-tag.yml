@@ -46,38 +46,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4  # 저장소 코드 다시 체크아웃
 
-      - name: Create .env file from secrets
-        env:
-          VERSION: ${{ needs.build-and-push.outputs.version }}
-        run: |
-          echo "\
-            DB_URL=${{ secrets.DB_URL }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-    
-            IMAGE=$IMAGE_NAME
-            VERSION=$VERSION 
-    
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-    
-            KAKAO_REDIRECT_API_KEY=${{ secrets.KAKAO_REDIRECT_API_KEY }}
-            KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
-            KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
-    
-            GOOGLE_USERNAME=${{ secrets.GOOGLE_USERNAME }}
-            GOOGLE_PASSWORD=${{ secrets.GOOGLE_PASSWORD }}
-    
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            JWT_SIGNING_KEY=${{ secrets.JWT_SIGNING_KEY }}
-    
-            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
-            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
-            S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
-            AWS_REGION=${{ secrets.AWS_REGION }}
-          " > .env
-          cat .env
-          cat $IMAGE_NAME
-
       - name: Ensure remote dir     # 원격 배포 디렉터리 생성 (없으면 생성)
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -90,14 +58,42 @@ jobs:
             sudo mkdir -p /srv/redis-data
             sudo chown 1000:1000 /srv/redis-data
 
-      - name: Copy .env to Swarm manager  # Swarm 매니저 노드에 배포 관련 파일 업로드
-        uses: appleboy/scp-action@v0.1.7
+      - name: Create .env on remote
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          VERSION: ${{ needs.build-and-push.outputs.version }}
         with:
-          host: ${{ secrets.SSH_HOST }}     # 서버 주소
-          username: ${{ secrets.SSH_USER }} # 서버 유저명
-          key: ${{ secrets.SSH_KEY }}       # SSH 개인키
-          source: ".env" # 업로드할 파일 목록
-          target: "~/deploy/${{ env.STACK_NAME }}"      # 서버 내 저장 경로
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            mkdir -p ~/deploy/${{ env.STACK_NAME }}
+            cat > ~/deploy/${{ env.STACK_NAME }}/.env <<'EOF'
+              DB_URL=${{ secrets.DB_URL }}
+              DB_USERNAME=${{ secrets.DB_USERNAME }}
+              DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+              IMAGE=$IMAGE_NAME
+              VERSION=$VERSION 
+
+              REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+
+              KAKAO_REDIRECT_API_KEY=${{ secrets.KAKAO_REDIRECT_API_KEY }}
+              KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+              KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+
+              GOOGLE_USERNAME=${{ secrets.GOOGLE_USERNAME }}
+              GOOGLE_PASSWORD=${{ secrets.GOOGLE_PASSWORD }}
+
+              JWT_SECRET=${{ secrets.JWT_SECRET }}
+              JWT_SIGNING_KEY=${{ secrets.JWT_SIGNING_KEY }}
+
+              AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+              AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+              S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
+              AWS_REGION=${{ secrets.AWS_REGION }}
+            EOF
+            chmod 600 ~/deploy/${{ env.STACK_NAME }}/.env
 
       - name: Copy files to Swarm manager  # Swarm 매니저 노드에 배포 관련 파일 업로드
         uses: appleboy/scp-action@v0.1.7
@@ -105,7 +101,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}     # 서버 주소
           username: ${{ secrets.SSH_USER }} # 서버 유저명
           key: ${{ secrets.SSH_KEY }}       # SSH 개인키
-          source: "compose.yaml,.env,nginx.conf" # 업로드할 파일 목록
+          source: "compose.yaml,nginx.conf" # 업로드할 파일 목록
           target: "~/deploy/${{ env.STACK_NAME }}"      # 서버 내 저장 경로
 
       - name: Deploy                       # Swarm 배포 실행
