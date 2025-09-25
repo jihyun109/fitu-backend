@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   nginx:
     depends_on:
@@ -13,6 +11,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    networks:
+      - fitu-prod-web
 
   app:
     image: jihyun923/fitu:latest
