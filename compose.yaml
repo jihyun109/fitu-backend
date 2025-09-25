@@ -27,7 +27,6 @@ services:
         order: start-first      # 새 컨테이너 먼저 띄우고, 그 다음 기존 것 내림
       restart_policy:
         condition: on-failure
-    platform: linux/amd64
 
     # health check
     healthcheck:
