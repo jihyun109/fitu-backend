@@ -55,8 +55,8 @@ jobs:
           script: |
             mkdir -p ~/deploy/${STACK_NAME}
             
-            sudo mkdir -p /srv/redis-data
-            sudo chown 1000:1000 /srv/redis-data
+            sudo mkdir -p ./srv/redis-data
+            sudo chown 1000:1000 ./srv/redis-data
 
       - name: Create .env on remote
         uses: appleboy/ssh-action@v1.2.0
