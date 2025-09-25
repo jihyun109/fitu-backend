@@ -30,7 +30,7 @@ services:
 
     # health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 10s
       timeout: 3s
       retries: 3
@@ -44,7 +44,9 @@ services:
     configs:
       - source: redis_conf
         target: /usr/local/etc/redis/redis.conf
-    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    secrets:
+      - redis_acl
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" , "--aclfile", "/run/secrets/redis_acl" ]
     deploy:
       replicas: 1
       restart_policy:
@@ -60,3 +62,7 @@ configs:
     file: ./nginx.conf
   redis_conf:
     file: ./redis.conf
+
+secrets:
+  redis_acl:
+    external: true
