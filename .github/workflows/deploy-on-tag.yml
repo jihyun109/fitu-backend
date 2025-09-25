@@ -133,5 +133,14 @@ jobs:
             cd ~/deploy/${{ env.STACK_NAME }} && \
             if ! docker info | grep -q "Swarm: active"; then
               docker swarm init
-            fi && \
+            fi
+            
+            docker config rm redis_conf || true
+            
+            docker config create redis_conf ./redis.conf
+            
+            docker secret rm redis_acl || true
+            
+            echo "user default on >${{ secrets.REDIS_PASSWORD }} ~* +@all" | docker secret create redis_acl -
+            
             docker stack deploy -c /home/ubuntu/deploy/fitu-prod/compose.yaml --with-registry-auth ${{ env.STACK_NAME }}
