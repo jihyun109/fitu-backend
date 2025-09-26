@@ -3,10 +3,11 @@ package com.hsp.fitu.controller;
 import com.hsp.fitu.dto.PostCreateRequestDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.dto.PostUpdateRequestDTO;
-import com.hsp.fitu.repository.PostRepository;
+import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,8 +19,16 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public ResponseEntity<PostResponseDTO> createPost(@RequestBody PostCreateRequestDTO requestDTO) {
-        return ResponseEntity.ok(postService.createPost(requestDTO));
+    public ResponseEntity<PostResponseDTO> createPost(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody PostCreateRequestDTO requestDTO) {
+
+        Long writerId = userDetails.getId();
+        Long universityId = userDetails.getUniversityId();
+
+        PostResponseDTO postResponseDTO = postService.createPost(writerId, universityId, requestDTO);
+
+        return ResponseEntity.ok(postResponseDTO);
     }
 
     @GetMapping
@@ -27,21 +36,21 @@ public class PostController {
         return ResponseEntity.ok(postService.getAllPosts());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDTO> getPost(@PathVariable Long id) {
-        return ResponseEntity.ok(postService.getPost(id));
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostResponseDTO> getPost(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.getPost(postId));
     }
 
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id,
+    @PatchMapping("/{postId}")
+    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long postId,
                                                       @RequestBody PostUpdateRequestDTO postUpdateRequestDTO) {
-        return ResponseEntity.ok(postService.updatePost(id, postUpdateRequestDTO));
+        return ResponseEntity.ok(postService.updatePost(postId, postUpdateRequestDTO));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        postService.deletePost(id);
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+        postService.deletePost(postId);
         return ResponseEntity.noContent().build();
     }
 }
