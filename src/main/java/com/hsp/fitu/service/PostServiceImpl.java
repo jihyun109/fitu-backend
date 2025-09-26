@@ -22,7 +22,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostCommentRepository postCommentRepository;
@@ -31,15 +30,13 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostResponseDTO createPost(Long writerId, Long universityId, PostCreateRequestDTO requestDTO) {
-        UserEntity writer = userRepository.findById(writerId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 
         PostEntity postEntity = PostEntity.builder()
                 .category(requestDTO.category())
                 .title(requestDTO.title())
                 .contents(requestDTO.contents())
                 .universityId(universityId)
-                .writerId(writer)
+                .writerId(writerId)
                 .build();
 
         PostEntity saved = postRepository.save(postEntity);

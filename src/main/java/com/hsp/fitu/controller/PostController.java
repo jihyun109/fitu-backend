@@ -27,7 +27,6 @@ public class PostController {
         Long universityId = userDetails.getUniversityId();
 
         PostResponseDTO postResponseDTO = postService.createPost(writerId, universityId, requestDTO);
-
         return ResponseEntity.ok(postResponseDTO);
     }
 

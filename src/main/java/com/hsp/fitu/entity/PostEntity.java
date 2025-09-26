@@ -26,9 +26,7 @@ public class PostEntity {
 
     private Long universityId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_id")
-    private UserEntity writerId;
+    private Long writerId;
 
     private String title;
 

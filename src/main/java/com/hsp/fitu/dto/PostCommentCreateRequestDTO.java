@@ -4,4 +4,4 @@ public record PostCommentCreateRequestDTO(
         Long postId,
         String contents,
         Long rootId
-) {}
+){}

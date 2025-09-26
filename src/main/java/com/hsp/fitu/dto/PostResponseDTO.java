@@ -13,4 +13,4 @@ public record PostResponseDTO(
       LocalDateTime createdAt,
       List<PostCommentResponseDTO> comments
 
-) {}
+){}
