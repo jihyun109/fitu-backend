@@ -1,6 +1,5 @@
 package com.hsp.fitu.entity;
 
-import com.hsp.fitu.entity.enums.PostCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,33 +14,21 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "posts")
-public class PostEntity {
+@Table(name = "post_comments")
+public class PostCommentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Enumerated(EnumType.STRING)
-    private PostCategory category;
-
-    private Long universityId;
-
+    private Long postId;
     private Long writerId;
-
-    private String title;
-
+    private Long rootId;
     private String contents;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-
-    public void update(String title, String contents) {
-        if(title != null) {
-            this.title = title;
-        }
-        if (contents != null) {
-            this.contents = contents;
-        }
+    public void update(String contents) {
+        this.contents = contents;
     }
+    public void setRootId(Long rootId) { this.rootId = rootId; }
 }
