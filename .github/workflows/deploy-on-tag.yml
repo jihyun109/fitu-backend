@@ -1,0 +1,146 @@
+name: deploy-on-tag.yml
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/fitu
+  STACK_NAME: fitu-prod
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    # job outputs로 노출할 이름 정의 (아래에서 steps.set_version.outputs.VERSION을 참조)
+    outputs:
+      version: ${{ steps.set_version.outputs.VERSION }}
+
+    steps:
+      - uses: actions/checkout@v4 # 소스코드 체크아웃
+
+      - name: Set version     # 빌드할 이미지 태그 결정
+        id: set_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Login to DockerHub           # DockerHub 로그인
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & Push         # 도커 이미지 빌드 & 푸시
+        uses: docker/build-push-action@v6
+        with:
+          context: .               # 현재 저장소에서 빌드
+          push: true               # 빌드한 이미지를 푸시
+          tags: |                  # 태그 2개로 푸시
+            ${{ env.IMAGE_NAME }}:${{ steps.set_version.outputs.VERSION }}
+            ${{ env.IMAGE_NAME }}:latest
+
+  deploy: # 2. 배포 단계
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4  # 저장소 코드 다시 체크아웃
+
+      - name: Ensure remote dir     # 원격 배포 디렉터리 생성 (없으면 생성)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            mkdir -p ~/deploy/${STACK_NAME}
+            
+            sudo mkdir -p ./srv/redis-data
+            sudo chown 1000:1000 ./srv/redis-data
+
+      - name: Create .env on remote
+        uses: appleboy/ssh-action@v1.2.0
+
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            mkdir -p ~/deploy/${{ env.STACK_NAME }}
+            cat > ~/deploy/${{ env.STACK_NAME }}/.env <<EOF
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+            IMAGE=${{ env.IMAGE_NAME }}
+            VERSION=${{ needs.build-and-push.outputs.version }} 
+
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+
+            KAKAO_REDIRECT_API_KEY=${{ secrets.KAKAO_REDIRECT_API_KEY }}
+            KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+            KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+
+            GOOGLE_USERNAME=${{ secrets.GOOGLE_USERNAME }}
+            GOOGLE_PASSWORD=${{ secrets.GOOGLE_PASSWORD }}
+
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_SIGNING_KEY=${{ secrets.JWT_SIGNING_KEY }}
+
+            AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+            AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
+            S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            EOF
+            chmod 600 ~/deploy/${{ env.STACK_NAME }}/.env
+
+      - name: Copy files to Swarm manager  # Swarm 매니저 노드에 배포 관련 파일 업로드
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}     # 서버 주소
+          username: ${{ secrets.SSH_USER }} # 서버 유저명
+          key: ${{ secrets.SSH_KEY }}       # SSH 개인키
+          source: "compose.yaml, nginx.conf, redis.conf" # 업로드할 파일 목록
+          target: "~/deploy/${{ env.STACK_NAME }}"      # 서버 내 저장 경로
+
+      - name: Deploy                       # Swarm 배포 실행
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            
+            if ! command -v docker >/dev/null 2>&1; then
+              curl -fsSL https://get.docker.com | sudo sh
+              sudo systemctl enable --now docker
+            fi
+            
+            if ! docker compose version >/dev/null 2>&1; then
+              sudo apt-get update
+              sudo apt-get install -y docker-compose-plugin
+            fi
+            
+            sudo usermod -aG docker $USER
+            newgrp docker || true
+            
+            echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            
+            sudo docker version
+            sudo docker compose version || true
+            
+            cd ~/deploy/${{ env.STACK_NAME }} && \
+            if ! docker info | grep -q "Swarm: active"; then
+              docker swarm init
+            fi
+            
+            docker config rm redis_conf || true
+            
+            docker config create redis_conf ./redis.conf
+            
+            docker secret rm redis_acl || true
+            
+            echo "user default on >${{ secrets.REDIS_PASSWORD }} ~* +@all" | docker secret create redis_acl -
+            
+            docker stack deploy -c /home/ubuntu/deploy/fitu-prod/compose.yaml --with-registry-auth ${{ env.STACK_NAME }}
