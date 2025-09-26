@@ -5,8 +5,10 @@ import com.hsp.fitu.dto.PostCreateRequestDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.dto.PostUpdateRequestDTO;
 import com.hsp.fitu.entity.PostEntity;
+import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.mapper.PostMapper;
 import com.hsp.fitu.repository.PostRepository;
+import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,20 +18,26 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
+    private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final PostMapper postMapper;
 
     @Override
-    public PostResponseDTO createPost(PostCreateRequestDTO requestDTO) {
-        PostEntity post = PostEntity.builder()
-                .universityId(requestDTO.getUniversityId())
-                .writerId(requestDTO.getWriterId())
-                .category(requestDTO.getCategory())
-                .title(requestDTO.getTitle())
-                .contents(requestDTO.getContents())
+    @Transactional
+    public PostResponseDTO createPost(Long writerId, Long universityId, PostCreateRequestDTO requestDTO) {
+        UserEntity writer = userRepository.findById(writerId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+
+        PostEntity postEntity = PostEntity.builder()
+                .category(requestDTO.category())
+                .title(requestDTO.title())
+                .contents(requestDTO.contents())
+                .universityId(universityId)
+                .writerId(writer)
                 .build();
 
-        PostEntity saved  = postRepository.save(post);
-        return PostMapper.postToDTO(saved);
+        PostEntity saved = postRepository.save(postEntity);
+        return postMapper.postToDTO(saved);
     }
 
     @Override
@@ -37,35 +45,35 @@ public class PostServiceImpl implements PostService {
     public List<PostResponseDTO> getAllPosts() {
         return postRepository.findAll()
                 .stream()
-                .map(PostMapper::postToDTO)
+                .map(postMapper::postToDTO)
                 .toList();
     }
 
     @Override
     @Transactional
-    public PostResponseDTO getPost(Long id) {
-        PostEntity postEntity = postRepository.findById(id)
+    public PostResponseDTO getPost(Long postId) {
+        PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
         PostEntity updatedPost = postRepository.save(postEntity);
-        return PostMapper.postToDTO(updatedPost);
+        return postMapper.postToDTO(updatedPost);
     }
 
     @Override
     @Transactional
-    public PostResponseDTO updatePost(Long id, PostUpdateRequestDTO postUpdateRequestDTO) {
-        PostEntity postEntity = postRepository.findById(id)
+    public PostResponseDTO updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO) {
+        PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         postEntity.update(
-                postUpdateRequestDTO.getTitle(),
-                postUpdateRequestDTO.getContents()
+                postUpdateRequestDTO.title(),
+                postUpdateRequestDTO.contents()
         );
-        return PostMapper.postToDTO(postEntity);
+        return postMapper.postToDTO(postEntity);
     }
 
     @Override
-    public void deletePost(Long id) {
-        postRepository.deleteById(id);
+    public void deletePost(Long postId) {
+        postRepository.deleteById(postId);
     }
 
 }

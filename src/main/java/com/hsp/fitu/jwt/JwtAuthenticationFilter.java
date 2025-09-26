@@ -7,7 +7,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private SecretKey secretKey;
@@ -62,11 +60,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .parseClaimsJws(jwt)
                 .getBody();
 
-        System.out.println("claims:" + claims);
-
         Number userIdNumber = (Number) claims.get("userId");
         Long userId = userIdNumber.longValue();
         String role = (String) claims.get("role");
+        Number universityIdNumber = (Number) claims.get("universityId");
+        Long universityId = universityIdNumber.longValue();
 
         // SecurityContext 에 추가할 Authentication 인스턴스 생성
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -75,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
 //        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
-        CustomUserDetails userDetails = new CustomUserDetails(userId, claims.getSubject(), authorities);
+        CustomUserDetails userDetails = new CustomUserDetails(userId, claims.getSubject(), authorities, universityId);
 
         UsernamePasswordAuthentication authentication = new UsernamePasswordAuthentication(userDetails, null, authorities);
 
