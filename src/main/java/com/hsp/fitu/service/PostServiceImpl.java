@@ -1,12 +1,16 @@
 package com.hsp.fitu.service;
 
 
+import com.hsp.fitu.dto.PostCommentResponseDTO;
 import com.hsp.fitu.dto.PostCreateRequestDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.dto.PostUpdateRequestDTO;
+import com.hsp.fitu.entity.PostCommentEntity;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.UserEntity;
+import com.hsp.fitu.mapper.PostCommentMapper;
 import com.hsp.fitu.mapper.PostMapper;
+import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.PostRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,8 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final PostCommentRepository postCommentRepository;
+    private final PostCommentMapper postCommentMapper;
 
     @Override
     @Transactional
@@ -55,8 +61,13 @@ public class PostServiceImpl implements PostService {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        PostEntity updatedPost = postRepository.save(postEntity);
-        return postMapper.postToDTO(updatedPost);
+        List<PostCommentEntity> allComments = postCommentRepository.findAllByPostIdOrderByRootIdAscIdAsc(postId);
+
+        List<PostCommentResponseDTO> commentDTOs = allComments.stream()
+                .map(postCommentMapper::commentToDTO)
+                .toList();
+
+        return postMapper.postToDTO(postEntity, commentDTOs);
     }
 
     @Override
@@ -73,6 +84,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(Long postId) {
+        postCommentRepository.deleteAllByPostId(postId);
         postRepository.deleteById(postId);
     }
 

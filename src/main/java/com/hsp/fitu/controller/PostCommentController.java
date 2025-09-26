@@ -21,17 +21,8 @@ public class PostCommentController {
     @PostMapping
     public ResponseEntity<PostCommentResponseDTO> createComment(@RequestBody PostCommentCreateRequestDTO postCommentCreateRequestDTO,
                                                                 @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(postCommentService.createComment(postCommentCreateRequestDTO, userDetails.getId()));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<PostCommentResponseDTO>> getCommentsByPost(@RequestParam Long postId) {
-        return ResponseEntity.ok(postCommentService.getCommentsByPost(postId));
-    }
-
-    @GetMapping("/threads/{rootId}")
-    public ResponseEntity<List<PostCommentResponseDTO>> getThread(@PathVariable Long rootId) {
-        return ResponseEntity.ok(postCommentService.getThreadByRoot(rootId));
+        Long writerId = userDetails.getId();
+        return ResponseEntity.ok(postCommentService.createComment(postCommentCreateRequestDTO, writerId));
     }
 
     @PatchMapping("/{id}")
