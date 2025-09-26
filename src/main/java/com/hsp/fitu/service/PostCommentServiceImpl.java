@@ -29,7 +29,6 @@ public class PostCommentServiceImpl implements PostCommentService{
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
         if (req.rootId() == null) {
-
             PostCommentEntity root = postCommentRepository.save(
                     PostCommentEntity.builder()
                             .postId(postEntity.getId())
@@ -41,19 +40,9 @@ public class PostCommentServiceImpl implements PostCommentService{
 
             root.setRootId(root.getId());
             PostCommentEntity saved = postCommentRepository.save(root);
-
             return postCommentMapper.commentToDTO(saved);
 
         } else {
-
-            PostCommentEntity rootComment = postCommentRepository.findById(req.rootId())
-                    .orElseThrow(() -> new IllegalArgumentException("대상이 되는 루트 댓글을 찾을 수 없습니다."));
-
-            if (!rootComment.getPostId().equals(req.postId())) {
-                throw new IllegalArgumentException("다른 게시글의 댓글에 답글을 달 수 없습니다.");
-            }
-
-            // req.rootId()를 그대로 사용
             Long threadRootId = req.rootId();
 
             PostCommentEntity saved = postCommentRepository.save(

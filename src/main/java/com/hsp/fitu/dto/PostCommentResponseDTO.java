@@ -9,4 +9,4 @@ public record PostCommentResponseDTO(
         Long rootId,
         String contents,
         LocalDateTime createdAt
-) {}
+){}
