@@ -57,15 +57,12 @@ public class UserEntity {
         this.role = role;
     }
 
-    public void updateInfo(UserInfoRequestDTO userInfoRequestDTO, String friendCode) {
+    public void updateInfo(UserInfoRequestDTO userInfoRequestDTO, String friendCode, Long universityId) {
         this.name = userInfoRequestDTO.getName();
         this.universityEmail = userInfoRequestDTO.getUniversityEmail();
         this.height = userInfoRequestDTO.getHeight();
         this.gender = userInfoRequestDTO.getGender();
         this.friendCode = friendCode;
-    }
-
-    public void assignCode(String code) {
-        this.friendCode = code;
+        this.universityId = universityId;
     }
 }

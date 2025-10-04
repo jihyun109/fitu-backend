@@ -1,0 +1,68 @@
+services:
+  nginx:
+    depends_on:
+      - app
+    image: nginx:1.25-alpine
+    ports:
+      - "80:80"
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/nginx.conf
+    deploy:
+      restart_policy:
+        condition: on-failure
+    networks:
+      - fitu-prod-web
+
+  app:
+    image: jihyun923/fitu:latest
+    env_file:
+      - .env
+    deploy:
+      replicas: 2               # 백엔드 인스턴스 수
+      update_config:
+        parallelism: 1          # 롤링업데이트 시 한 번에 1개씩만 교체
+        delay: 5s               # 각 단계 사이 지연
+        failure_action: rollback
+        order: start-first      # 새 컨테이너 먼저 띄우고, 그 다음 기존 것 내림
+      restart_policy:
+        condition: on-failure
+
+    # health check
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - fitu-prod-web
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - ./srv/redis-data:/data
+    configs:
+      - source: redis_conf
+        target: /usr/local/etc/redis/redis.conf
+    secrets:
+      - redis_acl
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" , "--aclfile", "/run/secrets/redis_acl" ]
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - fitu-prod-web
+
+networks:
+  fitu-prod-web:
+
+configs:
+  nginx_conf:
+    file: ./nginx.conf
+  redis_conf:
+    file: ./redis.conf
+
+secrets:
+  redis_acl:
+    external: true
