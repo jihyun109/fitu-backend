@@ -7,9 +7,9 @@ import com.hsp.fitu.dto.PostUpdateRequestDTO;
 import java.util.List;
 
 public interface PostService {
-    PostResponseDTO createPost(PostCreateRequestDTO requestDTO);
+    PostResponseDTO createPost(Long writerId, Long universityId, PostCreateRequestDTO requestDTO);
     List<PostResponseDTO> getAllPosts();
-    PostResponseDTO getPost(Long id);
-    PostResponseDTO updatePost(Long id, PostUpdateRequestDTO postUpdateRequestDTO);
-    void deletePost(Long id);
+    PostResponseDTO getPost(Long postId);
+    PostResponseDTO updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO);
+    void deletePost(Long postId);
 }

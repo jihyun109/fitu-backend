@@ -31,7 +31,9 @@ public class SecurityConfig {
             "/auth/login/kakao/**",
             "/auth/reissue",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/actuator/health/**",
+            "/actuator/health"
     };
 
     @Bean
