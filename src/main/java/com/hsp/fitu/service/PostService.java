@@ -10,6 +10,7 @@ public interface PostService {
     PostResponseDTO createPost(Long writerId, Long universityId, PostCreateRequestDTO requestDTO);
     List<PostResponseDTO> getAllPosts();
     PostResponseDTO getPost(Long postId);
+    List<PostResponseDTO> searchPosts(String keyword);
     PostResponseDTO updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO);
     void deletePost(Long postId);
 }

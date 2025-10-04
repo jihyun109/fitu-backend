@@ -41,6 +41,11 @@ public class PostController {
         return ResponseEntity.ok(postService.getPost(postId));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<PostResponseDTO>> searchPosts(
+            @RequestParam String keyword) {
+        return ResponseEntity.ok(postService.searchPosts(keyword));
+    }
 
     @PatchMapping("/{postId}")
     public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long postId,

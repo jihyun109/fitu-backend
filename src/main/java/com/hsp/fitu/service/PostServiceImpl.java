@@ -61,6 +61,16 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
+    public List<PostResponseDTO> searchPosts(String keyword) {
+        List<PostEntity> posts = postRepository
+                .findByTitleContainingIgnoreCaseOrContentsContainingIgnoreCase(keyword, keyword);
+
+        return postMapper.postToDTOList(posts);
+    }
+
+
+    @Override
+    @Transactional
     public PostResponseDTO updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO) {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
