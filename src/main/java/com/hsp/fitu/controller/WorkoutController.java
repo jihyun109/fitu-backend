@@ -4,12 +4,9 @@ import com.hsp.fitu.dto.RoutineRecommendationRequestDTO;
 import com.hsp.fitu.dto.RoutineRecommendationResponseDTO;
 import com.hsp.fitu.dto.WorkoutGifRequestDTO;
 import com.hsp.fitu.dto.WorkoutGifResponseDTO;
-import com.hsp.fitu.entity.WorkoutEntity;
-import com.hsp.fitu.repository.WorkoutRepository;
 import com.hsp.fitu.service.WorkoutService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
