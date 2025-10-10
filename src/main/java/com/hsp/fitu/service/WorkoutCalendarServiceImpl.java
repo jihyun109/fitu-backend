@@ -3,7 +3,7 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.WorkoutCalendarFullDTO;
 import com.hsp.fitu.dto.WorkoutCalendarDetailDTO;
 import com.hsp.fitu.entity.WorkoutDetailLogEntity;
-import com.hsp.fitu.entity.WorkoutEntity;
+import com.hsp.fitu.entity.OldWorkoutEntity;
 import com.hsp.fitu.entity.WorkoutLogEntity;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.error.customExceptions.WorkoutNotFoundException;
@@ -44,7 +44,7 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
 //                    .toList();
 
             List<WorkoutCalendarDetailDTO> detailDTOs = details.stream().map(d -> {
-                WorkoutEntity workoutEntity = workoutRepository.findById(d.getWorkoutId())
+                OldWorkoutEntity workoutEntity = workoutRepository.findById(d.getWorkoutId())
                         .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.WORKOUT_NOT_FOUND));
 
                 return new WorkoutCalendarDetailDTO(
