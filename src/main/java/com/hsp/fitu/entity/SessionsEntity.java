@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -17,6 +20,10 @@ public class SessionsEntity {
 
     @Column(name = "user_id")
     private long userId;
+
+    @Column(name = "start_time")
+    @CreationTimestamp
+    private LocalDateTime startTime;
 
     @Column(name = "exercise_image_id")
     private long exerciseImageId;
