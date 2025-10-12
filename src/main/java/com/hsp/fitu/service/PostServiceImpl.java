@@ -3,13 +3,18 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.PostCreateRequestDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
+import com.hsp.fitu.dto.PostSliceResponseDTO;
 import com.hsp.fitu.dto.PostUpdateRequestDTO;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.UserEntity;
+import com.hsp.fitu.entity.enums.PostCategory;
 import com.hsp.fitu.mapper.PostMapper;
 import com.hsp.fitu.repository.PostRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,11 +47,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponseDTO> getAllPosts() {
-        return postRepository.findAll()
-                .stream()
-                .map(postMapper::postToDTO)
-                .toList();
+    public PostSliceResponseDTO<PostResponseDTO> getAllPosts(PostCategory category, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Slice<PostEntity> slice = postRepository.findAllByCategoryOrderByIdDesc(category, pageRequest);
+
+        List<PostResponseDTO> content = slice.getContent().stream().map(postMapper::postToDTO).toList();
+
+        return new PostSliceResponseDTO<>(content, slice.hasNext());
     }
 
     @Override
@@ -61,11 +68,18 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public List<PostResponseDTO> searchPosts(String keyword) {
-        List<PostEntity> posts = postRepository
-                .findByTitleContainingIgnoreCaseOrContentsContainingIgnoreCase(keyword, keyword);
+    public PostSliceResponseDTO<PostResponseDTO> searchPosts(PostCategory category, String keyword, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        return postMapper.postToDTOList(posts);
+        Slice<PostEntity> slice = postRepository
+                .findByCategoryAndTitleContainingIgnoreCaseOrCategoryAndContentsContainingIgnoreCase(
+                        category, keyword,
+                        category, keyword,
+                        pageRequest
+                );
+        List<PostResponseDTO> content = slice.getContent().stream().map(postMapper::postToDTO).toList();
+
+        return new PostSliceResponseDTO<>(content, slice.hasNext());
     }
 
 
