@@ -7,10 +7,10 @@ import lombok.Getter;
 @Entity
 @Table(name = "workout_categories")
 @Getter
-public class WorkoutCategoryEntity {
+public class OldWorkoutCategoryEntity {
     @Id
     private long id;
-
     @Enumerated(EnumType.STRING)
     private WorkoutCategory name;
+    private int priority;
 }
