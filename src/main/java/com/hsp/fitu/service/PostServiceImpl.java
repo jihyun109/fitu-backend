@@ -57,8 +57,7 @@ public class PostServiceImpl implements PostService {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        PostEntity updatedPost = postRepository.save(postEntity);
-        return postMapper.postToDTO(updatedPost);
+        return postMapper.postToDTO(postEntity);
     }
 
     @Override
