@@ -7,22 +7,21 @@ import lombok.Getter;
 @Entity
 @Getter
 @Table(name = "workouts")
-public class WorkoutEntity {
+public class OldWorkoutEntity {
     @Id
     private long id;
-
     private long categoryId;
-
-    @Column(name = "equipment_id")
-    private long equipmentId;
 
     @Enumerated(EnumType.STRING)
     private Workout name;
+    private String imageUrl;
+    private String gifUrl;
 
-    @Column(name = "image_id")
-    private String imageId;
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 
-    @Column(name = "gif_id")
-    private String gifId;
-
+    public void updateGifUrl(String gifUrl) {
+        this.gifUrl = gifUrl;
+    }
 }

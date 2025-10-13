@@ -6,7 +6,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record PostResponseDTO(
-      Long id,
+      long id,
+      long universityId,
       PostCategory category,
       String title,
       String contents,
