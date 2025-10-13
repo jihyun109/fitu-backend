@@ -6,11 +6,9 @@ import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.dto.PostSliceResponseDTO;
 import com.hsp.fitu.dto.PostUpdateRequestDTO;
 import com.hsp.fitu.entity.PostEntity;
-import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
 import com.hsp.fitu.mapper.PostMapper;
 import com.hsp.fitu.repository.PostRepository;
-import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -23,22 +21,19 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
 
     @Override
     @Transactional
-    public PostResponseDTO createPost(Long writerId, Long universityId, PostCreateRequestDTO requestDTO) {
-        UserEntity writer = userRepository.findById(writerId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+    public PostResponseDTO createPost(long writerId, long universityId, PostCreateRequestDTO requestDTO) {
 
         PostEntity postEntity = PostEntity.builder()
                 .category(requestDTO.category())
                 .title(requestDTO.title())
                 .contents(requestDTO.contents())
                 .universityId(universityId)
-                .writerId(writer)
+                .writerId(writerId)
                 .build();
 
         PostEntity saved = postRepository.save(postEntity);
@@ -58,7 +53,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostResponseDTO getPost(Long postId) {
+    public PostResponseDTO getPost(long postId) {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
@@ -85,7 +80,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostResponseDTO updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO) {
+    public PostResponseDTO updatePost(long postId, PostUpdateRequestDTO postUpdateRequestDTO) {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         postEntity.update(
@@ -96,7 +91,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void deletePost(Long postId) {
+    public void deletePost(long postId) {
         postRepository.deleteById(postId);
     }
 

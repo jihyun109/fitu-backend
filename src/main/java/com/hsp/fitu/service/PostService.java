@@ -9,10 +9,10 @@ import com.hsp.fitu.entity.enums.PostCategory;
 import java.util.List;
 
 public interface PostService {
-    PostResponseDTO createPost(Long writerId, Long universityId, PostCreateRequestDTO requestDTO);
+    PostResponseDTO createPost(long writerId, long universityId, PostCreateRequestDTO requestDTO);
     PostSliceResponseDTO<PostResponseDTO> getAllPosts(PostCategory category, int page, int size);
-    PostResponseDTO getPost(Long postId);
+    PostResponseDTO getPost(long postId);
     PostSliceResponseDTO<PostResponseDTO> searchPosts(PostCategory category, String keyword, int page, int size);
-    PostResponseDTO updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO);
-    void deletePost(Long postId);
+    PostResponseDTO updatePost(long postId, PostUpdateRequestDTO postUpdateRequestDTO);
+    void deletePost(long postId);
 }

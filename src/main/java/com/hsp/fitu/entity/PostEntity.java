@@ -26,7 +26,7 @@ public class PostEntity {
 
     private long universityId;
 
-    private Long writerId;
+    private long writerId;
 
     private String title;
 
