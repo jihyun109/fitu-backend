@@ -3,35 +3,27 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.PostCommentCreateRequestDTO;
 import com.hsp.fitu.dto.PostCommentResponseDTO;
 import com.hsp.fitu.dto.PostCommentUpdateRequestDTO;
-import com.hsp.fitu.entity.PostCommentEntity;
-import com.hsp.fitu.entity.PostEntity;
+import com.hsp.fitu.entity.PostCommentsEntity;
 import com.hsp.fitu.mapper.PostCommentMapper;
 import com.hsp.fitu.repository.PostCommentRepository;
-import com.hsp.fitu.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PostCommentServiceImpl implements PostCommentService{
     private final PostCommentRepository postCommentRepository;
-    private final PostRepository postRepository;
     private final PostCommentMapper postCommentMapper;
 
     @Override
     @Transactional
-    public PostCommentResponseDTO createComment(PostCommentCreateRequestDTO req, Long writerId) {
-        PostEntity postEntity = postRepository.findById(req.postId())
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+    public PostCommentResponseDTO createComment(Long postId, PostCommentCreateRequestDTO req, Long writerId) {
 
         if (req.rootId() == null) {
-            PostCommentEntity root = postCommentRepository.save(
-                    PostCommentEntity.builder()
-                            .postId(postEntity.getId())
+            PostCommentsEntity root = postCommentRepository.save(
+                    PostCommentsEntity.builder()
+                            .postId(postId)
                             .writerId(writerId)
                             .contents(req.contents())
                             .rootId(-1L)
@@ -39,15 +31,15 @@ public class PostCommentServiceImpl implements PostCommentService{
             );
 
             root.setRootId(root.getId());
-            PostCommentEntity saved = postCommentRepository.save(root);
+            PostCommentsEntity saved = postCommentRepository.save(root);
             return postCommentMapper.commentToDTO(saved);
 
         } else {
             Long threadRootId = req.rootId();
 
-            PostCommentEntity saved = postCommentRepository.save(
-                    PostCommentEntity.builder()
-                            .postId(postEntity.getId())
+            PostCommentsEntity saved = postCommentRepository.save(
+                    PostCommentsEntity.builder()
+                            .postId(postId)
                             .writerId(writerId)
                             .contents(req.contents())
                             .rootId(threadRootId)
@@ -58,19 +50,20 @@ public class PostCommentServiceImpl implements PostCommentService{
     }
 
     @Override
-    public PostCommentResponseDTO updateComment(Long id, PostCommentUpdateRequestDTO commentUpdateRequestDTO) {
-        PostCommentEntity postCommentEntity = postCommentRepository.findById(id)
+    @Transactional
+    public PostCommentResponseDTO updateComment(Long postId, Long commentId, PostCommentUpdateRequestDTO commentUpdateRequestDTO) {
+        PostCommentsEntity postCommentsEntity = postCommentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
-        postCommentEntity.update(commentUpdateRequestDTO.contents());
-        return postCommentMapper.commentToDTO(postCommentEntity);
+        postCommentsEntity.update(commentUpdateRequestDTO.contents());
+        return postCommentMapper.commentToDTO(postCommentsEntity);
     }
 
     @Override
     @Transactional
-    public void deleteComment(Long id) {
-        if(!postCommentRepository.existsById(id)) {
+    public void deleteComment(Long postId, Long commentId) {
+        if(!postCommentRepository.existsById(commentId)) {
             throw new IllegalArgumentException("댓글을 찾을 수 없습니다.");
         }
-        postCommentRepository.deleteById(id);
+        postCommentRepository.deleteById(commentId);
     }
 }
