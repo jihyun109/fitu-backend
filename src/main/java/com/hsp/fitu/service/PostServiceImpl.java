@@ -2,12 +2,9 @@ package com.hsp.fitu.service;
 
 
 import com.hsp.fitu.dto.*;
-import com.hsp.fitu.entity.PostCommentsEntity;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
-import com.hsp.fitu.mapper.PostCommentMapper;
 import com.hsp.fitu.mapper.PostMapper;
-import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -22,9 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
-    private final PostCommentRepository postCommentRepository;
     private final PostMapper postMapper;
-    private final PostCommentMapper postCommentMapper;
 
     @Override
     @Transactional
@@ -44,13 +39,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public PostSliceResponseDTO<PostResponseDTO> getAllPosts(PostCategory category, int page, int size) {
+    public PostSliceResponseDTO<PostListResponseDTO> getAllPosts(PostCategory category, Long universityId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-        Slice<PostEntity> slice = postRepository.findAllByCategoryOrderByIdDesc(category, pageRequest);
 
-        List<PostResponseDTO> content = slice.getContent().stream().map(postMapper::postToDTO).toList();
+        Slice<PostListResponseDTO> slice = postRepository.findAllWithUniversityName(category, universityId, pageRequest);
 
-        return new PostSliceResponseDTO<>(content, slice.hasNext());
+        return new PostSliceResponseDTO<>(slice.getContent(), slice.hasNext());
     }
 
     @Override
@@ -59,31 +53,19 @@ public class PostServiceImpl implements PostService {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        List<PostCommentsEntity> allComments = postCommentRepository.findAllByPostIdOrderByRootIdAscIdAsc(postId);
-
-        List<PostCommentResponseDTO> commentDTOs = allComments.stream()
-                .map(postCommentMapper::commentToDTO)
-                .toList();
-
-        return postMapper.postToDTO(postEntity, commentDTOs);
+        return postMapper.postToDTO(postEntity);
     }
 
     @Override
     @Transactional
-    public PostSliceResponseDTO<PostResponseDTO> searchPosts(PostCategory category, String keyword, int page, int size) {
+    public PostSliceResponseDTO<PostListResponseDTO> searchPosts(Long universityId, PostCategory category, String keyword, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        Slice<PostEntity> slice = postRepository
-                .findByCategoryAndTitleContainingIgnoreCaseOrCategoryAndContentsContainingIgnoreCase(
-                        category, keyword,
-                        category, keyword,
-                        pageRequest
-                );
-        List<PostResponseDTO> content = slice.getContent().stream().map(postMapper::postToDTO).toList();
+        Slice<PostListResponseDTO> slice = postRepository.searchByUniversityAndKeyword(universityId, category, keyword, pageRequest);
+        List<PostListResponseDTO> content = slice.getContent();
 
         return new PostSliceResponseDTO<>(content, slice.hasNext());
     }
-
 
     @Override
     @Transactional
@@ -99,7 +81,6 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(long postId) {
-        postCommentRepository.deleteAllByPostId(postId);
         postRepository.deleteById(postId);
     }
 

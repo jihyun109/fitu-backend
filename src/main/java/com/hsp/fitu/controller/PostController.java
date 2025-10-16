@@ -1,9 +1,6 @@
 package com.hsp.fitu.controller;
 
-import com.hsp.fitu.dto.PostCreateRequestDTO;
-import com.hsp.fitu.dto.PostResponseDTO;
-import com.hsp.fitu.dto.PostSliceResponseDTO;
-import com.hsp.fitu.dto.PostUpdateRequestDTO;
+import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.enums.PostCategory;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.PostService;
@@ -14,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/post")
+@RequestMapping("/api/v2/posts")
 public class PostController {
     private final PostService postService;
 
@@ -31,12 +28,15 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<PostSliceResponseDTO<PostResponseDTO>> getAllPosts(
+    public ResponseEntity<PostSliceResponseDTO<PostListResponseDTO>> getAllPosts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam PostCategory category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        PostSliceResponseDTO<PostResponseDTO> postResponseDTOs = postService.getAllPosts(category, page, size);
+        Long universityId = userDetails.getUniversityId();
+
+        PostSliceResponseDTO<PostListResponseDTO> postResponseDTOs = postService.getAllPosts(category, universityId, page, size);
         return ResponseEntity.ok(postResponseDTOs);
     }
 
@@ -47,13 +47,16 @@ public class PostController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<PostSliceResponseDTO<PostResponseDTO>> searchPosts(
+    public ResponseEntity<PostSliceResponseDTO<PostListResponseDTO>> searchPosts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam PostCategory category,
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        PostSliceResponseDTO<PostResponseDTO> postResponseDTOs = postService.searchPosts(category, keyword, page, size);
+        Long universityId = userDetails.getUniversityId();
+
+        PostSliceResponseDTO<PostListResponseDTO> postResponseDTOs = postService.searchPosts(universityId, category, keyword, page, size);
 
         return ResponseEntity.ok(postResponseDTOs);
     }
