@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BodyImageServiceImpl implements BodyImageService {
+public class ProfileImageServiceImpl implements ProfileImageService {
     private final BodyImageRepository bodyImageRepository;
 
     @Override
