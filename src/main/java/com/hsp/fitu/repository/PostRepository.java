@@ -1,6 +1,7 @@
 package com.hsp.fitu.repository;
 
 import com.hsp.fitu.dto.PostListResponseDTO;
+import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<PostEntity, Long> {
@@ -32,6 +35,22 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
             @Param("category") PostCategory category,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT new com.hsp.fitu.dto.PostResponseDTO(
+        p.id,
+        p.title,
+        u.name,
+        m.url,
+        p.contents,
+        p.createdAt
+    )
+    FROM PostEntity p
+    JOIN UserEntity u ON p.writerId = u.id
+    LEFT JOIN MediaFilesEntity m ON u.profileImgId = m.id
+    WHERE p.id = :postId
+    """)
+    Optional<PostResponseDTO> findPostWithWriter(@Param("postId") long postId);
 
     @Query("""
         SELECT new com.hsp.fitu.dto.PostListResponseDTO(

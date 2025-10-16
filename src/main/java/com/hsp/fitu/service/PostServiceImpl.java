@@ -51,10 +51,8 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostResponseDTO getPost(long postId) {
-        PostEntity postEntity = postRepository.findById(postId)
+        return postRepository.findPostWithWriter(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-
-        return postMapper.postToDTO(postEntity);
     }
 
     @Override
@@ -78,7 +76,8 @@ public class PostServiceImpl implements PostService {
                 postUpdateRequestDTO.title(),
                 postUpdateRequestDTO.contents()
         );
-        return postMapper.postToDTO(postEntity);
+        return postRepository.findPostWithWriter(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
     }
 
     @Override
