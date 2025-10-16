@@ -6,6 +6,6 @@ import com.hsp.fitu.entity.BodyImageEntity;
 import java.util.List;
 
 public interface ProfileImageService {
-    BodyImageMainResponseDTO getMainBodyImage(long userId);
-    List<BodyImageEntity> getBodyImages(long userId);
+    BodyImageMainResponseDTO getMainProfileImage(long userId);
+    List<BodyImageEntity> getProfileImages(long userId);
 }

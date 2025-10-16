@@ -2,7 +2,7 @@ package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
 import com.hsp.fitu.dto.BodyImageMainResponseDTO;
-import com.hsp.fitu.dto.BodyImageUploadResponseDTO;
+import com.hsp.fitu.dto.ProfileImageUploadResponseDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.ProfileImageService;
@@ -25,25 +25,25 @@ public class ProfileImageController {
     private final S3ImageService s3ImageService;
 
     @GetMapping()
-    public ResponseEntity<BodyImageMainResponseDTO> getMainBodyPhoto(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<BodyImageMainResponseDTO> getMainProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
-        return ResponseEntity.ok(profileImageService.getMainBodyImage(userId));
+        return ResponseEntity.ok(profileImageService.getMainProfileImage(userId));
     }
 
     @GetMapping("/history")
     public ResponseEntity<List<BodyImageEntity>> getBodyImages(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
 
-        List<BodyImageEntity> bodyImageEntityList = profileImageService.getBodyImages(userId);
+        List<BodyImageEntity> bodyImageEntityList = profileImageService.getProfileImages(userId);
         return ResponseEntity.ok(bodyImageEntityList);
     }
 
     @PostMapping()
-    public ResponseEntity<BodyImageUploadResponseDTO> uploadBodyImage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestPart(value = "image", required = false) MultipartFile image) {
+    public ResponseEntity<ProfileImageUploadResponseDTO> uploadBodyImage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestPart(value = "image", required = false) MultipartFile image) {
         Long userId = userDetails.getId();
         String url = s3ImageService.upload(image, userId);
 
-        return ResponseEntity.ok(BodyImageUploadResponseDTO.builder()
+        return ResponseEntity.ok(ProfileImageUploadResponseDTO.builder()
                 .imageUrl(url).build());
     }
 
