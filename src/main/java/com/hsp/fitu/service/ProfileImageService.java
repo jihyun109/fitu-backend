@@ -5,7 +5,7 @@ import com.hsp.fitu.entity.BodyImageEntity;
 
 import java.util.List;
 
-public interface BodyImageService {
+public interface ProfileImageService {
     BodyImageMainResponseDTO getMainBodyImage(long userId);
     List<BodyImageEntity> getBodyImages(long userId);
 }
