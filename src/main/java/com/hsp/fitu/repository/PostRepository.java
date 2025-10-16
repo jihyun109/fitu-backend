@@ -1,15 +1,55 @@
 package com.hsp.fitu.repository;
 
+import com.hsp.fitu.dto.PostListResponseDTO;
+import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PostRepository extends JpaRepository<PostEntity, Long> {
-    Slice<PostEntity> findAllByCategoryOrderByIdDesc(PostCategory postCategory, Pageable pageable);
-    Slice<PostEntity> findByCategoryAndTitleContainingIgnoreCaseOrCategoryAndContentsContainingIgnoreCase(PostCategory category1, String title, PostCategory category2, String contents, Pageable pageable);
+    @Query("""
+    SELECT new com.hsp.fitu.dto.PostListResponseDTO(
+        p.id,
+        u.name,
+        p.category,
+        p.title,
+        p.contents,
+        p.createdAt
+    )
+    FROM PostEntity p JOIN UniversityEntity u ON p.universityId = u.id
+    WHERE p.category = :category AND p.universityId = :universityId ORDER BY p.id DESC""")
+    Slice<PostListResponseDTO> findAllWithUniversityName(
+            @Param("category") PostCategory category,
+            @Param("universityId") Long universityId,
+            Pageable pageable
+    );
 
+    @Query("""
+    SELECT new com.hsp.fitu.dto.PostListResponseDTO(
+        p.id,
+        u.name,
+        p.category,
+        p.title,
+        p.contents,
+        p.createdAt
+    )
+    FROM PostEntity p
+    JOIN UniversityEntity u ON p.universityId = u.id
+    WHERE p.universityId = :universityId
+      AND p.category = :category
+      AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+      OR LOWER(p.contents) LIKE LOWER(CONCAT('%', :keyword, '%')))
+    ORDER BY p.id DESC""")
+    Slice<PostListResponseDTO> searchByUniversityAndKeyword(
+            @Param("universityId") Long universityId,
+            @Param("category") PostCategory category,
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
 }

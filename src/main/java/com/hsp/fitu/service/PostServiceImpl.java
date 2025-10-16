@@ -1,10 +1,7 @@
 package com.hsp.fitu.service;
 
 
-import com.hsp.fitu.dto.PostCreateRequestDTO;
-import com.hsp.fitu.dto.PostResponseDTO;
-import com.hsp.fitu.dto.PostSliceResponseDTO;
-import com.hsp.fitu.dto.PostUpdateRequestDTO;
+import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
 import com.hsp.fitu.mapper.PostMapper;
@@ -42,13 +39,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public PostSliceResponseDTO<PostResponseDTO> getAllPosts(PostCategory category, int page, int size) {
+    public PostSliceResponseDTO<PostListResponseDTO> getAllPosts(PostCategory category, Long universityId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-        Slice<PostEntity> slice = postRepository.findAllByCategoryOrderByIdDesc(category, pageRequest);
 
-        List<PostResponseDTO> content = slice.getContent().stream().map(postMapper::postToDTO).toList();
+        Slice<PostListResponseDTO> slice = postRepository.findAllWithUniversityName(category, universityId, pageRequest);
 
-        return new PostSliceResponseDTO<>(content, slice.hasNext());
+        return new PostSliceResponseDTO<>(slice.getContent(), slice.hasNext());
     }
 
     @Override
@@ -62,20 +58,14 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostSliceResponseDTO<PostResponseDTO> searchPosts(PostCategory category, String keyword, int page, int size) {
+    public PostSliceResponseDTO<PostListResponseDTO> searchPosts(Long universityId, PostCategory category, String keyword, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        Slice<PostEntity> slice = postRepository
-                .findByCategoryAndTitleContainingIgnoreCaseOrCategoryAndContentsContainingIgnoreCase(
-                        category, keyword,
-                        category, keyword,
-                        pageRequest
-                );
-        List<PostResponseDTO> content = slice.getContent().stream().map(postMapper::postToDTO).toList();
+        Slice<PostListResponseDTO> slice = postRepository.searchByUniversityAndKeyword(universityId, category, keyword, pageRequest);
+        List<PostListResponseDTO> content = slice.getContent();
 
         return new PostSliceResponseDTO<>(content, slice.hasNext());
     }
-
 
     @Override
     @Transactional
