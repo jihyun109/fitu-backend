@@ -1,7 +1,6 @@
 package com.hsp.fitu.repository;
 
 import com.hsp.fitu.dto.PostListResponseDTO;
-import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
 import org.springframework.data.domain.Pageable;
@@ -16,37 +15,42 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     @Query("""
     SELECT new com.hsp.fitu.dto.PostListResponseDTO(
         p.id,
-        u.name,
-        p.category,
-        p.title,
-        p.contents,
-        p.createdAt
-    )
-    FROM PostEntity p JOIN UniversityEntity u ON p.universityId = u.id
-    WHERE p.category = :category AND p.universityId = :universityId ORDER BY p.id DESC""")
-    Slice<PostListResponseDTO> findAllWithUniversityName(
-            @Param("category") PostCategory category,
-            @Param("universityId") Long universityId,
-            Pageable pageable
-    );
-
-    @Query("""
-    SELECT new com.hsp.fitu.dto.PostListResponseDTO(
-        p.id,
-        u.name,
+        w.name,
         p.category,
         p.title,
         p.contents,
         p.createdAt
     )
     FROM PostEntity p
-    JOIN UniversityEntity u ON p.universityId = u.id
+    JOIN UserEntity w ON p.writerId = w.id
     WHERE p.universityId = :universityId
       AND p.category = :category
-      AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-      OR LOWER(p.contents) LIKE LOWER(CONCAT('%', :keyword, '%')))
-    ORDER BY p.id DESC""")
-    Slice<PostListResponseDTO> searchByUniversityAndKeyword(
+    ORDER BY p.id DESC
+    """)
+    Slice<PostListResponseDTO> findPostsByUniversityAndCategory(
+            @Param("universityId") Long universityId,
+            @Param("category") PostCategory category,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT new com.hsp.fitu.dto.PostListResponseDTO(
+            p.id,
+            w.name,
+            p.category,
+            p.title,
+            p.contents,
+            p.createdAt
+        )
+        FROM PostEntity p
+        JOIN UserEntity w ON p.writerId = w.id
+        WHERE p.universityId = :universityId
+          AND p.category = :category
+          AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(p.contents) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        ORDER BY p.id DESC
+    """)
+    Slice<PostListResponseDTO> searchPostsByUniversityAndKeyword(
             @Param("universityId") Long universityId,
             @Param("category") PostCategory category,
             @Param("keyword") String keyword,
