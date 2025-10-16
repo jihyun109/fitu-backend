@@ -6,10 +6,9 @@ import java.time.LocalDateTime;
 
 public record PostListResponseDTO(
         long id,
-        String universityName,
+        String writerName,
         PostCategory category,
         String title,
         String contents,
         LocalDateTime createdAt
-) {
-}
+) {}
