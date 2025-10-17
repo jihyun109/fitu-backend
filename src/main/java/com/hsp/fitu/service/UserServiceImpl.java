@@ -1,5 +1,6 @@
 package com.hsp.fitu.service;
 
+import com.hsp.fitu.dto.UserFriendCodeResponseDto;
 import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
@@ -54,8 +55,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String getFriendCode(Long userId) {
-        return userRepository.findFriendCodeById(userId);
+    public UserFriendCodeResponseDto getFriendCode(Long userId) {
+        return UserFriendCodeResponseDto.builder()
+                .friendCode(userRepository.findFriendCodeById(userId))
+                .build();
     }
 
     // friend code 부여

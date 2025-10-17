@@ -1,5 +1,6 @@
 package com.hsp.fitu.service;
 
+import com.hsp.fitu.dto.UserFriendCodeResponseDto;
 import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
 
@@ -8,5 +9,5 @@ public interface UserService {
 
     UserProfileImageResponseDto findUserProfileImageAndVisibility(Long userId);
 
-    String getFriendCode(Long userId);
+    UserFriendCodeResponseDto getFriendCode(Long userId);
 }
