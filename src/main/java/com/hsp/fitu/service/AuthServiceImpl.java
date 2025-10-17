@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
         if (userEntity == null) {
             isNewUser = true;
             userEntity = createNewUser(kakaoProfile);
-            role = null;
+            role = Role.USER;
         } else {
             role = userEntity.getRole();
         }
