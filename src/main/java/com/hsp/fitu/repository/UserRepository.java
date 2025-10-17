@@ -16,7 +16,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Long findIdByFriendCode(@Param("code") String code);
 
     // 사용자 프로필 사진과 공유 여부 조회
-    @Query("SELECT m.url, u.profileVisibility " +
+    @Query("SELECT new com.hsp.fitu.dto.UserProfileImageResponseDto(m.url, u.profileVisibility) " +
             "FROM UserEntity u, MediaFilesEntity m " +
             "WHERE u.profileImgId = m.id " +
             "AND u.id = :userId")
