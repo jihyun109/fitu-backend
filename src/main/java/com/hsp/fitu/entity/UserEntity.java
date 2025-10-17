@@ -47,8 +47,6 @@ public class UserEntity {
 
     private boolean profileVisibility;
 
-    private Integer height;
-
     public void updateProfile(Gender gender) {
         this.gender = gender;
     }
@@ -60,7 +58,6 @@ public class UserEntity {
     public void updateInfo(UserInfoRequestDTO userInfoRequestDTO, String friendCode, Long universityId) {
         this.name = userInfoRequestDTO.getName();
         this.universityEmail = userInfoRequestDTO.getUniversityEmail();
-        this.height = userInfoRequestDTO.getHeight();
         this.gender = userInfoRequestDTO.getGender();
         this.friendCode = friendCode;
         this.universityId = universityId;
