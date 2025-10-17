@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/v2/physical-infos")
 @RequiredArgsConstructor
 public class PhysicalInfoController {
