@@ -12,11 +12,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BodyImageServiceImpl implements BodyImageService {
+public class ProfileImageServiceImpl implements ProfileImageService {
     private final BodyImageRepository bodyImageRepository;
 
     @Override
-    public BodyImageMainResponseDTO getMainBodyImage(long userId) {
+    public BodyImageMainResponseDTO getMainProfileImage(long userId) {
         BodyImageEntity entity = bodyImageRepository.findFirstUrlByUserIdOrderByRecordedAtDesc(userId);
         if (entity == null) {
             return new BodyImageMainResponseDTO("https://fitu-bucket.s3.ap-northeast-2.amazonaws.com/fitu_default_image.png");
@@ -26,7 +26,7 @@ public class BodyImageServiceImpl implements BodyImageService {
     }
 
     @Override
-    public List<BodyImageEntity> getBodyImages(long userId) {
+    public List<BodyImageEntity> getProfileImages(long userId) {
 
         return bodyImageRepository.findByUserIdOrderByRecordedAtDesc(userId);
     }
