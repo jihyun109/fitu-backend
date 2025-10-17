@@ -1,6 +1,7 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.UserInfoRequestDTO;
+import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
@@ -44,6 +45,11 @@ public class UserServiceImpl implements UserService {
                 .build();
         physicalInfoRepository.save(physicalInfoEntity);
 
+    }
+
+    @Override
+    public UserProfileImageResponseDto findUserProfileImageAndVisibility(Long userId) {
+        return userRepository.findUserProfileImage(userId);
     }
 
     // friend code 부여
