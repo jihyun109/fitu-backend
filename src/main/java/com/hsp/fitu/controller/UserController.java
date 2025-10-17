@@ -29,4 +29,10 @@ public class UserController {
     public ResponseEntity<UserProfileImageResponseDto> getUserProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(userService.findUserProfileImageAndVisibility(userDetails.getId()));
     }
+
+    @PatchMapping("/profile-img/visibility")
+    @Operation(summary = "사용자 프로필 공유 여부 수정")
+    public ResponseEntity<String> toggleProfileVisibility(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok("success to toggle profile visibility");
+    }
 }
