@@ -1,5 +1,6 @@
 package com.hsp.fitu.controller;
 
+import com.hsp.fitu.dto.UserFriendCodeResponseDto;
 import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.jwt.CustomUserDetails;
@@ -38,7 +39,7 @@ public class UserController {
 
     @GetMapping("/friend-code")
     @Operation(summary = "사용자의 친구 코드 조회 by 장지현")
-    public ResponseEntity<String> getFriendCode(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<UserFriendCodeResponseDto> getFriendCode(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(userService.getFriendCode(userDetails.getId()));
     }
 }
