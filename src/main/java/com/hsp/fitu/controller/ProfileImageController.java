@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/profile-image")
+@RequestMapping("/api/v2/profile-image")
 @RequiredArgsConstructor
 @Slf4j
 public class ProfileImageController {
