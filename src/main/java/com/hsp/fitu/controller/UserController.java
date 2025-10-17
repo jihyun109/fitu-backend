@@ -35,4 +35,10 @@ public class UserController {
     public ResponseEntity<String> toggleProfileVisibility(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok("success to toggle profile visibility");
     }
+
+    @GetMapping("/friend-code")
+    @Operation(summary = "사용자의 친구 코드 조회 by 장지현")
+    public ResponseEntity<String> getFriendCode(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(userService.getFriendCode(userDetails.getId()));
+    }
 }
