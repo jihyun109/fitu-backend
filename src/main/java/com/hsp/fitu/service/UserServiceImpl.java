@@ -40,6 +40,7 @@ public class UserServiceImpl implements UserService {
         PhysicalInfoEntity physicalInfoEntity = PhysicalInfoEntity.builder()
                 .userId(userId)
                 .weight(userInfoRequestDTO.getWeight())
+                .height(userInfoRequestDTO.getHeight())
                 .muscle(userInfoRequestDTO.getMuscle())
                 .bodyFat(userInfoRequestDTO.getBodyFat())
                 .build();
