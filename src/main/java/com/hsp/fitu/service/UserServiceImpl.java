@@ -53,6 +53,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.findUserProfileImage(userId);
     }
 
+    @Override
+    public String getFriendCode(Long userId) {
+        return userRepository.findFriendCodeById(userId);
+    }
+
     // friend code 부여
     private String assignFriendCode() {
         // 코드 부여 10회 시도
