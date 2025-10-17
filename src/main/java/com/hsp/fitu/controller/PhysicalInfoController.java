@@ -21,7 +21,7 @@ import java.util.List;
 public class PhysicalInfoController {
     private final PhysicalInfoService physicalInfoService;
 
-    // 사용자 가장 최근 신체 정보 조회
+    // 사용자 가장 최근 신체 정보 & 사용자 이름 조회
     @GetMapping()
     public ResponseEntity<PhysicalInfoResponseDTO> getPhysicsInfos(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();

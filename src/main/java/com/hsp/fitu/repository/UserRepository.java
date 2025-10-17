@@ -9,6 +9,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    // 사용자 이름 조회
+    @Query("SELECT u.name " +
+            "FROM UserEntity u " +
+            "WHERE u.id = :userId")
+    String findNameById(@Param("userId") Long userId);
+
     Optional<UserEntity> findByKakaoEmail(String kakaoEmail);
 
     // 친구 초대 코드로 사용자 id 조회
