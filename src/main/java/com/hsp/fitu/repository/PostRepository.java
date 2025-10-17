@@ -39,6 +39,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     @Query("""
     SELECT new com.hsp.fitu.dto.PostResponseDTO(
         p.id,
+        p.category,
         p.title,
         u.name,
         m.url,
