@@ -38,6 +38,8 @@ public class PostCommentsEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    private Boolean isSecret;
+
     public void update(String contents) {
         this.contents = contents;
     }
