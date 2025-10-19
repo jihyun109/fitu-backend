@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 
 public record PostCommentResponseDTO(
         Long id,
-        Long postId,
-        Long writerId,
+        String writerName,
+        String writerProfileImgUrl,
         Long rootId,
         String contents,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Boolean isMine,     //게시글 작성자가 작성한 댓글인지
+        Boolean isSecret    //댓글이 비밀댓글인지
 ){}

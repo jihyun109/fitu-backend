@@ -13,12 +13,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final UniversityRepository universityRepository;
+    private final PostCommentService postCommentService;
 
     @Override
     @Transactional
@@ -50,9 +53,17 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostResponseDTO getPost(long postId) {
-        return postRepository.findPostWithWriter(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+    public PostDetailResponseDTO getPost(long postId, Long currentUserId) {
+        PostResponseDTO postResponseDTO = postRepository.findPostWithWriter(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없다."));
+
+        Long postWriterId = postRepository.findById(postId)
+                .map(PostEntity::getWriterId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글 작성자를 찾을 수 없다."));
+
+        List<PostCommentResponseDTO> comments = postCommentService.getComments(postId, currentUserId, postWriterId);
+
+        return new PostDetailResponseDTO(postResponseDTO, comments);
     }
 
     @Override
