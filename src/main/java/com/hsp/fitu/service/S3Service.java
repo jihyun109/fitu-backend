@@ -4,7 +4,7 @@ import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
 import com.hsp.fitu.entity.enums.MediaCategory;
 import org.springframework.web.multipart.MultipartFile;
 
-public interface S3ImageService {
+public interface S3Service {
     String upload(MultipartFile image, long userId, MediaCategory mediaCategory);
 
     void deleteImageFromS3(BodyImageDeleteRequestDTO imageUrl);
