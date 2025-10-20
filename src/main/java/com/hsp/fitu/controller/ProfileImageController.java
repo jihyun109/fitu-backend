@@ -31,7 +31,7 @@ public class ProfileImageController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<BodyImageEntity>> getBodyImages(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<List<BodyImageEntity>> getProfileImages(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
 
         List<BodyImageEntity> bodyImageEntityList = profileImageService.getProfileImages(userId);
@@ -39,8 +39,10 @@ public class ProfileImageController {
     }
 
     @PostMapping()
-    public ResponseEntity<ProfileImageUploadResponseDTO> uploadBodyImage(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestPart(value = "image", required = false) MultipartFile image) {
+    public ResponseEntity<ProfileImageUploadResponseDTO> uploadProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                            @RequestPart(value = "image", required = false) MultipartFile image) {
         Long userId = userDetails.getId();
+
         String url = s3ImageService.upload(image, userId);
 
         return ResponseEntity.ok(ProfileImageUploadResponseDTO.builder()
