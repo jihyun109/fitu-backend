@@ -32,7 +32,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class S3ImageServiceImpl implements S3ImageService {
+public class S3ServiceImpl implements S3Service {
     private final S3Client s3Client;
     private final BodyImageRepository bodyImageRepository;
 

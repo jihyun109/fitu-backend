@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ProfileImageServiceImpl implements ProfileImageService {
-    private final S3ImageService s3ImageService;
+    private final S3Service s3Service;
     private final MediaValidator mediaValidator;
     private final BodyImageRepository bodyImageRepository;
 
@@ -39,6 +39,6 @@ public class ProfileImageServiceImpl implements ProfileImageService {
         // 이미지 파일 유효성 검사
         mediaValidator.validateMedia(file, MediaType.IMAGE);
 
-        return s3ImageService.upload(file, userId, MediaCategory.PROFILE_IMAGE);
+        return s3Service.upload(file, userId, MediaCategory.PROFILE_IMAGE);
     }
 }

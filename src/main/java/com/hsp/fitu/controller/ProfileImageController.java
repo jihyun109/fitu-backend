@@ -6,7 +6,7 @@ import com.hsp.fitu.dto.ProfileImageUploadResponseDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.ProfileImageService;
-import com.hsp.fitu.service.S3ImageService;
+import com.hsp.fitu.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class ProfileImageController {
     private final ProfileImageService profileImageService;
-    private final S3ImageService s3ImageService;
+    private final S3Service s3Service;
 
     @GetMapping()
     public ResponseEntity<BodyImageMainResponseDTO> getMainProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -51,7 +51,7 @@ public class ProfileImageController {
 
     @DeleteMapping()
     public ResponseEntity<?> s3delete(@RequestBody BodyImageDeleteRequestDTO dto) {
-        s3ImageService.deleteImageFromS3(dto);
+        s3Service.deleteImageFromS3(dto);
         return ResponseEntity.ok("Body image deleted successfully.");
     }
 }
