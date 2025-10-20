@@ -119,7 +119,7 @@ public class WorkoutServiceImpl implements WorkoutService {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
-        String newImageUrl = s3ImageService.uploadImage(image, "workouts/images/");
+        String newImageUrl = s3ImageService.uploadFileToS3(image, "workouts/images/");
         workout.updateImageUrl(newImageUrl);
     }
 
@@ -133,7 +133,7 @@ public class WorkoutServiceImpl implements WorkoutService {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
-        String newGifUrl = s3ImageService.uploadImage(gif, "workouts/gifs/");
+        String newGifUrl = s3ImageService.uploadFileToS3(gif, "workouts/gifs/");
         workout.updateGifUrl(newGifUrl);
     }
 
