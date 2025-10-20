@@ -2,6 +2,7 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
+import com.hsp.fitu.entity.enums.MediaCategory;
 import com.hsp.fitu.error.customExceptions.EmptyFileException;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.error.customExceptions.S3UploadFailException;
@@ -26,14 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
+@Service
 public class S3ImageServiceImpl implements S3ImageService {
-
     private final S3Client s3Client;
     private final BodyImageRepository bodyImageRepository;
 
@@ -44,28 +43,37 @@ public class S3ImageServiceImpl implements S3ImageService {
     private String region;
 
     @Override
-    public String upload(MultipartFile image, long userId) {
-        if (image.isEmpty() || Objects.isNull(image.getOriginalFilename())) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
-        }
+    public String upload(MultipartFile file, long userId, MediaCategory mediaCategory) {
+        String folderName = getFolderName(mediaCategory);   // 폴더 이름
 
-        String imageUrl = this.uploadImage(image, "body-image");
+        // 미디어 파일 S3에 업로드 & get media file url
+        String url = this.uploadFileToS3(file, folderName);
+
+        // db에 데이터 저장
         bodyImageRepository.save(BodyImageEntity.builder()
-                .url(imageUrl)
+                .url(url)
                 .userId(userId)
                 .build());
 
-        return imageUrl;
+        return url;
     }
 
     @Override
-    public String uploadImage(MultipartFile image, String folder) {
-        this.validateImageFileExtention(image.getOriginalFilename());
+    public String uploadFileToS3(MultipartFile file, String folder) {
+        this.validateImageFileExtention(file.getOriginalFilename());
         try {
-            return this.uploadImageToS3(image, folder);
+            return this.uploadImageToS3(file, folder);
         } catch (IOException e) {
             throw new EmptyFileException(ErrorCode.FILE_UPLOAD_FAILED);
         }
+    }
+
+    private String getFolderName(MediaCategory mediaCategory) {
+
+        return switch (mediaCategory) {
+            case PROFILE_IMAGE -> "profile_img";
+            case WORKOUT_VERIFICATION_VIDEO -> "workout_verification_video";
+        };
     }
 
     private void validateImageFileExtention(String filename) {
