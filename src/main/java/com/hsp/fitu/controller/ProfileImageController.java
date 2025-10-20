@@ -43,7 +43,7 @@ public class ProfileImageController {
                                                                             @RequestPart(value = "image", required = false) MultipartFile image) {
         Long userId = userDetails.getId();
 
-        String url = s3ImageService.upload(image, userId);
+        String url = profileImageService.uploadProfileImage(image, userId);
 
         return ResponseEntity.ok(ProfileImageUploadResponseDTO.builder()
                 .imageUrl(url).build());
