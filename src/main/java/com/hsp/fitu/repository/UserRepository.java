@@ -27,4 +27,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             "WHERE u.profileImgId = m.id " +
             "AND u.id = :userId")
     UserProfileImageResponseDto findUserProfileImage(@Param("userId") long userId);
+
+    // 사용자의 friend code 조회
+    @Query("SELECT u.friendCode " +
+            "FROM UserEntity u " +
+            "WHERE u.id = :userId")
+    String findFriendCodeById(@Param("userId") Long userId);
 }
