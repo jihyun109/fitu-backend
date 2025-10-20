@@ -2,17 +2,21 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.BodyImageMainResponseDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
+import com.hsp.fitu.entity.enums.MediaCategory;
+import com.hsp.fitu.entity.enums.MediaType;
 import com.hsp.fitu.repository.BodyImageRepository;
+import com.hsp.fitu.validator.MediaValidator;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class ProfileImageServiceImpl implements ProfileImageService {
+    private final S3Service s3Service;
+    private final MediaValidator mediaValidator;
     private final BodyImageRepository bodyImageRepository;
 
     @Override
@@ -27,7 +31,23 @@ public class ProfileImageServiceImpl implements ProfileImageService {
 
     @Override
     public List<BodyImageEntity> getProfileImages(long userId) {
-
         return bodyImageRepository.findByUserIdOrderByRecordedAtDesc(userId);
+    }
+
+    @Override
+    public String uploadProfileImage(MultipartFile file, long userId) {
+        // 이미지 파일 유효성 검사
+        mediaValidator.validateMedia(file, MediaType.IMAGE);
+
+        // S3에 프로필이미지 업로드 & url get
+        String url = s3Service.upload(file, userId, MediaCategory.PROFILE_IMAGE);
+
+        // db에 데이터 저장
+        bodyImageRepository.save(BodyImageEntity.builder()
+                .url(url)
+                .userId(userId)
+                .build());
+
+        return url;
     }
 }
