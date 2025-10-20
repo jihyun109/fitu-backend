@@ -42,7 +42,7 @@ public class S3ServiceImpl implements S3Service {
     private String region;
 
     @Override
-    public String upload(MultipartFile file, long userId, MediaCategory mediaCategory) {
+    public String upload(MultipartFile file, MediaCategory mediaCategory) {
         String folderName = getFolderName(mediaCategory);   // 폴더 이름
 
         // 미디어 파일 S3에 업로드 & get media file url
