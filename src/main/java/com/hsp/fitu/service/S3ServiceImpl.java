@@ -1,7 +1,6 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
-import com.hsp.fitu.entity.BodyImageEntity;
 import com.hsp.fitu.entity.enums.MediaCategory;
 import com.hsp.fitu.error.customExceptions.EmptyFileException;
 import com.hsp.fitu.error.ErrorCode;
@@ -47,15 +46,7 @@ public class S3ServiceImpl implements S3Service {
         String folderName = getFolderName(mediaCategory);   // 폴더 이름
 
         // 미디어 파일 S3에 업로드 & get media file url
-        String url = this.uploadFileToS3(file, folderName);
-
-        // db에 데이터 저장
-        bodyImageRepository.save(BodyImageEntity.builder()
-                .url(url)
-                .userId(userId)
-                .build());
-
-        return url;
+        return this.uploadFileToS3(file, folderName);
     }
 
     @Override
