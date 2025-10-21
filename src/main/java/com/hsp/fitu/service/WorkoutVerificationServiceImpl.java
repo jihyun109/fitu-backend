@@ -43,8 +43,8 @@ public class WorkoutVerificationServiceImpl implements WorkoutVerificationServic
         // db에 운동 인증 데이터 저장
         workoutVerificationRepository.save(WorkoutVerificationEntity.builder()
                 .userId(workoutVerificationRequestDTO.getUserId())
-                .mediaId(mediaFileId)
-                .workoutVerificationType(workoutVerificationType)
+                .videoId(mediaFileId)
+                .workoutType(workoutVerificationType)
                 .build());
     }
 
