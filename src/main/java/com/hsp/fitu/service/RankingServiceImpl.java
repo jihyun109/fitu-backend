@@ -2,6 +2,7 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.RankingItem;
 import com.hsp.fitu.dto.RankingTotal500ResponseDTO;
+import com.hsp.fitu.dto.RankingWorkoutCountResponseDTO;
 import com.hsp.fitu.entity.Total500Info;
 import com.hsp.fitu.repository.WorkoutVerificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,5 +32,10 @@ public class RankingServiceImpl implements RankingService {
                 .myRanking(myRanking)
                 .myTotal500Record(myTotal500Info)
                 .build();
+    }
+
+    @Override
+    public RankingWorkoutCountResponseDTO getWorkoutCountRanking(Long userId) {
+        return null;
     }
 }
