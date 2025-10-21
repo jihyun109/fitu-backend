@@ -32,4 +32,6 @@ public class WorkoutVerificationEntity {
 
     @Enumerated(EnumType.STRING)
     private WorkoutVerificationRequestStatus status;
+
+    private int weight; // 운동 무게
 }

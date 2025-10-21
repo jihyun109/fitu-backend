@@ -26,13 +26,13 @@ public class UserController {
     }
 
     @GetMapping("/profile-img")
-    @Operation(summary = "사용자 프로필 사진 및 프로필사진 공유 여부 get")
+    @Operation(summary = "사용자 프로필 사진 및 프로필사진 공유 여부 get by 장지현")
     public ResponseEntity<UserProfileImageResponseDto> getUserProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(userService.findUserProfileImageAndVisibility(userDetails.getId()));
     }
 
     @PatchMapping("/profile-img/visibility")
-    @Operation(summary = "사용자 프로필 공유 여부 수정")
+    @Operation(summary = "사용자 프로필 공유 여부 수정 by 장지현")
     public ResponseEntity<String> toggleProfileVisibility(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok("success to toggle profile visibility");
     }
