@@ -61,6 +61,11 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public void deactivateUser(Long userId) {
+        userRepository.deactivateUserById(userId);
+    }
+
     // friend code 부여
     private String assignFriendCode() {
         // 코드 부여 10회 시도

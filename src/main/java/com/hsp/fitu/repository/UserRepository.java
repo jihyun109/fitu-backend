@@ -33,4 +33,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             "FROM UserEntity u " +
             "WHERE u.id = :userId")
     String findFriendCodeById(@Param("userId") Long userId);
+
+    @Query()
+    void deactivateUserById(Long userId);
+
 }
