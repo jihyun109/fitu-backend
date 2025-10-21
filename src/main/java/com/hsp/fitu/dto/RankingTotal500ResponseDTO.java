@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-public class Total500ResponseDTO {
+public class RankingTotal500ResponseDTO {
     private List<RankingItem> rankingItems;
     private RankingItem myRanking;
     private Total500Info myTotal500Record;
