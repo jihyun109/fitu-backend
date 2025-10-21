@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface SessionRespository extends JpaRepository<SessionsEntity, Long> {
     @Query(value = """
-            SELECT ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT s.id) DESC) AS ranking,
+            SELECT ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT s.id) DESC, SUM(s.end_time - s.start_time) DESC) AS ranking,
             		u.name AS userName,
             		COUNT(s.id) AS amount,
             		COALESCE(
@@ -30,7 +30,7 @@ public interface SessionRespository extends JpaRepository<SessionsEntity, Long> 
     @Query(value = """
             WITH ranked_users AS (
             	SELECT
-            		ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT s.id) DESC) AS ranking,
+            		ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT s.id) DESC, SUM(s.end_time - s.start_time) DESC) AS ranking,
             		u.id AS userId,
             		u.name AS userName,
             		COUNT(s.id) AS amount,
