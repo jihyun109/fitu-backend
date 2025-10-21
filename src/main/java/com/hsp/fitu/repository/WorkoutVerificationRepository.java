@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVerificationEntity, Long> {
-    //todo: 최대 6개만 가져오게 수정
     @Query(value = "SELECT " +
             "ROW_NUMBER() OVER (ORDER BY SUM(wv.weight) DESC) AS ranking, " +
             "u.name AS userName, " +
@@ -25,7 +24,8 @@ public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVeri
             "AND wv.request_date BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE()) " +
             "AND wv.status = 'ACCEPTED' " +
             "GROUP BY u.id, u.name, u.profile_img_id, m.url " +
-            "ORDER BY ranking",
+            "ORDER BY ranking " +
+            "LIMIT 6",
             nativeQuery = true)
     List<RankingItem> getTotal500Ranking(Long userId);
 
