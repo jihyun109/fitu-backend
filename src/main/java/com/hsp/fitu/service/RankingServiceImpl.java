@@ -39,7 +39,7 @@ public class RankingServiceImpl implements RankingService {
     @Override
     public RankingWorkoutCountResponseDTO getWorkoutCountRanking(Long userId) {
         // 랭킹 list get
-        List<RankingItem> rankingItems = sessionRespository.findRankingWorkoutCountByUserId(userId);
+        List<RankingItem> rankingItems = sessionRespository.findAllRankingWorkoutCountByUserId(userId);
 
         return RankingWorkoutCountResponseDTO.builder()
                 .rankingItems(rankingItems)

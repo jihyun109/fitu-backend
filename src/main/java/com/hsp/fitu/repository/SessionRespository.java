@@ -25,5 +25,5 @@ public interface SessionRespository extends JpaRepository<SessionsEntity, Long> 
             ORDER BY ranking
             LIMIT 6
             """, nativeQuery = true)
-    List<RankingItem> findRankingWorkoutCountByUserId(Long userId);
+    List<RankingItem> findAllRankingWorkoutCountByUserId(Long userId);
 }
