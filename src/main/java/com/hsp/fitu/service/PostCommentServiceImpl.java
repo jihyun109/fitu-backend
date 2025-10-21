@@ -35,6 +35,7 @@ public class PostCommentServiceImpl implements PostCommentService{
                             .writerId(writerId)
                             .contents(req.contents())
                             .rootId(-1L)
+                            .isSecret(req.isSecret())
                             .build()
             );
 
@@ -48,10 +49,11 @@ public class PostCommentServiceImpl implements PostCommentService{
                             .writerId(writerId)
                             .contents(req.contents())
                             .rootId(req.rootId())
+                            .isSecret(req.isSecret())
                             .build()
             );
         }
-        return postCommentMapper.commentToDTO(saved);
+        return postCommentRepository.findCommentDTOById(saved.getId());
     }
 
     @Override
@@ -60,23 +62,24 @@ public class PostCommentServiceImpl implements PostCommentService{
         List<PostCommentResponseDTO> rawComments = postCommentRepository.findCommentsByPostId(postId);
 
         return rawComments.stream()
-                .filter(c -> {
-                    if (!c.isSecret()) return true; //공개 댓글이라면 항상 통과
+                .map(c -> {
+                    boolean canView = !c.isSecret() || // 공개 댓글이면 항상 OK
+                            Objects.equals(getUserNameById(currentUserId), c.writerName()) ||
+                            Objects.equals(currentUserId, postWriterId) ||
+                            isAdmin(currentUserId) ||
+                            isParentWriter(c, currentUserId);
 
-                    return Objects.equals(getUserNameById(currentUserId),c.writerName()) ||
-                           Objects.equals(currentUserId, postWriterId) ||
-                           isAdmin(currentUserId);
+                    return new PostCommentResponseDTO(
+                            c.id(),
+                            c.writerName(),
+                            c.writerProfileImgUrl(),
+                            c.rootId(),
+                            canView ? c.contents() : null,
+                            c.createdAt(),
+                            Objects.equals(c.writerName(), getUserNameById(postWriterId)),
+                            c.isSecret()
+                    );
                 })
-                .map(c -> new PostCommentResponseDTO(
-                        c.id(),
-                        c.writerName(),
-                        c.writerProfileImgUrl(),
-                        c.rootId(),
-                        c.contents(),
-                        c.createdAt(),
-                        Objects.equals(c.writerName(), getUserNameById(postWriterId)),
-                        c.isSecret()
-                ))
                 .toList();
 
     }
@@ -90,6 +93,15 @@ public class PostCommentServiceImpl implements PostCommentService{
         return userRepository.findById(userId)
                 .map(UserEntity::getName)
                 .orElse("Unknown");
+    }
+
+    private boolean isParentWriter(PostCommentResponseDTO dto, Long currentUserId) {
+        if (Objects.equals(dto.id(), dto.rootId())) {
+            return false; // 루트 댓글이면 부모 아님
+        }
+        PostCommentsEntity rootComment = postCommentRepository.findById(dto.rootId())
+                .orElse(null);
+        return rootComment != null && Objects.equals(rootComment.getWriterId(), currentUserId);
     }
 
     @Override
