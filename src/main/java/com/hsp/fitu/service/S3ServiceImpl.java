@@ -1,7 +1,7 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
-import com.hsp.fitu.entity.BodyImageEntity;
+import com.hsp.fitu.entity.enums.MediaCategory;
 import com.hsp.fitu.error.customExceptions.EmptyFileException;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.error.customExceptions.S3UploadFailException;
@@ -23,17 +23,12 @@ import java.net.URL;
 import java.net.URLDecoder;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
-public class S3ImageServiceImpl implements S3ImageService {
-
+@Service
+public class S3ServiceImpl implements S3Service {
     private final S3Client s3Client;
     private final BodyImageRepository bodyImageRepository;
 
@@ -44,58 +39,41 @@ public class S3ImageServiceImpl implements S3ImageService {
     private String region;
 
     @Override
-    public String upload(MultipartFile image, long userId) {
-        if (image.isEmpty() || Objects.isNull(image.getOriginalFilename())) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
-        }
+    public String upload(MultipartFile file, MediaCategory mediaCategory) {
+        String folderName = getFolderName(mediaCategory);   // 폴더 이름
 
-        String imageUrl = this.uploadImage(image, "body-image");
-        bodyImageRepository.save(BodyImageEntity.builder()
-                .url(imageUrl)
-                .userId(userId)
-                .build());
-
-        return imageUrl;
+        // 미디어 파일 S3에 업로드 & get media file url
+        return this.uploadFileToS3(file, folderName);
     }
 
     @Override
-    public String uploadImage(MultipartFile image, String folder) {
-        this.validateImageFileExtention(image.getOriginalFilename());
+    public String uploadFileToS3(MultipartFile file, String folder) {
         try {
-            return this.uploadImageToS3(image, folder);
+            return this.uploadImageToS3(file, folder);
         } catch (IOException e) {
             throw new EmptyFileException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
-    private void validateImageFileExtention(String filename) {
-        int lastDotIndex = filename.lastIndexOf(".");
-        if (lastDotIndex == -1) {
-            throw new EmptyFileException(ErrorCode.MISSING_FILE_EXTENSION);
-        }
+    private String getFolderName(MediaCategory mediaCategory) {
 
-        String extention = filename.substring(lastDotIndex + 1).toLowerCase();
-        List<String> allowedExtentionList = Arrays.asList("jpg", "jpeg", "png", "gif");
-
-        if (!allowedExtentionList.contains(extention)) {
-            throw new EmptyFileException(ErrorCode.INVALID_FILE_EXTENSION);
-        }
+        return switch (mediaCategory) {
+            case PROFILE_IMAGE -> "profile_img";
+            case WORKOUT_VERIFICATION_VIDEO -> "workout_verification_video";
+        };
     }
 
-    private String uploadImageToS3(MultipartFile image, String folder) throws IOException {
-        String originalFilename = image.getOriginalFilename(); //원본 파일 명
-        String extention = originalFilename.substring(originalFilename.lastIndexOf(".")); //확장자 명
+    private String uploadImageToS3(MultipartFile file, String folder) throws IOException {
+        // 저장할 파일 이름 생성
+        String s3FileName = generateFileName(file, folder);
 
-        String s3FileName = folder + UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename; //변경된 파일 명
-
-        InputStream is = image.getInputStream();
-        byte[] bytes = image.getBytes();
+        byte[] bytes = file.getBytes();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(s3FileName)
                 .acl(ObjectCannedACL.PUBLIC_READ) // Public 권한
-                .contentType(image.getContentType())
+                .contentType(file.getContentType())
                 .build();
 
         try {
@@ -133,5 +111,13 @@ public class S3ImageServiceImpl implements S3ImageService {
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             throw new EmptyFileException(ErrorCode.INVALID_IMAGE_FILE);
         }
+    }
+
+    private String generateFileName(MultipartFile file, String folder) {
+        String originalFilename = file.getOriginalFilename(); //원본 파일 명
+        String ext = originalFilename.substring(originalFilename.lastIndexOf(".")); // 확장자
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String random = UUID.randomUUID().toString().substring(0, 6);
+        return folder + timestamp + "_" + random + ext;
     }
 }

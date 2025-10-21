@@ -1,23 +1,25 @@
 package com.hsp.fitu.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Entity
+@Builder
 @Table(name = "media_files")
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class MediaFilesEntity {
     @Id
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "uploader_id")
-    private long uploaderId;
+    private Long uploaderId;
 
     @Column(name = "url")
     private String url;

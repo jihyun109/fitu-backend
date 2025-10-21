@@ -24,7 +24,7 @@ import java.util.*;
 public class WorkoutServiceImpl implements WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final WorkoutCategoryRepository workoutCategoryRepository;
-    private final S3ImageService s3ImageService;
+    private final S3Service s3Service;
 
     @Override
     public List<RoutineRecommendationResponseDTO> suggestRoutine(RoutineRecommendationRequestDTO requestDTO) {
@@ -119,7 +119,7 @@ public class WorkoutServiceImpl implements WorkoutService {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
-        String newImageUrl = s3ImageService.uploadImage(image, "workouts/images/");
+        String newImageUrl = s3Service.uploadFileToS3(image, "workouts/images/");
         workout.updateImageUrl(newImageUrl);
     }
 
@@ -133,7 +133,7 @@ public class WorkoutServiceImpl implements WorkoutService {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
-        String newGifUrl = s3ImageService.uploadImage(gif, "workouts/gifs/");
+        String newGifUrl = s3Service.uploadFileToS3(gif, "workouts/gifs/");
         workout.updateGifUrl(newGifUrl);
     }
 

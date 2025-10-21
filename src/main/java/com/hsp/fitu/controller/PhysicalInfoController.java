@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-@Controller
-@RequestMapping("/physical-infos")
+@RestController
+@RequestMapping("/api/v2/physical-infos")
 @RequiredArgsConstructor
 public class PhysicalInfoController {
     private final PhysicalInfoService physicalInfoService;
 
+    // 사용자 가장 최근 신체 정보 & 사용자 이름 조회
     @GetMapping()
     public ResponseEntity<PhysicalInfoResponseDTO> getPhysicsInfos(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
