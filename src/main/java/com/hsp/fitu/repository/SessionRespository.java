@@ -23,7 +23,7 @@ public interface SessionRespository extends JpaRepository<SessionsEntity, Long> 
             	AND s.start_time BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())
             GROUP BY u.id
             ORDER BY ranking
-            LIMIT 6
+            LIMIT 10
             """, nativeQuery = true)
     List<RankingItem> findAllRankingWorkoutCountByUserId(Long userId);
 

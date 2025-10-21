@@ -28,7 +28,7 @@ public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVeri
               AND wv.status = 'ACCEPTED' 
             GROUP BY u.id, u.name, u.profile_img_id, m.url 
             ORDER BY ranking 
-            LIMIT 6
+            LIMIT 10
             """, nativeQuery = true)
     List<RankingItem> findTotalRankingByUserId(Long userId);
 
