@@ -32,7 +32,6 @@ public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVeri
             """, nativeQuery = true)
     List<RankingItem> findTotalRankingByUserId(Long userId);
 
-    //todo: 함수명 findRankingByUserId로 수정
     @Query(value = """
             WITH ranked_users AS (
                 SELECT
@@ -56,7 +55,7 @@ public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVeri
             FROM ranked_users
             WHERE userId = :userId
             """, nativeQuery = true)
-    RankingItem getMyRanking(Long userId);
+    RankingItem findRankingByUserId(Long userId);
 
     @Query(value = """
         SELECT 
