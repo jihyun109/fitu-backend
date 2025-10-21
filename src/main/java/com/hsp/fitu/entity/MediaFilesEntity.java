@@ -1,13 +1,7 @@
 package com.hsp.fitu.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -18,12 +12,14 @@ import java.time.LocalDateTime;
 @Table(name = "media_files")
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class MediaFilesEntity {
     @Id
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "uploader_id")
-    private long uploaderId;
+    private Long uploaderId;
 
     @Column(name = "url")
     private String url;

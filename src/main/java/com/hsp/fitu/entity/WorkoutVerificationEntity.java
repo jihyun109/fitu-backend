@@ -19,9 +19,10 @@ import java.util.Date;
 @AllArgsConstructor
 public class WorkoutVerificationEntity {
     @Id
-    private long id;
-    private long userId;
-    private long videoId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long userId;
+    private Long videoId;
 
     @Enumerated(EnumType.STRING)
     private WorkoutVerificationType workoutType;

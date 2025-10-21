@@ -10,6 +10,7 @@ import com.hsp.fitu.entity.enums.WorkoutVerificationType;
 import com.hsp.fitu.repository.MediaFilesRepository;
 import com.hsp.fitu.repository.WorkoutVerificationRepository;
 import com.hsp.fitu.validator.MediaValidator;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,7 @@ public class WorkoutVerificationServiceImpl implements WorkoutVerificationServic
     private final S3Service s3Service;
 
     @Override
+    @Transactional
     public void requestWorkoutVerification(WorkoutVerificationRequestDTO workoutVerificationRequestDTO) {
         // 운동 인증 영상 유효성 검사
         validateWorkoutVerificationRequest(workoutVerificationRequestDTO);
