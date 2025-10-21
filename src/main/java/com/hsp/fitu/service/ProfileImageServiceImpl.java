@@ -40,7 +40,7 @@ public class ProfileImageServiceImpl implements ProfileImageService {
         mediaValidator.validateMedia(file, MediaType.IMAGE);
 
         // S3에 프로필이미지 업로드 & url get
-        String url = s3Service.upload(file, userId, MediaCategory.PROFILE_IMAGE);
+        String url = s3Service.upload(file, MediaCategory.PROFILE_IMAGE);
 
         // db에 데이터 저장
         bodyImageRepository.save(BodyImageEntity.builder()
