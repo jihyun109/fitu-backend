@@ -29,6 +29,7 @@ public class RankingController {
     @Operation(summary = "규칙적 운동 랭킹 조회 by 장지현")
     @GetMapping("/workout-count")
     public ResponseEntity<RankingWorkoutCountResponseDTO> getWorkoutCountRanking(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(null);
+        RankingWorkoutCountResponseDTO  rankingWorkoutCountResponseDTO = rankingService.getWorkoutCountRanking(userDetails.getId());
+        return ResponseEntity.ok(rankingWorkoutCountResponseDTO);
     }
 }
