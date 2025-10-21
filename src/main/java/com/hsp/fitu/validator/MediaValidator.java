@@ -12,7 +12,7 @@ import java.util.List;
 @Component
 public class MediaValidator {
     private List<String> allowedImageExtentions = Arrays.asList("jpg", "jpeg", "png", "gif");
-    private List<String> allowedVideoExtentions = Arrays.asList(".mp4", ".mov", ".wmv", ".avi");
+    private List<String> allowedVideoExtentions = Arrays.asList("mp4", "mov", "wmv", "avi");
 
     public void validateMedia(MultipartFile mediaFile, MediaType mediaType) {
         if (mediaFile == null || mediaFile.isEmpty()) {
