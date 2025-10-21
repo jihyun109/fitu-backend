@@ -4,6 +4,7 @@ import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
 import com.hsp.fitu.mapper.PostMapper;
+import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.PostRepository;
 import com.hsp.fitu.repository.UniversityRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UniversityRepository universityRepository;
     private final PostCommentService postCommentService;
+    private final PostCommentRepository postCommentRepository;
 
     @Override
     @Transactional
@@ -93,6 +95,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(long postId) {
+        postCommentRepository.deleteByPostId(postId);
         postRepository.deleteById(postId);
     }
 

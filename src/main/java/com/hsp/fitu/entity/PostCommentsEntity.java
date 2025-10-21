@@ -1,9 +1,6 @@
 package com.hsp.fitu.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +17,7 @@ import java.time.LocalDateTime;
 @Table(name = "post_comments")
 public class PostCommentsEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "post_id")
@@ -38,6 +36,7 @@ public class PostCommentsEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "is_secret")
     private Boolean isSecret;
 
     public void update(String contents) {
