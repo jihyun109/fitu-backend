@@ -42,7 +42,7 @@ public class S3ServiceImpl implements S3Service {
     private String region;
 
     @Override
-    public String upload(MultipartFile file, long userId, MediaCategory mediaCategory) {
+    public String upload(MultipartFile file, MediaCategory mediaCategory) {
         String folderName = getFolderName(mediaCategory);   // 폴더 이름
 
         // 미디어 파일 S3에 업로드 & get media file url
@@ -51,7 +51,6 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String uploadFileToS3(MultipartFile file, String folder) {
-        this.validateImageFileExtention(file.getOriginalFilename());
         try {
             return this.uploadImageToS3(file, folder);
         } catch (IOException e) {
@@ -65,20 +64,6 @@ public class S3ServiceImpl implements S3Service {
             case PROFILE_IMAGE -> "profile_img";
             case WORKOUT_VERIFICATION_VIDEO -> "workout_verification_video";
         };
-    }
-
-    private void validateImageFileExtention(String filename) {
-        int lastDotIndex = filename.lastIndexOf(".");
-        if (lastDotIndex == -1) {
-            throw new EmptyFileException(ErrorCode.MISSING_FILE_EXTENSION);
-        }
-
-        String extention = filename.substring(lastDotIndex + 1).toLowerCase();
-        List<String> allowedExtentionList = Arrays.asList("jpg", "jpeg", "png", "gif");
-
-        if (!allowedExtentionList.contains(extention)) {
-            throw new EmptyFileException(ErrorCode.INVALID_FILE_EXTENSION);
-        }
     }
 
     private String uploadImageToS3(MultipartFile image, String folder) throws IOException {
