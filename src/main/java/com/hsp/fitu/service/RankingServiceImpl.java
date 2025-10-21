@@ -21,7 +21,7 @@ public class RankingServiceImpl implements RankingService {
         List<RankingItem> rankingItems = workoutVerificationRepository.findTotalRankingByUserId(userId);
 
         // 나의 랭킹 get
-        RankingItem myRanking = workoutVerificationRepository.getMyRanking(userId);
+        RankingItem myRanking = workoutVerificationRepository.findRankingByUserId(userId);
 
         // 나의 3대 무게 get
         Total500Info myTotal500Info = workoutVerificationRepository.findTotal500InfoByUserId(userId);
