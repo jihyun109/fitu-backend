@@ -41,9 +41,12 @@ public class RankingServiceImpl implements RankingService {
         // 랭킹 list get
         List<RankingItem> rankingItems = sessionRespository.findAllRankingWorkoutCountByUserId(userId);
 
+        // 나의 랭킹 get
+        RankingItem myRanking = sessionRespository.findRankingWorkoutCountByUserId(userId);
+
         return RankingWorkoutCountResponseDTO.builder()
                 .rankingItems(rankingItems)
-                .myRanking(null)
+                .myRanking(myRanking)
                 .build();
     }
 }
