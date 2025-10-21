@@ -1,13 +1,10 @@
 package com.hsp.fitu.error;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Getter
 @Builder
 // exception 발생시 응답하는 에러 정보 클래스
