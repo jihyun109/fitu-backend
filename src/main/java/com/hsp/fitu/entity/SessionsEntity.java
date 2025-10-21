@@ -22,8 +22,10 @@ public class SessionsEntity {
     private long userId;
 
     @Column(name = "start_time")
-    @CreationTimestamp
     private LocalDateTime startTime;
+
+    @Column(name = "end_time")
+    private LocalDateTime endTime;
 
     @Column(name = "exercise_image_id")
     private long exerciseImageId;
