@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVerificationEntity, Long> {
+    //todo: 최대 6개만 가져오게 수정
     @Query(value = "SELECT " +
             "ROW_NUMBER() OVER (ORDER BY SUM(wv.weight) DESC) AS ranking, " +
             "u.name AS userName, " +
@@ -27,4 +28,29 @@ public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVeri
             "ORDER BY ranking",
             nativeQuery = true)
     List<RankingItem> getTotal500Ranking(Long userId);
+
+    @Query(value = """
+            WITH ranked_users AS (
+                SELECT
+                    ROW_NUMBER() OVER (ORDER BY SUM(wv.weight) DESC) AS ranking,
+                    u.id AS userId,
+                    u.name AS userName,
+                    SUM(wv.weight) AS amount,
+                    CASE
+                        WHEN u.profile_visibility = FALSE THEN 'https://fitu-bucket.s3.ap-northeast-2.amazonaws.com/fitu_default_image.png'
+                        ELSE m.url
+                    END AS profileImageUrl
+                FROM workout_verifications wv
+                JOIN users u ON wv.user_id = u.id
+                LEFT JOIN media_files m ON u.profile_img_id = m.id
+                WHERE u.university_id = (SELECT university_id FROM users WHERE id = :userId)
+                  AND wv.request_date BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())
+                  AND wv.status = 'ACCEPTED'
+                GROUP BY u.id, u.name, u.profile_visibility, u.profile_img_id, m.url
+            )
+            SELECT *
+            FROM ranked_users
+            WHERE userId = :userId
+            """, nativeQuery = true)
+    RankingItem getMyRanking(Long userId);
 }
