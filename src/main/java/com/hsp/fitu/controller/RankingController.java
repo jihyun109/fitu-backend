@@ -1,6 +1,7 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.RankingTotal500ResponseDTO;
+import com.hsp.fitu.dto.RankingWorkoutCountResponseDTO;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.RankingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,5 +24,11 @@ public class RankingController {
     public ResponseEntity<RankingTotal500ResponseDTO> getTotal500Ranking(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
         return ResponseEntity.ok(rankingService.getTotal500Ranking(userDetails.getId()));
+    }
+
+    @Operation(summary = "규칙적 운동 랭킹 조회 by 장지현")
+    @GetMapping("/workout-count")
+    public ResponseEntity<RankingWorkoutCountResponseDTO> getWorkoutCountRanking(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(rankingService.getWorkoutCountRanking(userDetails.getId()));
     }
 }
