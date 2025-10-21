@@ -16,10 +16,15 @@ public class RankingServiceImpl implements RankingService {
 
     @Override
     public RankingTotal500ResponseDTO getTotal500Ranking(Long userId) {
+        // 랭킹 리스트 get
         List<RankingItem> rankingItems = workoutVerificationRepository.getTotal500Ranking(userId);
+
+        // 나의 랭킹 get
+        RankingItem myRanking = workoutVerificationRepository.getMyRanking(userId);
 
         return RankingTotal500ResponseDTO.builder()
                 .rankingItems(rankingItems)
+                .myRanking(myRanking)
                 .build();
     }
 }
