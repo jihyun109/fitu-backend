@@ -1,10 +1,7 @@
 package com.hsp.fitu.entity;
 
-import lombok.Getter;
-
-@Getter
-public class Total500Info {
-    private int benchPress;
-    private int deadLift;
-    private int squat;
+public interface Total500Info {
+    Integer getBenchPress();
+    Integer getDeadLift();
+    Integer getSquat();
 }
