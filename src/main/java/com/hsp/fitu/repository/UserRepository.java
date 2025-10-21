@@ -4,6 +4,7 @@ import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.AccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -36,6 +37,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     String findFriendCodeById(@Param("userId") Long userId);
 
     // 사용자의 계정 상태 수정
+    @Modifying
     @Query("UPDATE UserEntity u " +
             "SET u.status = :status " +
             "WHERE u.id = :userId")
