@@ -21,10 +21,13 @@ public class WorkoutVerificationEntity {
     private long id;
     private long userId;
     private long videoId;
+
+    @Enumerated(EnumType.STRING)
     private WorkoutVerificationType workoutType;
 
     @CreationTimestamp
     private Date requestDate;
 
+    @Enumerated(EnumType.STRING)
     private WorkoutVerificationRequestStatus status;
 }
