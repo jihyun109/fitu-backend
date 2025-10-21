@@ -23,9 +23,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -66,20 +63,17 @@ public class S3ServiceImpl implements S3Service {
         };
     }
 
-    private String uploadImageToS3(MultipartFile image, String folder) throws IOException {
-        String originalFilename = image.getOriginalFilename(); //원본 파일 명
-        String extention = originalFilename.substring(originalFilename.lastIndexOf(".")); //확장자 명
+    private String uploadImageToS3(MultipartFile file, String folder) throws IOException {
+        // 저장할 파일 이름 생성
+        String s3FileName = generateFileName(file, folder);
 
-        String s3FileName = folder + UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename; //변경된 파일 명
-
-        InputStream is = image.getInputStream();
-        byte[] bytes = image.getBytes();
+        byte[] bytes = file.getBytes();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(s3FileName)
                 .acl(ObjectCannedACL.PUBLIC_READ) // Public 권한
-                .contentType(image.getContentType())
+                .contentType(file.getContentType())
                 .build();
 
         try {
@@ -117,5 +111,13 @@ public class S3ServiceImpl implements S3Service {
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             throw new EmptyFileException(ErrorCode.INVALID_IMAGE_FILE);
         }
+    }
+
+    private String generateFileName(MultipartFile file, String folder) {
+        String originalFilename = file.getOriginalFilename(); //원본 파일 명
+        String ext = originalFilename.substring(originalFilename.lastIndexOf(".")); // 확장자
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String random = UUID.randomUUID().toString().substring(0, 6);
+        return folder + timestamp + "_" + random + ext;
     }
 }
