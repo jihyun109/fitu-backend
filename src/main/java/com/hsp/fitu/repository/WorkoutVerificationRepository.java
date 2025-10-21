@@ -1,11 +1,30 @@
 package com.hsp.fitu.repository;
 
-import com.hsp.fitu.dto.RankingTotal500ResponseDTO;
+import com.hsp.fitu.dto.RankingItem;
 import com.hsp.fitu.entity.WorkoutVerificationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVerificationEntity, Long> {
-    RankingTotal500ResponseDTO getTotal500Ranking(Long userId);
+    @Query(value = "SELECT " +
+            "ROW_NUMBER() OVER (ORDER BY SUM(wv.weight) DESC) AS ranking, " +
+            "u.name AS userName, " +
+            "SUM(wv.weight) AS amount, " +
+            "CASE WHEN u.profile_visibility = FALSE THEN 'https://fitu-bucket.s3.ap-northeast-2.amazonaws.com/fitu_default_image.png' " +
+            "ELSE m.url END AS profileImageUrl " +
+
+            "FROM workout_verifications wv " +
+            "JOIN users u ON wv.user_id = u.id " +
+            "LEFT JOIN media_files m ON u.profile_img_id = m.id " +
+            "WHERE u.university_id = (SELECT university_id FROM  users WHERE id = :userId) " +
+            "AND wv.request_date BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE()) " +
+            "AND wv.status = 'ACCEPTED' " +
+            "GROUP BY u.id, u.name, u.profile_img_id, m.url " +
+            "ORDER BY ranking",
+            nativeQuery = true)
+    List<RankingItem> getTotal500Ranking(Long userId);
 }
