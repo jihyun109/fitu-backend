@@ -3,7 +3,7 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.WorkoutVerificationRequestDTO;
 import com.hsp.fitu.entity.MediaFilesEntity;
 import com.hsp.fitu.entity.WorkoutVerificationEntity;
-import com.hsp.fitu.entity.WorkoutVerificationRequestStatus;
+import com.hsp.fitu.entity.enums.WorkoutVerificationRequestStatus;
 import com.hsp.fitu.entity.enums.MediaCategory;
 import com.hsp.fitu.entity.enums.MediaType;
 import com.hsp.fitu.entity.enums.WorkoutVerificationType;

@@ -1,4 +1,4 @@
-package com.hsp.fitu.entity;
+package com.hsp.fitu.entity.enums;
 
 public enum WorkoutVerificationRequestStatus {
     ACCEPTED,

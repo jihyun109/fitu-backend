@@ -1,5 +1,6 @@
 package com.hsp.fitu.entity;
 
+import com.hsp.fitu.entity.enums.WorkoutVerificationRequestStatus;
 import com.hsp.fitu.entity.enums.WorkoutVerificationType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
