@@ -18,13 +18,13 @@ import java.util.Date;
 @AllArgsConstructor
 public class WorkoutVerificationEntity {
     @Id
-    private Long id;
-    private Long userId;
-    private Long mediaId;
-    private WorkoutVerificationType workoutVerificationType;
+    private long id;
+    private long userId;
+    private long videoId;
+    private WorkoutVerificationType workoutType;
 
     @CreationTimestamp
-    private Date date;
+    private Date requestDate;
 
     private WorkoutVerificationRequestStatus status;
 }
