@@ -11,7 +11,6 @@ import java.util.List;
 
 @Repository
 public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVerificationEntity, Long> {
-    //todo: 함수명 findTotalRankingByUserId로 수정
     @Query(value = """
             SELECT 
                 ROW_NUMBER() OVER (ORDER BY SUM(wv.weight) DESC) AS ranking, 
@@ -31,7 +30,7 @@ public interface WorkoutVerificationRepository extends JpaRepository<WorkoutVeri
             ORDER BY ranking 
             LIMIT 6
             """, nativeQuery = true)
-    List<RankingItem> getTotal500Ranking(Long userId);
+    List<RankingItem> findTotalRankingByUserId(Long userId);
 
     //todo: 함수명 findRankingByUserId로 수정
     @Query(value = """
