@@ -32,7 +32,7 @@ public class AuthController {
         return ResponseEntity.status(201).body(tokenResponseDTO);
     }
 
-    @PostMapping("/reissue")
+    @GetMapping("/reissue")
     public ResponseEntity<TokenResponseDTO> reissue(@CookieValue("refreshToken") String refreshToken) {
         TokenResponseDTO tokenResponseDTO = authService.reissue(refreshToken);
 
