@@ -3,7 +3,6 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
-import com.hsp.fitu.mapper.PostMapper;
 import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.PostRepository;
 import com.hsp.fitu.repository.UniversityRepository;
@@ -20,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
-    private final PostMapper postMapper;
     private final UniversityRepository universityRepository;
     private final PostCommentService postCommentService;
     private final PostCommentRepository postCommentRepository;
@@ -38,7 +36,8 @@ public class PostServiceImpl implements PostService {
                 .build();
 
         PostEntity saved = postRepository.save(postEntity);
-        return postMapper.postToDTO(saved);
+        return postRepository.findPostWithWriter(saved.getId())
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
     }
 
     @Override

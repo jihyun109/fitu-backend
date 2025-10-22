@@ -1,6 +1,7 @@
 package com.hsp.fitu.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record PostCommentResponseDTO(
         Long id,
@@ -10,5 +11,6 @@ public record PostCommentResponseDTO(
         String contents,
         LocalDateTime createdAt,
         Boolean isMine,     //게시글 작성자가 작성한 댓글인지
-        Boolean isSecret    //댓글이 비밀댓글인지
+        Boolean isSecret,    //댓글이 비밀댓글인지
+        List<PostCommentResponseDTO> replies
 ){}
