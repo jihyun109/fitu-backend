@@ -24,7 +24,6 @@ public class PostController {
         Long universityId = userDetails.getUniversityId();
 
         PostResponseDTO postResponseDTO = postService.createPost(writerId, universityId, requestDTO);
-
         return ResponseEntity.ok(postResponseDTO);
     }
 
@@ -42,9 +41,14 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostResponseDTO> getPost(
-            @PathVariable Long postId) {
-        return ResponseEntity.ok(postService.getPost(postId));
+    public ResponseEntity<PostDetailResponseDTO> getPost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long currentUserId = userDetails.getId();
+        PostDetailResponseDTO detailResponseDTO = postService.getPost(postId, currentUserId);
+
+        return ResponseEntity.ok(detailResponseDTO);
     }
 
     @GetMapping("/search")
