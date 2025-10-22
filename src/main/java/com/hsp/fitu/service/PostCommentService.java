@@ -7,9 +7,8 @@ import com.hsp.fitu.dto.PostCommentUpdateRequestDTO;
 import java.util.List;
 
 public interface PostCommentService {
-    PostCommentResponseDTO createComment(PostCommentCreateRequestDTO commentCreateRequestDTO, Long writerId);
-    List<PostCommentResponseDTO> getCommentsByPost(Long postId);
-    List<PostCommentResponseDTO> getThreadByRoot(Long rootId);
-    PostCommentResponseDTO updateComment(Long id, PostCommentUpdateRequestDTO commentUpdateRequestDTO);
-    void deleteComment(Long id);
+    PostCommentResponseDTO createComment(Long postId, PostCommentCreateRequestDTO commentCreateRequestDTO, Long writerId);
+    List<PostCommentResponseDTO> getComments(Long postId, Long currentUserId, Long postWriterId);
+    PostCommentResponseDTO updateComment(Long postId, Long commentId, PostCommentUpdateRequestDTO commentUpdateRequestDTO);
+    void deleteComment(Long postId, Long commentId);
 }
