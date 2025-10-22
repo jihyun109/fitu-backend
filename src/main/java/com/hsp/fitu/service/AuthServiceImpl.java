@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
                 .secure(false)
                 .path("/")
                 .maxAge(refreshExpMs)
-                .sameSite("None")
+                .sameSite("Lax")
                 .build();
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
