@@ -5,6 +5,7 @@ import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.entity.UserEntity;
+import com.hsp.fitu.entity.enums.AccountStatus;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
 import com.hsp.fitu.repository.UniversityRepository;
 import com.hsp.fitu.repository.UserRepository;
@@ -59,6 +60,12 @@ public class UserServiceImpl implements UserService {
         return UserFriendCodeResponseDto.builder()
                 .friendCode(userRepository.findFriendCodeById(userId))
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void deactivateUser(Long userId) {
+        userRepository.updateAccountStatusById(userId, AccountStatus.DEACTIVATED);
     }
 
     // friend code 부여

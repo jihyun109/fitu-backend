@@ -42,4 +42,11 @@ public class UserController {
     public ResponseEntity<UserFriendCodeResponseDto> getFriendCode(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(userService.getFriendCode(userDetails.getId()));
     }
+
+    @PatchMapping("/deactivate")
+    @Operation(summary = "계정 삭제")
+    public ResponseEntity<String> deactivateUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        userService.deactivateUser(userDetails.getId());
+        return ResponseEntity.ok("success to deactivate user");
+    }
 }
