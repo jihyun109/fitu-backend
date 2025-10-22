@@ -1,5 +1,6 @@
 package com.hsp.fitu.repository;
 
+import com.hsp.fitu.dto.PostCommentFlatDTO;
 import com.hsp.fitu.dto.PostCommentResponseDTO;
 import com.hsp.fitu.entity.PostCommentsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public interface PostCommentRepository extends JpaRepository<PostCommentsEntity, Long> {
     @Query("""
-    SELECT new com.hsp.fitu.dto.PostCommentResponseDTO(
+    SELECT new com.hsp.fitu.dto.PostCommentFlatDTO(
         c.id,
         u.name,
         m.url,
@@ -28,7 +29,7 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
     PostCommentResponseDTO findCommentDTOById(@Param("commentId") Long commentId);
 
     @Query("""
-    SELECT new com.hsp.fitu.dto.PostCommentResponseDTO(
+    SELECT new com.hsp.fitu.dto.PostCommentFlatDTO(
         c.id,
         u.name,
         m.url,
@@ -44,7 +45,7 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
     WHERE c.postId = :postId
     ORDER BY c.createdAt ASC
     """)
-    List<PostCommentResponseDTO> findCommentsByPostId(@Param("postId") long postId);
+    List<PostCommentFlatDTO> findCommentsByPostId(@Param("postId") long postId);
 
     void deleteByPostId(long postId);
 }
