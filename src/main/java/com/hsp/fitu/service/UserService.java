@@ -10,4 +10,6 @@ public interface UserService {
     UserProfileImageResponseDto findUserProfileImageAndVisibility(Long userId);
 
     UserFriendCodeResponseDto getFriendCode(Long userId);
+
+    void deactivateUser(Long userId);
 }
