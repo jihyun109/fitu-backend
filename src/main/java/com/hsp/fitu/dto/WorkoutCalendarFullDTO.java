@@ -10,6 +10,5 @@ import java.util.List;
 @AllArgsConstructor
 public class WorkoutCalendarFullDTO {
     private LocalDate date;
-//    private List<Long> categoryIds;
     private List<WorkoutCalendarDetailDTO> details;
 }

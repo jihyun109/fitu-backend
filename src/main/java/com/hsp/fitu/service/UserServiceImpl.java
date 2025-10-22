@@ -1,8 +1,11 @@
 package com.hsp.fitu.service;
 
+import com.hsp.fitu.dto.UserFriendCodeResponseDto;
 import com.hsp.fitu.dto.UserInfoRequestDTO;
+import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.entity.UserEntity;
+import com.hsp.fitu.entity.enums.AccountStatus;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
 import com.hsp.fitu.repository.UniversityRepository;
 import com.hsp.fitu.repository.UserRepository;
@@ -39,11 +42,30 @@ public class UserServiceImpl implements UserService {
         PhysicalInfoEntity physicalInfoEntity = PhysicalInfoEntity.builder()
                 .userId(userId)
                 .weight(userInfoRequestDTO.getWeight())
+                .height(userInfoRequestDTO.getHeight())
                 .muscle(userInfoRequestDTO.getMuscle())
                 .bodyFat(userInfoRequestDTO.getBodyFat())
                 .build();
         physicalInfoRepository.save(physicalInfoEntity);
 
+    }
+
+    @Override
+    public UserProfileImageResponseDto findUserProfileImageAndVisibility(Long userId) {
+        return userRepository.findUserProfileImage(userId);
+    }
+
+    @Override
+    public UserFriendCodeResponseDto getFriendCode(Long userId) {
+        return UserFriendCodeResponseDto.builder()
+                .friendCode(userRepository.findFriendCodeById(userId))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void deactivateUser(Long userId) {
+        userRepository.updateAccountStatusById(userId, AccountStatus.DEACTIVATED);
     }
 
     // friend code 부여

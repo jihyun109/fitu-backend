@@ -1,8 +1,8 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.*;
-import com.hsp.fitu.entity.WorkoutCategoryEntity;
-import com.hsp.fitu.entity.WorkoutEntity;
+import com.hsp.fitu.entity.OldWorkoutCategoryEntity;
+import com.hsp.fitu.entity.OldWorkoutEntity;
 import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.entity.enums.WorkoutCategory;
 import com.hsp.fitu.error.ErrorCode;
@@ -24,11 +24,11 @@ import java.util.*;
 public class WorkoutServiceImpl implements WorkoutService {
     private final WorkoutRepository workoutRepository;
     private final WorkoutCategoryRepository workoutCategoryRepository;
-    private final S3ImageService s3ImageService;
+    private final S3Service s3Service;
 
     @Override
     public List<RoutineRecommendationResponseDTO> suggestRoutine(RoutineRecommendationRequestDTO requestDTO) {
-        List<WorkoutCategoryEntity> sortedCategories =
+        List<OldWorkoutCategoryEntity> sortedCategories =
                 workoutCategoryRepository.findByNameInOrderByPriority(requestDTO.getWorkoutCategoryList());
 
         Map<WorkoutCategory, Integer> workoutCountMap = allocateWorkoutCounts(sortedCategories);
@@ -36,30 +36,30 @@ public class WorkoutServiceImpl implements WorkoutService {
         Set<Workout> selectedMainWorkouts = new HashSet<>();
         List<RoutineRecommendationResponseDTO> responseList = new ArrayList<>();
 
-        for (WorkoutCategoryEntity category : sortedCategories) {
+        for (OldWorkoutCategoryEntity category : sortedCategories) {
 
             WorkoutCategory categoryName = category.getName();
             int count = workoutCountMap.get(categoryName);
 
-            List<WorkoutEntity> allWorkouts = workoutRepository.findAllByCategoryId(category.getId());
+            List<OldWorkoutEntity> allWorkouts = workoutRepository.findAllByCategoryId(category.getId());
             Collections.shuffle(allWorkouts);
 
             int added = 0;
 
             // mainWorkout 선정
-            for (WorkoutEntity workout : allWorkouts) {
+            for (OldWorkoutEntity workout : allWorkouts) {
                 Workout mainWorkout = workout.getName();
                 if (selectedMainWorkouts.contains(mainWorkout)) continue;
 
                 // similar workout 선정
-                List<WorkoutEntity> similarCandidates = workoutRepository.findSimilarWorkouts(mainWorkout, category.getId());
+                List<OldWorkoutEntity> similarCandidates = workoutRepository.findSimilarWorkouts(mainWorkout, category.getId());
                 Collections.shuffle(similarCandidates);
 
                 selectedMainWorkouts.add(mainWorkout);
 
                 // body part 받아오기
                 long bodyPartId = workout.getCategoryId();
-                Optional<WorkoutCategoryEntity> workoutCategoryEntity = workoutCategoryRepository.findById(bodyPartId);
+                Optional<OldWorkoutCategoryEntity> workoutCategoryEntity = workoutCategoryRepository.findById(bodyPartId);
                 WorkoutCategory bodyPart = workoutCategoryEntity.get().getName();
 
                 // response 생성
@@ -95,7 +95,7 @@ public class WorkoutServiceImpl implements WorkoutService {
 
         return workouts.stream()
                 .map(workout -> {
-                    WorkoutEntity entity = workoutRepository.findByName(workout);
+                    OldWorkoutEntity entity = workoutRepository.findByName(workout);
 
                     if (entity == null) {
                         throw new WorkoutNotFoundException(ErrorCode.WORKOUT_NOT_FOUND);
@@ -112,33 +112,33 @@ public class WorkoutServiceImpl implements WorkoutService {
     @Transactional
     @Override
     public void updateWorkoutImage(long workoutId, MultipartFile image) {
-        WorkoutEntity workout = workoutRepository.findById(workoutId)
+        OldWorkoutEntity workout = workoutRepository.findById(workoutId)
                 .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.INVALID_WORKOUT_ID));
 
         if (image.isEmpty()) {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
-        String newImageUrl = s3ImageService.uploadImage(image, "workouts/images/");
+        String newImageUrl = s3Service.uploadFileToS3(image, "workouts/images/");
         workout.updateImageUrl(newImageUrl);
     }
 
     @Transactional
     @Override
     public void updateWorkoutGif(long workoutId, MultipartFile gif) {
-        WorkoutEntity workout = workoutRepository.findById(workoutId)
+        OldWorkoutEntity workout = workoutRepository.findById(workoutId)
                 .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.INVALID_WORKOUT_ID));
 
         if (gif.isEmpty()) {
             throw new EmptyFileException(ErrorCode.EMPTY_FILE);
         }
 
-        String newGifUrl = s3ImageService.uploadImage(gif, "workouts/gifs/");
+        String newGifUrl = s3Service.uploadFileToS3(gif, "workouts/gifs/");
         workout.updateGifUrl(newGifUrl);
     }
 
 
-    private Map<WorkoutCategory, Integer> allocateWorkoutCounts(List<WorkoutCategoryEntity> sortedCategories) {
+    private Map<WorkoutCategory, Integer> allocateWorkoutCounts(List<OldWorkoutCategoryEntity> sortedCategories) {
         Map<WorkoutCategory, Integer> workoutCountMap = new HashMap<>();
         WorkoutCategory workoutCategory;
 

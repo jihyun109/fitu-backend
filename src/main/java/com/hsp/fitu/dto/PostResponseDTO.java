@@ -5,9 +5,11 @@ import com.hsp.fitu.entity.enums.PostCategory;
 import java.time.LocalDateTime;
 
 public record PostResponseDTO(
-      Long id,
-      PostCategory category,
+      long id,
+      PostCategory postCategory,
       String title,
+      String writerName,
+      String writerProfileImgUrl,
       String contents,
-       LocalDateTime createdAt
+      LocalDateTime createdAt
 ) {}

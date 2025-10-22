@@ -6,10 +6,10 @@ import com.hsp.fitu.dto.PhysicalInfoWeightHeightResponseDTO;
 import com.hsp.fitu.dto.PhysicalInfosRequestDTO;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
+import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,11 +18,13 @@ import java.util.List;
 public class PhysicalInfoServiceImpl implements PhysicalInfoService {
 
     private final PhysicalInfoRepository physicalInfoRepository;
+    private final UserRepository userRepository;
 
     @Override
     public PhysicalInfoResponseDTO getPhysicalInfo(long userId) {
         PhysicalInfoEntity physicalInfoEntity = physicalInfoRepository.findFirstByUserIdOrderByRecordedAtDesc(userId);
-        return PhysicalInfoResponseDTO.from(physicalInfoEntity);
+        String userName = userRepository.findNameById(userId);
+        return PhysicalInfoResponseDTO.from(physicalInfoEntity, userName);
     }
 
     @Override
