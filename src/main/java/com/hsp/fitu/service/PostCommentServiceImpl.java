@@ -1,7 +1,6 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.PostCommentCreateRequestDTO;
-import com.hsp.fitu.dto.PostCommentFlatDTO;
 import com.hsp.fitu.dto.PostCommentResponseDTO;
 import com.hsp.fitu.dto.PostCommentUpdateRequestDTO;
 import com.hsp.fitu.entity.PostCommentsEntity;
@@ -14,11 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -63,38 +58,48 @@ public class PostCommentServiceImpl implements PostCommentService{
     @Override
     @Transactional
     public List<PostCommentResponseDTO> getComments(Long postId, Long currentUserId, Long postWriterId) {
-        List<PostCommentFlatDTO> rawComments = postCommentRepository.findCommentsByPostId(postId);
+        List<PostCommentResponseDTO> rawComments = postCommentRepository.findCommentsByPostId(postId);
 
-        Map<Long, PostCommentResponseDTO> commentMap = rawComments.stream()
-                .collect(Collectors.toMap(
-                        PostCommentFlatDTO::id,
-                        c -> new PostCommentResponseDTO(
-                                c.id(),
-                                c.writerName(),
-                                c.writerProfileImgUrl(),
-                                c.rootId(),
-                                c.contents(),
-                                c.createdAt(),
-                                c.isMine(),
-                                c.isSecret(),
-                                new ArrayList<>()
-                        )
-                ));
+        Map<Long, PostCommentResponseDTO> commentMap = new HashMap<>();
 
-        for (PostCommentFlatDTO c : rawComments) {
-            if (!Objects.equals(c.id(), c.rootId())) { // 대댓글이면
-                PostCommentResponseDTO parent = commentMap.get(c.rootId());
-                if (parent != null) {
-                    parent.replies().add(commentMap.get(c.id()));
+        List<PostCommentResponseDTO> processed = rawComments.stream()
+                .map(c -> {
+                    boolean canView = !c.isSecret() ||
+                            Objects.equals(getUserNameById(currentUserId), c.writerName()) ||
+                            Objects.equals(currentUserId, postWriterId) ||
+                            isAdmin(currentUserId) ||
+                            isParentWriter(c, currentUserId);
+
+                    PostCommentResponseDTO dto = new PostCommentResponseDTO(
+                            c.id(),
+                            c.writerName(),
+                            c.writerProfileImgUrl(),
+                            c.rootId(),
+                            canView ? c.contents() : null,
+                            c.createdAt(),
+                            Objects.equals(c.writerName(), getUserNameById(postWriterId)),
+                            c.isSecret(),
+                            new ArrayList<>()
+                    );
+                    commentMap.put(dto.id(), dto);
+                    return dto;
+                }).toList();
+
+        List<PostCommentResponseDTO> rootComments = new ArrayList<>();
+
+        for (PostCommentResponseDTO dto : processed) {
+            if (Objects.equals(dto.id(), dto.rootId())) {
+                rootComments.add(dto);
+            } else {
+                PostCommentResponseDTO parent = commentMap.get(dto.rootId());
+                if (parent != null && parent.replies() != null) {
+                    parent.replies().add(dto);
                 }
             }
         }
 
-        return commentMap.values().stream()
-                .filter(c -> Objects.equals(c.id(), c.rootId()))
-                .toList();
+        return rootComments;
     }
-
     private boolean isAdmin(Long userId) {
         return userRepository.findById(userId)
                 .map(u -> u.getRole().equals(Role.ADMIN))
