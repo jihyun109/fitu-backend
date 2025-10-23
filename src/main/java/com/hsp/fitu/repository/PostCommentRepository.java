@@ -1,6 +1,5 @@
 package com.hsp.fitu.repository;
 
-import com.hsp.fitu.dto.PostCommentFlatDTO;
 import com.hsp.fitu.dto.PostCommentResponseDTO;
 import com.hsp.fitu.entity.PostCommentsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +10,7 @@ import java.util.List;
 
 public interface PostCommentRepository extends JpaRepository<PostCommentsEntity, Long> {
     @Query("""
-    SELECT new com.hsp.fitu.dto.PostCommentFlatDTO(
+    SELECT new com.hsp.fitu.dto.PostCommentResponseDTO(
         c.id,
         u.name,
         m.url,
@@ -19,7 +18,8 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
         c.contents,
         c.createdAt,
         true,
-        c.isSecret
+        c.isSecret,
+        null
     )
     FROM PostCommentsEntity c
     JOIN UserEntity u ON c.writerId = u.id
@@ -29,7 +29,7 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
     PostCommentResponseDTO findCommentDTOById(@Param("commentId") Long commentId);
 
     @Query("""
-    SELECT new com.hsp.fitu.dto.PostCommentFlatDTO(
+    SELECT new com.hsp.fitu.dto.PostCommentResponseDTO(
         c.id,
         u.name,
         m.url,
@@ -37,7 +37,8 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
         c.contents,
         c.createdAt,
         false,
-        c.isSecret
+        c.isSecret,
+        null
     )
     FROM PostCommentsEntity c
     JOIN UserEntity u ON c.writerId = u.id
@@ -45,7 +46,7 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
     WHERE c.postId = :postId
     ORDER BY c.createdAt ASC
     """)
-    List<PostCommentFlatDTO> findCommentsByPostId(@Param("postId") long postId);
+    List<PostCommentResponseDTO> findCommentsByPostId(@Param("postId") long postId);
 
     void deleteByPostId(long postId);
 }
