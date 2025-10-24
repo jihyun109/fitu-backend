@@ -1,5 +1,6 @@
 package com.hsp.fitu.mapper;
 
+import com.hsp.fitu.dto.PostCommentResponseDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.entity.PostEntity;
 import org.mapstruct.Mapper;
@@ -11,5 +12,5 @@ public interface PostMapper {
 
     PostResponseDTO postToDTO(PostEntity postEntity);
 
-    List<PostResponseDTO> postToDTOList(List<PostEntity> postEntities);
+    PostResponseDTO postToDTO(PostEntity postEntity, List<PostCommentResponseDTO> commentDTOs);
 }
