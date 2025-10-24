@@ -2,7 +2,7 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.ReportRequestDTO;
 import com.hsp.fitu.dto.ReportResponseDTO;
-import com.hsp.fitu.entity.ReportEntity;
+import com.hsp.fitu.entity.ReportsEntity;
 import com.hsp.fitu.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,21 +14,20 @@ public class ReportServiceImpl implements ReportService{
     private final ReportRepository reportRepository;
 
     @Override
-    public ReportResponseDTO report(ReportRequestDTO reportRequestDTO) {
-        ReportEntity reportEntity = ReportEntity.builder()
-                .reporterId(reportRequestDTO.getReporterId())
-                .targetId(reportRequestDTO.getTargetId())
-                .targetType(reportRequestDTO.getTargetType())
+    public ReportResponseDTO report(Long reporterId, ReportRequestDTO reportRequestDTO) {
+        ReportsEntity reportsEntity = ReportsEntity.builder()
+                .reporterId(reporterId)
+                .targetId(reportRequestDTO.targetId())
+                .targetType(reportRequestDTO.targetType())
                 .build();
 
-        ReportEntity saved = reportRepository.save(reportEntity);
+        ReportsEntity saved = reportRepository.save(reportsEntity);
 
-        return ReportResponseDTO.builder()
-                .id(saved.getId())
-                .reporterId(saved.getReporterId())
-                .targetId(saved.getTargetId())
-                .targetType(saved.getTargetType())
-                .build();
+        return new ReportResponseDTO(
+                saved.getId(),
+                saved.getReporterId(),
+                saved.getTargetId(),
+                saved.getTargetType()
+        );
     }
-
 }
