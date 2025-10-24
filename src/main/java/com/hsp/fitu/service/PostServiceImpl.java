@@ -3,7 +3,7 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
-import com.hsp.fitu.mapper.PostMapper;
+import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.PostRepository;
 import com.hsp.fitu.repository.UniversityRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +13,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
-    private final PostMapper postMapper;
     private final UniversityRepository universityRepository;
+    private final PostCommentService postCommentService;
+    private final PostCommentRepository postCommentRepository;
 
     @Override
     @Transactional
@@ -33,7 +36,8 @@ public class PostServiceImpl implements PostService {
                 .build();
 
         PostEntity saved = postRepository.save(postEntity);
-        return postMapper.postToDTO(saved);
+        return postRepository.findPostWithWriter(saved.getId())
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
     }
 
     @Override
@@ -50,9 +54,17 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostResponseDTO getPost(long postId) {
-        return postRepository.findPostWithWriter(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+    public PostDetailResponseDTO getPost(long postId, Long currentUserId) {
+        PostResponseDTO postResponseDTO = postRepository.findPostWithWriter(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없다."));
+
+        Long postWriterId = postRepository.findById(postId)
+                .map(PostEntity::getWriterId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글 작성자를 찾을 수 없다."));
+
+        List<PostCommentResponseDTO> comments = postCommentService.getComments(postId, currentUserId, postWriterId);
+
+        return new PostDetailResponseDTO(postResponseDTO, comments);
     }
 
     @Override
@@ -82,6 +94,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void deletePost(long postId) {
+        postCommentRepository.deleteByPostId(postId);
         postRepository.deleteById(postId);
     }
 
