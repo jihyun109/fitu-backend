@@ -23,13 +23,11 @@ public class AuthController {
 
         TokenResponseDTO tokenResponseDTO = TokenResponseDTO.builder().token(loginDTO.getToken()).build();
 
-//        if (loginDTO.isNewUser()) {
-//            return ResponseEntity.status(201).body(tokenResponseDTO);
-//        } else {
-//            return ResponseEntity.ok(tokenResponseDTO);
-//        }
-
-        return ResponseEntity.status(201).body(tokenResponseDTO);
+        if (loginDTO.isNewUser()) {
+            return ResponseEntity.status(201).body(tokenResponseDTO);
+        } else {
+            return ResponseEntity.ok(tokenResponseDTO);
+        }
     }
 
     @GetMapping("/reissue")
