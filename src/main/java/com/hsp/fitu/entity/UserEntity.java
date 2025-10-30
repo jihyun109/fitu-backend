@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -37,7 +38,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    private Date suspendEndAt;  // 계정 정지 종료 날짜
+    private LocalDateTime suspendEndAt;  // 계정 정지 종료 날짜
 
     private Long universityId;
 
@@ -62,4 +63,13 @@ public class UserEntity {
         this.friendCode = friendCode;
         this.universityId = universityId;
     }
+
+    public void suspend(LocalDateTime suspendEndAt) {
+        this.suspendEndAt = suspendEndAt;
+    }
+
+    public void unsuspend() {
+        this.suspendEndAt = null;
+    }
+
 }

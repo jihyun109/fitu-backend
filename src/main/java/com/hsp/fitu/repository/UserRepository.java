@@ -1,5 +1,6 @@
 package com.hsp.fitu.repository;
 
+import com.hsp.fitu.dto.AdminUserResponseDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.AccountStatus;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
@@ -43,4 +45,16 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             "WHERE u.id = :userId")
     void updateAccountStatusById(Long userId, AccountStatus status);
 
+    //관리자 사용자 이름 검색으로 이름, 학교명 조회
+    @Query("""
+        SELECT new com.hsp.fitu.dto.AdminUserResponseDTO(
+            u.id,
+            u.name,
+            uni.name
+        )
+        FROM UserEntity u
+        JOIN UniversityEntity uni ON u.universityId = uni.id
+        WHERE u.name LIKE %:name%
+        """)
+    List<AdminUserResponseDTO> findByNameContaining(@Param("name") String name);
 }
