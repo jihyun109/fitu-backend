@@ -27,7 +27,7 @@ public class PostCommentServiceImpl implements PostCommentService{
     public PostCommentResponseDTO createComment(Long postId, PostCommentCreateRequestDTO req, Long writerId) {
         PostCommentsEntity saved;
 
-        if (req.rootId() == null) {
+        if (req.rootId() == 0) {
             PostCommentsEntity root = postCommentRepository.save(
                     PostCommentsEntity.builder()
                             .postId(postId)
