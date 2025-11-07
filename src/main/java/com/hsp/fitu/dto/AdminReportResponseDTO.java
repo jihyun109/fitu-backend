@@ -3,8 +3,9 @@ package com.hsp.fitu.dto;
 import java.time.LocalDateTime;
 
 public record AdminReportResponseDTO(
-        long reportId,
+        String reportName,
         LocalDateTime reportedAt,
         String universityName,
+        long targetId,
         String postTitle
 ) {}

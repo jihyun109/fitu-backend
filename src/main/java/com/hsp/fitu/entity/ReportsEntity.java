@@ -4,6 +4,8 @@ import com.hsp.fitu.entity.enums.TargetType;
 import jakarta.persistence.*;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @Table(name = "reports")
@@ -20,4 +22,6 @@ public class ReportsEntity {
     @Column(name = "target_type")
     @Enumerated(EnumType.STRING)
     private TargetType targetType;
+
+    private LocalDateTime recordedAt;
 }
