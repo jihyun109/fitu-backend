@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @Builder
@@ -27,4 +29,6 @@ public class ReportsEntity {
     @Column(name = "target_type")
     @Enumerated(EnumType.STRING)
     private TargetType targetType;
+
+    private LocalDateTime recordedAt;
 }
