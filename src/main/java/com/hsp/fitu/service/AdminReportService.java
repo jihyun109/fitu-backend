@@ -1,10 +1,8 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.AdminReportResponseDTO;
-
-import java.util.List;
+import com.hsp.fitu.dto.SliceResponseDTO;
 
 public interface AdminReportService {
-    List<AdminReportResponseDTO> getReportedPosts();
-    void deletePost(long postId);
+    SliceResponseDTO<AdminReportResponseDTO> getReportedPosts(int page, int size);
 }

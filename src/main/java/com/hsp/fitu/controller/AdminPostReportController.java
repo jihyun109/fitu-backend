@@ -1,27 +1,29 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.AdminReportResponseDTO;
+import com.hsp.fitu.dto.SliceResponseDTO;
 import com.hsp.fitu.service.AdminReportService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v2/admin/reports")
+@RequestMapping("/api/v2/admin")
 public class AdminPostReportController {
     private final AdminReportService adminReportService;
-    @GetMapping
-    public ResponseEntity<List<AdminReportResponseDTO>> getReportPosts() {
-        return ResponseEntity.ok(adminReportService.getReportedPosts());
-    }
 
-    @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> deleteReportedPost(
-            @PathVariable long postId) {
-        adminReportService.deletePost(postId);
-        return ResponseEntity.noContent().build();
+    @Operation(summary = "요청문의/게시글 신고 by 조민기")
+    @GetMapping("/reports")
+    public ResponseEntity<SliceResponseDTO<AdminReportResponseDTO>> getReportPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+
+        SliceResponseDTO<AdminReportResponseDTO> reportedPosts =
+                adminReportService.getReportedPosts(page, size);
+
+        return ResponseEntity.ok(reportedPosts);
     }
 }
