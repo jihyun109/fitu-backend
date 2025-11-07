@@ -23,7 +23,7 @@ public class InquiriesEntity {
     private long writerId;
 
     @Column(name = "contents")
-    private long contents;
+    private String contents;
 
     @CreationTimestamp
     @Column(name = "created_at")
