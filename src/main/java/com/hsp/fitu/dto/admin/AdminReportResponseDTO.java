@@ -1,4 +1,4 @@
-package com.hsp.fitu.dto;
+package com.hsp.fitu.dto.admin;
 
 import java.time.LocalDateTime;
 

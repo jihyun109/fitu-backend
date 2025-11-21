@@ -1,6 +1,6 @@
 package com.hsp.fitu.repository;
 
-import com.hsp.fitu.dto.AdminUserResponseDTO;
+import com.hsp.fitu.dto.admin.AdminUserResponseDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.AccountStatus;

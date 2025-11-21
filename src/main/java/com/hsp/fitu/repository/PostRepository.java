@@ -1,6 +1,6 @@
 package com.hsp.fitu.repository;
 
-import com.hsp.fitu.dto.AdminPostManagementResponseDTO;
+import com.hsp.fitu.dto.admin.AdminPostManagementResponseDTO;
 import com.hsp.fitu.dto.PostListResponseDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.entity.PostEntity;

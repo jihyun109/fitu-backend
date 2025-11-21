@@ -1,6 +1,6 @@
 package com.hsp.fitu.service;
 
-import com.hsp.fitu.dto.AdminUserReportResponseDTO;
+import com.hsp.fitu.dto.admin.AdminUserReportResponseDTO;
 import com.hsp.fitu.dto.SliceResponseDTO;
 
 public interface AdminUserReportService {
