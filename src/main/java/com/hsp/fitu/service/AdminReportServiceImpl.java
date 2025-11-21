@@ -1,6 +1,6 @@
 package com.hsp.fitu.service;
 
-import com.hsp.fitu.dto.AdminReportResponseDTO;
+import com.hsp.fitu.dto.admin.AdminReportResponseDTO;
 import com.hsp.fitu.dto.SliceResponseDTO;
 import com.hsp.fitu.repository.AdminPostReportRepository;
 import lombok.RequiredArgsConstructor;

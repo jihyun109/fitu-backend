@@ -1,7 +1,7 @@
 package com.hsp.fitu.controller;
 
-import com.hsp.fitu.dto.AdminSuspendRequestDTO;
-import com.hsp.fitu.dto.AdminUserResponseDTO;
+import com.hsp.fitu.dto.admin.AdminSuspendRequestDTO;
+import com.hsp.fitu.dto.admin.AdminUserResponseDTO;
 import com.hsp.fitu.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

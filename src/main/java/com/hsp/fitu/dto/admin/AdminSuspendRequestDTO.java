@@ -1,4 +1,4 @@
-package com.hsp.fitu.dto;
+package com.hsp.fitu.dto.admin;
 
 public record AdminSuspendRequestDTO(
         int suspendDays

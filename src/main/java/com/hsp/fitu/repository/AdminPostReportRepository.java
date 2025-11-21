@@ -1,6 +1,6 @@
 package com.hsp.fitu.repository;
 
-import com.hsp.fitu.dto.AdminReportResponseDTO;
+import com.hsp.fitu.dto.admin.AdminReportResponseDTO;
 import com.hsp.fitu.entity.ReportsEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
