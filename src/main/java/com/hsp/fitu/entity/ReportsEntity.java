@@ -4,13 +4,15 @@ import com.hsp.fitu.entity.enums.TargetType;
 import jakarta.persistence.*;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.util.Date;
+
 
 @Getter
 @Entity
 @Table(name = "reports")
 public class ReportsEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "reporter_id")
@@ -23,5 +25,6 @@ public class ReportsEntity {
     @Enumerated(EnumType.STRING)
     private TargetType targetType;
 
-    private LocalDateTime recordedAt;
+    @Column(name = "created_at")
+    private Date recordedAt;
 }
