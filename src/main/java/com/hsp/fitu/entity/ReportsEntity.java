@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.util.Date;
 
 @Getter
 @Entity
@@ -27,4 +30,7 @@ public class ReportsEntity {
     @Column(name = "target_type")
     @Enumerated(EnumType.STRING)
     private TargetType targetType;
+
+    @CreationTimestamp
+    private Date createdAt;
 }
