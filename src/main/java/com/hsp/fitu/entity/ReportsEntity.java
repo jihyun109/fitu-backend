@@ -2,17 +2,22 @@ package com.hsp.fitu.entity;
 
 import com.hsp.fitu.entity.enums.TargetType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
-
 @Getter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "reports")
 public class ReportsEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "reporter_id")
@@ -24,7 +29,8 @@ public class ReportsEntity {
     @Column(name = "target_type")
     @Enumerated(EnumType.STRING)
     private TargetType targetType;
+}
 
-    @Column(name = "created_at")
-    private Date recordedAt;
+    @CreationTimestamp
+    private Date createdAt;
 }
