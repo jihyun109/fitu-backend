@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface AdminUserReportRepository extends JpaRepository<ReportsEntity, Long> {
     @Query("""
-    SELECT new com.hsp.fitu.dto.AdminUserReportResponseDTO(
+    SELECT new com.hsp.fitu.dto.admin.AdminUserReportResponseDTO(
         u.name,
         r.recordedAt,
         uni.name

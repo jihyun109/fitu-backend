@@ -34,4 +34,9 @@ public class WorkoutVerificationEntity {
     private WorkoutVerificationRequestStatus status;
 
     private int weight; // 운동 무게
+
+    public void accepted(int weight) {
+        this.status= WorkoutVerificationRequestStatus.ACCEPTED;
+        this.weight = weight;
+    }
 }

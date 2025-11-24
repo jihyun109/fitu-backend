@@ -80,7 +80,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     );
 
     @Query("""
-    SELECT new com.hsp.fitu.dto.AdminPostManagementResponseDTO(
+    SELECT new com.hsp.fitu.dto.admin.AdminPostManagementResponseDTO(
         p.id,
         u.name,
         p.createdAt,
@@ -88,10 +88,11 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     )
     FROM PostEntity p
     JOIN UserEntity u ON p.writerId = u.id
-    JOIN UniversityEntity uni ON p.universityId = uni.id
-    WHERE uni.name = :universityName
+    JOIN UniversityEntity uni
+    WHERE p.universityId = uni.id
+      AND uni.name = :universityName
     ORDER BY p.createdAt DESC
-""")
+    """)
     Page<AdminPostManagementResponseDTO> findPostsByUniversityName(
             @Param("universityName") String universityName,
             Pageable pageable
