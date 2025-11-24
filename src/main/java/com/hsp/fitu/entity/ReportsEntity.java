@@ -29,7 +29,6 @@ public class ReportsEntity {
     @Column(name = "target_type")
     @Enumerated(EnumType.STRING)
     private TargetType targetType;
-}
 
     @CreationTimestamp
     private Date createdAt;
