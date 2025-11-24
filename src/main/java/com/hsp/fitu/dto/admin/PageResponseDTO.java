@@ -4,5 +4,9 @@ import java.util.List;
 
 public record PageResponseDTO<T>(
         List<T> contents,
-        String totalPage
+        int page,
+        int size,
+        long totalElements,
+        int totalPage,
+        boolean last
 ) {}
