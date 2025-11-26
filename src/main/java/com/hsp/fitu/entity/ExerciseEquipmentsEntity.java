@@ -13,6 +13,6 @@ public class ExerciseEquipmentsEntity {
     @Id
     private long id;
 
-    @Column(name = "equipment_name")
+    @Column(name = "name")
     private String equipmentName;
 }
