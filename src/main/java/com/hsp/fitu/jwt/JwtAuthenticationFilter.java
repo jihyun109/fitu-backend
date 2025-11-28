@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,9 +26,11 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private final RedisTemplate<String, String> redisTemplate;
     private SecretKey secretKey;
 
-    public JwtAuthenticationFilter(@Value("${jwt.secret}") String signingKey) {
+    public JwtAuthenticationFilter(RedisTemplate<String, String> redisTemplate, @Value("${jwt.secret}") String signingKey) {
+        this.redisTemplate = redisTemplate;
         this.secretKey = new SecretKeySpec(signingKey.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS256.getJcaName());
     }
 
@@ -44,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jwt = request.getHeader("Authorization");
 
-        if (jwt == null || !jwt.startsWith("Bearer ")) {
+        if (jwt == null || !jwt.startsWith("Bearer ") || isTokenBlacklisted(jwt)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("JWT token missing or invalid");
             return;
@@ -64,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Long userId = userIdNumber.longValue();
         String role = (String) claims.get("role");
         Number universityIdNumber = (Number) claims.get("universityId");
-        Long universityId = (Long) universityIdNumber;
+        Long universityId = universityIdNumber != null ? universityIdNumber.longValue() : null;
 
         // SecurityContext 에 추가할 Authentication 인스턴스 생성
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -81,5 +84,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext()
                 .setAuthentication(authentication);
         filterChain.doFilter(request, response);    // 필터 체인의 다음 필터 호룿
+    }
+
+    private boolean isTokenBlacklisted(String token) {
+        return redisTemplate.hasKey("blacklist: " + token);
     }
 }
