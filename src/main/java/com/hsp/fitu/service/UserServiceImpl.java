@@ -3,6 +3,7 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.UserFriendCodeResponseDto;
 import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
+import com.hsp.fitu.dto.UserSaveInfoResponseDTO;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.AccountStatus;
@@ -26,7 +27,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String saveInfo(Long userId, UserInfoRequestDTO userInfoRequestDTO, String authHeader) {
+    public UserSaveInfoResponseDTO saveInfo(Long userId, UserInfoRequestDTO userInfoRequestDTO, String authHeader) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
@@ -51,8 +52,9 @@ public class UserServiceImpl implements UserService {
         physicalInfoRepository.save(physicalInfoEntity);
 
         // 기존 토큰 무효화 & 새 토큰 발급
-        String token = authHeader.replace("Bearer ", "");
-        return generateNewToken(token, userEntity);
+        return  UserSaveInfoResponseDTO.builder()
+                .newToken(generateNewToken(authHeader, userEntity))
+                .build();
     }
 
     @Override
