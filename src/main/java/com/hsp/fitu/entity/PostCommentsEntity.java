@@ -39,10 +39,6 @@ public class PostCommentsEntity {
     @Column(name = "is_secret")
     private Boolean isSecret;
 
-    public void update(String contents) {
-        this.contents = contents;
-    }
-
     public void setRootId(Long rootId) {
         this.rootId = rootId;
     }

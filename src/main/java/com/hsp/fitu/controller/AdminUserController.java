@@ -3,6 +3,7 @@ package com.hsp.fitu.controller;
 import com.hsp.fitu.dto.AdminSuspendRequestDTO;
 import com.hsp.fitu.dto.AdminUserResponseDTO;
 import com.hsp.fitu.service.AdminUserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +16,14 @@ import java.util.List;
 public class AdminUserController {
     private final AdminUserService adminUserService;
 
-    //전체 회원 조회
-    @GetMapping
+    @Operation(summary = "회원 관리 by 조민기")
+    @GetMapping("/members")
     public List<AdminUserResponseDTO> searchUsersByName(
             @RequestParam String name) {
         return adminUserService.searchUsersByName(name);
     }
 
-    //계정 정지
+    @Operation(summary = "계정 정지 by 조민기")
     @PostMapping("/{userId}/suspend")
     public ResponseEntity<Void> suspendUser(
             @PathVariable Long userId,
@@ -31,7 +32,7 @@ public class AdminUserController {
         return ResponseEntity.ok().build();
     }
 
-    //정지 해제
+    @Operation(summary = "정지 해제 by 조민기")
     @PostMapping("/{userId}/unsuspend")
     public ResponseEntity<Void> unsuspendUser(
             @PathVariable Long userId) {
