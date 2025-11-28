@@ -17,7 +17,7 @@ public class AdminUserController {
     private final AdminUserService adminUserService;
 
     @Operation(summary = "회원 관리 by 조민기")
-    @GetMapping
+    @GetMapping("/members")
     public List<AdminUserResponseDTO> searchUsersByName(
             @RequestParam String name) {
         return adminUserService.searchUsersByName(name);
