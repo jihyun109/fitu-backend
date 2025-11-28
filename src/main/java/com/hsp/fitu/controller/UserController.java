@@ -3,6 +3,7 @@ package com.hsp.fitu.controller;
 import com.hsp.fitu.dto.UserFriendCodeResponseDto;
 import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
+import com.hsp.fitu.dto.UserSaveInfoResponseDTO;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,10 +20,10 @@ public class UserController {
 
     @PostMapping("/info")
     @Operation(summary = "사용자 추가정보 저장 by 장지현")
-    public ResponseEntity<String> saveUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody UserInfoRequestDTO userInfoRequestDTO, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<UserSaveInfoResponseDTO> saveUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody UserInfoRequestDTO userInfoRequestDTO, @RequestHeader("Authorization") String authHeader) {
         Long userId = userDetails.getId();
-        String newToken = userService.saveInfo(userId, userInfoRequestDTO, authHeader);
-        return ResponseEntity.ok().body("newToken: " + newToken);
+        UserSaveInfoResponseDTO userSaveInfoResponseDTO = userService.saveInfo(userId, userInfoRequestDTO, authHeader);
+        return ResponseEntity.ok().body(userSaveInfoResponseDTO);
     }
 
     @GetMapping("/profile-img")
