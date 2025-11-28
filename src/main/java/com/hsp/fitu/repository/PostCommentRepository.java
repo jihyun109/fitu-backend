@@ -6,12 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PostCommentRepository extends JpaRepository<PostCommentsEntity, Long> {
     @Query("""
     SELECT new com.hsp.fitu.dto.PostCommentResponseDTO(
         c.id,
+        c.writerId,
         u.name,
         m.url,
         c.rootId,
@@ -31,12 +33,13 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
     @Query("""
     SELECT new com.hsp.fitu.dto.PostCommentResponseDTO(
         c.id,
+        c.writerId,
         u.name,
         m.url,
         c.rootId,
         c.contents,
         c.createdAt,
-        false,
+        true,
         c.isSecret,
         null
     )

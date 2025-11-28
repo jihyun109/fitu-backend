@@ -2,11 +2,9 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.PostCommentCreateRequestDTO;
 import com.hsp.fitu.dto.PostCommentResponseDTO;
-import com.hsp.fitu.dto.PostCommentUpdateRequestDTO;
 import com.hsp.fitu.entity.PostCommentsEntity;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.Role;
-import com.hsp.fitu.mapper.PostCommentMapper;
 import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class PostCommentServiceImpl implements PostCommentService{
     private final PostCommentRepository postCommentRepository;
-    private final PostCommentMapper postCommentMapper;
     private final UserRepository userRepository;
 
     @Override
@@ -72,6 +69,7 @@ public class PostCommentServiceImpl implements PostCommentService{
 
                     PostCommentResponseDTO dto = new PostCommentResponseDTO(
                             c.id(),
+                            c.writerId(),
                             c.writerName(),
                             c.writerProfileImgUrl(),
                             c.rootId(),
@@ -122,19 +120,15 @@ public class PostCommentServiceImpl implements PostCommentService{
 
     @Override
     @Transactional
-    public PostCommentResponseDTO updateComment(Long postId, Long commentId, PostCommentUpdateRequestDTO commentUpdateRequestDTO) {
-        PostCommentsEntity postCommentsEntity = postCommentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
-        postCommentsEntity.update(commentUpdateRequestDTO.contents());
-        return postCommentMapper.commentToDTO(postCommentsEntity);
-    }
+    public void deleteComment(Long postId, Long commentId, Long writerId) {
 
-    @Override
-    @Transactional
-    public void deleteComment(Long postId, Long commentId) {
-        if(!postCommentRepository.existsById(commentId)) {
-            throw new IllegalArgumentException("댓글을 찾을 수 없습니다.");
+        PostCommentsEntity postComments = postCommentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+
+        if (postComments.getWriterId() != writerId) {
+            throw new IllegalArgumentException("삭제 권한이 없습니다.");
         }
+
         postCommentRepository.deleteById(commentId);
     }
 }
