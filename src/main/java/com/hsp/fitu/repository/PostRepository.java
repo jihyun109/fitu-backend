@@ -41,6 +41,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
         p.id,
         p.category,
         p.title,
+        p.writerId,
         u.name,
         m.url,
         p.contents,
