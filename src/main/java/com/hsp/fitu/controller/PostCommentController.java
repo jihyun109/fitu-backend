@@ -2,7 +2,6 @@ package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.PostCommentCreateRequestDTO;
 import com.hsp.fitu.dto.PostCommentResponseDTO;
-import com.hsp.fitu.dto.PostCommentUpdateRequestDTO;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.PostCommentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,22 +27,16 @@ public class PostCommentController {
         return ResponseEntity.ok(postCommentService.createComment(postId, postCommentCreateRequestDTO, writerId));
     }
 
-    @PatchMapping("/{postId}/comments/{commentId}")
-    @Operation(summary = "댓글 수정 by 조민기")
-    public ResponseEntity<PostCommentResponseDTO> updateComment(
-            @PathVariable Long postId,
-            @PathVariable Long commentId,
-            @RequestBody PostCommentUpdateRequestDTO commentUpdateRequestDTO) {
-        return ResponseEntity.ok(postCommentService.updateComment(postId, commentId, commentUpdateRequestDTO));
-    }
-
     @DeleteMapping("/{postId}/comments/{commentId}")
     @Operation(summary = "댓글 삭제 by 조민기")
     public ResponseEntity<Void> deleteComment(
             @PathVariable Long postId,
-            @PathVariable Long commentId) {
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        postCommentService.deleteComment(postId, commentId);
+        Long writerId = userDetails.getId();
+
+        postCommentService.deleteComment(postId, commentId, writerId);
         return ResponseEntity.noContent().build();
     }
 }
