@@ -6,6 +6,7 @@ import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.AccountStatus;
+import com.hsp.fitu.jwt.JwtUtil;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
 import com.hsp.fitu.repository.UniversityRepository;
 import com.hsp.fitu.repository.UserRepository;
@@ -21,10 +22,11 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PhysicalInfoRepository physicalInfoRepository;
     private final UniversityRepository universityRepository;
+    private final JwtUtil jwtUtil;
 
     @Override
     @Transactional
-    public void saveInfo(Long userId, UserInfoRequestDTO userInfoRequestDTO) {
+    public String saveInfo(Long userId, UserInfoRequestDTO userInfoRequestDTO, String authHeader) {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
@@ -48,6 +50,9 @@ public class UserServiceImpl implements UserService {
                 .build();
         physicalInfoRepository.save(physicalInfoEntity);
 
+        // 기존 토큰 무효화 & 새 토큰 발급
+        String token = authHeader.replace("Bearer ", "");
+        return generateNewToken(token, userEntity);
     }
 
     @Override
@@ -104,5 +109,11 @@ public class UserServiceImpl implements UserService {
         String[] emailArray = universityEmail.split("@");
 
         return universityRepository.findIdByDomainName(emailArray[1]);
+    }
+
+    // 기존 토큰 무효화 & 새 토큰 발급
+    private String generateNewToken(String token, UserEntity userEntity) {
+        jwtUtil.invalidateToken(token, "save info");
+        return jwtUtil.createAccessToken(userEntity.getId(), userEntity.getRole(), userEntity.getUniversityId());
     }
 }

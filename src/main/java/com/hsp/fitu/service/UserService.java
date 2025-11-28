@@ -5,7 +5,7 @@ import com.hsp.fitu.dto.UserInfoRequestDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
 
 public interface UserService {
-    void saveInfo(Long userId, UserInfoRequestDTO userInfoRequestDTO);
+    String saveInfo(Long userId, UserInfoRequestDTO userInfoRequestDTO, String authHeader);
 
     UserProfileImageResponseDto findUserProfileImageAndVisibility(Long userId);
 

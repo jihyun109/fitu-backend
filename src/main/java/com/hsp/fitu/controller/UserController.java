@@ -19,10 +19,10 @@ public class UserController {
 
     @PostMapping("/info")
     @Operation(summary = "사용자 추가정보 저장 by 장지현")
-    public ResponseEntity<String> saveUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody UserInfoRequestDTO userInfoRequestDTO) {
+    public ResponseEntity<String> saveUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody UserInfoRequestDTO userInfoRequestDTO, @RequestHeader("Authorization") String authHeader) {
         Long userId = userDetails.getId();
-        userService.saveInfo(userId, userInfoRequestDTO);
-        return ResponseEntity.ok().body("success save user info");
+        String newToken = userService.saveInfo(userId, userInfoRequestDTO, authHeader);
+        return ResponseEntity.ok().body("newToken: " + newToken);
     }
 
     @GetMapping("/profile-img")
