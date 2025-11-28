@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Long userId = userIdNumber.longValue();
         String role = (String) claims.get("role");
         Number universityIdNumber = (Number) claims.get("universityId");
-        Long universityId = universityIdNumber.longValue();
+        Long universityId = (Long) universityIdNumber;
 
         // SecurityContext 에 추가할 Authentication 인스턴스 생성
         List<GrantedAuthority> authorities = new ArrayList<>();
