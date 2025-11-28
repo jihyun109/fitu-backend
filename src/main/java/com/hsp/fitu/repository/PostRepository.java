@@ -1,9 +1,11 @@
 package com.hsp.fitu.repository;
 
+import com.hsp.fitu.dto.AdminPostManagementResponseDTO;
 import com.hsp.fitu.dto.PostListResponseDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -75,6 +77,24 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
             @Param("universityId") Long universityId,
             @Param("category") PostCategory category,
             @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT new com.hsp.fitu.dto.AdminPostManagementResponseDTO(
+        p.id,
+        u.name,
+        p.createdAt,
+        p.contents
+    )
+    FROM PostEntity p
+    JOIN UserEntity u ON p.writerId = u.id
+    JOIN UniversityEntity uni ON p.universityId = uni.id
+    WHERE uni.name = :universityName
+    ORDER BY p.createdAt DESC
+""")
+    Page<AdminPostManagementResponseDTO> findPostsByUniversityName(
+            @Param("universityName") String universityName,
             Pageable pageable
     );
 }
