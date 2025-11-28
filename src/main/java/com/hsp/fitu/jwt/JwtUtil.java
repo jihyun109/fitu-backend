@@ -47,7 +47,7 @@ public class JwtUtil {
             claims.put("role", role.toString());
         }
 
-        return Jwts.builder()
+        return "Bearer " + Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .addClaims(claims)
                 .setIssuedAt(Date.from(now))
@@ -89,8 +89,8 @@ public class JwtUtil {
 
     // token 무효화
     public void invalidateToken(String token, String value) {
-        long expiration = getExpiration(token).getTime();
-        redisTemplate.opsForValue().set("blacklist:" + token, value, Duration.ofMillis(expiration));
+        long expiration = getExpiration(token.substring(7)).getTime();
+        redisTemplate.opsForValue().set("blacklist: " + token, value, Duration.ofMillis(expiration));
     }
 
     // jwt의 만료시간 get
