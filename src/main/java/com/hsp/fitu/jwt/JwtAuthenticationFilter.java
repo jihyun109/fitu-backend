@@ -67,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Long userId = userIdNumber.longValue();
         String role = (String) claims.get("role");
         Number universityIdNumber = (Number) claims.get("universityId");
-        Long universityId = (Long) universityIdNumber;
+        Long universityId = universityIdNumber != null ? universityIdNumber.longValue() : null;
 
         // SecurityContext 에 추가할 Authentication 인스턴스 생성
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -87,6 +87,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isTokenBlacklisted(String token) {
-        return redisTemplate.hasKey("blacklist:" + token);
+        return redisTemplate.hasKey("blacklist: " + token);
     }
 }
