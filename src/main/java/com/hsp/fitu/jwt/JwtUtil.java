@@ -7,10 +7,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
@@ -21,14 +23,16 @@ public class JwtUtil {
     private final SecretKey secretKey;
     private final Long accessExpMs;
     private final Long refreshExpMs;
+    private final StringRedisTemplate redisTemplate;
 
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.token.access-expiration-time}") Long access,
-            @Value("${jwt.token.refresh-expiration-time}") Long refresh) {
+            @Value("${jwt.token.refresh-expiration-time}") Long refresh, StringRedisTemplate redisTemplate) {
         secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         accessExpMs = access;
         refreshExpMs = refresh;
+        this.redisTemplate = redisTemplate;
     }
 
     public String createAccessToken(long userId, Role role, Long universityId) {
@@ -81,5 +85,21 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.get("userId", Long.class);
+    }
+
+    // token 무효화
+    public void invalidateToken(String token, String value) {
+        long expiration = getExpiration(token).getTime();
+        redisTemplate.opsForValue().set("blacklist:" + token, value, Duration.ofMillis(expiration));
+    }
+
+    // jwt의 만료시간 get
+    private Date getExpiration(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getExpiration();
     }
 }
