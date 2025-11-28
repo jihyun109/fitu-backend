@@ -12,6 +12,7 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
     @Query("""
     SELECT new com.hsp.fitu.dto.PostCommentResponseDTO(
         c.id,
+        c.writerId,
         u.name,
         m.url,
         c.rootId,
@@ -31,12 +32,13 @@ public interface PostCommentRepository extends JpaRepository<PostCommentsEntity,
     @Query("""
     SELECT new com.hsp.fitu.dto.PostCommentResponseDTO(
         c.id,
+        c.writerId,
         u.name,
         m.url,
         c.rootId,
         c.contents,
         c.createdAt,
-        false,
+        true,
         c.isSecret,
         null
     )
