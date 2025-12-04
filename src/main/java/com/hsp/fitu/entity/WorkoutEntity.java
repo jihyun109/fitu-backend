@@ -20,9 +20,9 @@ public class WorkoutEntity {
     private Workout name;
 
     @Column(name = "image_id")
-    private String imageId;
+    private long imageId;
 
     @Column(name = "gif_id")
-    private String gifId;
+    private long gifId;
 
 }

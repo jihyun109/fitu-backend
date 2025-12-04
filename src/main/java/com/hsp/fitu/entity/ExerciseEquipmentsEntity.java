@@ -15,4 +15,6 @@ public class ExerciseEquipmentsEntity {
 
     @Column(name = "equipment_name")
     private String equipmentName;
+
+    private String equipmentDescription;
 }
