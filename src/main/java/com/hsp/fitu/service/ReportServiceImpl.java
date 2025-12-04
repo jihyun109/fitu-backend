@@ -27,7 +27,8 @@ public class ReportServiceImpl implements ReportService{
                 saved.getId(),
                 saved.getReporterId(),
                 saved.getTargetId(),
-                saved.getTargetType()
+                saved.getTargetType(),
+                saved.getCreatedAt()
         );
     }
 }

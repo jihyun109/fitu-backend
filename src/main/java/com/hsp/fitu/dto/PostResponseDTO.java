@@ -8,6 +8,7 @@ public record PostResponseDTO(
       long id,
       PostCategory postCategory,
       String title,
+      Long writerId,
       String writerName,
       String writerProfileImgUrl,
       String contents,
