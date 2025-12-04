@@ -1,10 +1,10 @@
 package com.hsp.fitu.dto;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 public record AdminReportResponseDTO(
         String reportName,
-        LocalDateTime reportedAt,
+        Date reportedAt,
         String universityName,
         long targetId,
         String postTitle

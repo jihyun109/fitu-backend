@@ -11,7 +11,7 @@ public interface AdminUserReportRepository extends JpaRepository<ReportsEntity, 
     @Query("""
     SELECT new com.hsp.fitu.dto.AdminUserReportResponseDTO(
         u.name,
-        r.recordedAt,
+        r.createdAt,
         uni.name
     )
     FROM ReportsEntity r
@@ -19,7 +19,7 @@ public interface AdminUserReportRepository extends JpaRepository<ReportsEntity, 
         AND r.targetType = com.hsp.fitu.entity.enums.TargetType.USER
     JOIN UserEntity u ON p.writerId = u.id
     JOIN UniversityEntity uni ON p.universityId = uni.id
-    ORDER BY r.recordedAt DESC
+    ORDER BY r.createdAt DESC
     """)
     Page<AdminUserReportResponseDTO> findReportedUser(Pageable pageable);
 }
