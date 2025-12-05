@@ -1,6 +1,6 @@
 package com.hsp.fitu.controller;
 
-import com.hsp.fitu.dto.admin.AdminReportResponseDTO;
+import com.hsp.fitu.dto.AdminReportResponseDTO;
 import com.hsp.fitu.dto.SliceResponseDTO;
 import com.hsp.fitu.service.AdminReportService;
 import io.swagger.v3.oas.annotations.Operation;

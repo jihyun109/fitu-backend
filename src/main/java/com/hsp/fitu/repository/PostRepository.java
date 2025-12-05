@@ -1,6 +1,6 @@
 package com.hsp.fitu.repository;
 
-import com.hsp.fitu.dto.admin.AdminPostManagementResponseDTO;
+import com.hsp.fitu.dto.AdminPostManagementResponseDTO;
 import com.hsp.fitu.dto.PostListResponseDTO;
 import com.hsp.fitu.dto.PostResponseDTO;
 import com.hsp.fitu.entity.PostEntity;
@@ -81,7 +81,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     );
 
     @Query("""
-    SELECT new com.hsp.fitu.dto.admin.AdminPostManagementResponseDTO(
+    SELECT new com.hsp.fitu.dto.AdminPostManagementResponseDTO(
         p.id,
         u.name,
         p.createdAt,

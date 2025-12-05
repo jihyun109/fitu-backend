@@ -1,4 +1,4 @@
-package com.hsp.fitu.dto.admin;
+package com.hsp.fitu.dto;
 
 public record AdminUserResponseDTO(
     long id,
