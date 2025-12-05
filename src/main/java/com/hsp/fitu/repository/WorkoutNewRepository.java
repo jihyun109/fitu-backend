@@ -12,15 +12,29 @@ public interface WorkoutNewRepository extends JpaRepository<WorkoutEntity, Long>
     @Query("""
         SELECT new com.hsp.fitu.dto.WorkoutCustomDetailResponseDTO(
             w.id,
-            e.equipmentName,
-            e.equipmentDescription,
+            w.name,
+            w.workoutDescription,
             img.url
         )
         FROM WorkoutEntity w
         JOIN WorkoutCategoryEntity c ON w.categoryId = c.id
-        JOIN ExerciseEquipmentsEntity e ON w.equipmentId = e.id
         LEFT JOIN MediaFilesEntity img ON w.imageId = img.id
         WHERE w.categoryId = :categoryId
     """)
-    List<WorkoutCustomDetailResponseDTO> findByCategoryId(@Param("categoryId") long categoryId);
+    List<WorkoutCustomDetailResponseDTO> findByCategoryId(long categoryId);
+
+    @Query("""
+        SELECT new com.hsp.fitu.dto.WorkoutCustomDetailResponseDTO(
+            w.id,
+            w.name,
+            w.workoutDescription,
+            img.url
+        )
+        FROM WorkoutEntity w
+        JOIN WorkoutCategoryEntity c ON w.categoryId = c.id
+        LEFT JOIN MediaFilesEntity img ON w.imageId = img.id
+        WHERE LOWER(w.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           OR LOWER(w.workoutDescription) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    """)
+    List<WorkoutCustomDetailResponseDTO> searchByKeyword(@Param("keyword") String keyword);
 }
