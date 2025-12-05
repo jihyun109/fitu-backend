@@ -19,6 +19,8 @@ public class WorkoutEntity {
     @Enumerated(EnumType.STRING)
     private Workout name;
 
+    private String workoutDescription;
+
     @Column(name = "image_id")
     private long imageId;
 
