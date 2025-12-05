@@ -10,7 +10,7 @@ import lombok.Getter;
 public class WorkoutCategoryEntity {
     @Id
     private long id;
+
     @Enumerated(EnumType.STRING)
     private WorkoutCategory name;
-    private int priority;
 }

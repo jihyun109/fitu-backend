@@ -19,16 +19,14 @@ import java.time.LocalDateTime;
 public class PostEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Enumerated(EnumType.STRING)
     private PostCategory category;
 
-    private Long universityId;
+    private long universityId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "writer_id")
-    private UserEntity writerId;
+    private long writerId;
 
     private String title;
 

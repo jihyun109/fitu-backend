@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -37,7 +38,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    private Date suspendEndAt;  // 계정 정지 종료 날짜
+    private LocalDateTime suspendEndAt;  // 계정 정지 종료 날짜
 
     private Long universityId;
 
@@ -46,8 +47,6 @@ public class UserEntity {
     private Long profileImgId;
 
     private boolean profileVisibility;
-
-    private Integer height;
 
     public void updateProfile(Gender gender) {
         this.gender = gender;
@@ -60,9 +59,17 @@ public class UserEntity {
     public void updateInfo(UserInfoRequestDTO userInfoRequestDTO, String friendCode, Long universityId) {
         this.name = userInfoRequestDTO.getName();
         this.universityEmail = userInfoRequestDTO.getUniversityEmail();
-        this.height = userInfoRequestDTO.getHeight();
         this.gender = userInfoRequestDTO.getGender();
         this.friendCode = friendCode;
         this.universityId = universityId;
     }
+
+    public void suspend(LocalDateTime suspendEndAt) {
+        this.suspendEndAt = suspendEndAt;
+    }
+
+    public void unsuspend() {
+        this.suspendEndAt = null;
+    }
+
 }

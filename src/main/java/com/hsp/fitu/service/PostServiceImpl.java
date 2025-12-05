@@ -1,15 +1,15 @@
 package com.hsp.fitu.service;
 
-
-import com.hsp.fitu.dto.PostCreateRequestDTO;
-import com.hsp.fitu.dto.PostResponseDTO;
-import com.hsp.fitu.dto.PostUpdateRequestDTO;
+import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.PostEntity;
-import com.hsp.fitu.entity.UserEntity;
-import com.hsp.fitu.mapper.PostMapper;
+import com.hsp.fitu.entity.enums.PostCategory;
+import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.PostRepository;
-import com.hsp.fitu.repository.UserRepository;
+import com.hsp.fitu.repository.UniversityRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,61 +18,83 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
-    private final UserRepository userRepository;
     private final PostRepository postRepository;
-    private final PostMapper postMapper;
+    private final UniversityRepository universityRepository;
+    private final PostCommentService postCommentService;
+    private final PostCommentRepository postCommentRepository;
 
     @Override
     @Transactional
-    public PostResponseDTO createPost(Long writerId, Long universityId, PostCreateRequestDTO requestDTO) {
-        UserEntity writer = userRepository.findById(writerId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+    public PostResponseDTO createPost(long writerId, long universityId, PostCreateRequestDTO requestDTO) {
 
         PostEntity postEntity = PostEntity.builder()
                 .category(requestDTO.category())
                 .title(requestDTO.title())
                 .contents(requestDTO.contents())
                 .universityId(universityId)
-                .writerId(writer)
+                .writerId(writerId)
                 .build();
 
         PostEntity saved = postRepository.save(postEntity);
-        return postMapper.postToDTO(saved);
+        return postRepository.findPostWithWriter(saved.getId())
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponseDTO> getAllPosts() {
-        return postRepository.findAll()
-                .stream()
-                .map(postMapper::postToDTO)
-                .toList();
+    public PostSliceResponseDTO<PostListResponseDTO> getAllPosts(PostCategory category, Long universityId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        String universityName = universityRepository.findUniversityNameById(universityId);
+
+        Slice<PostListResponseDTO> posts = postRepository.findPostsByUniversityAndCategory(universityId, category, pageRequest);
+
+        return new PostSliceResponseDTO<>(universityName, posts.getContent(), posts.hasNext());
     }
 
     @Override
     @Transactional
-    public PostResponseDTO getPost(Long postId) {
-        PostEntity postEntity = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+    public PostDetailResponseDTO getPost(long postId, Long currentUserId) {
+        PostResponseDTO postResponseDTO = postRepository.findPostWithWriter(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없다."));
 
-        PostEntity updatedPost = postRepository.save(postEntity);
-        return postMapper.postToDTO(updatedPost);
+        Long postWriterId = postRepository.findById(postId)
+                .map(PostEntity::getWriterId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글 작성자를 찾을 수 없다."));
+
+        List<PostCommentResponseDTO> comments = postCommentService.getComments(postId, currentUserId, postWriterId);
+
+        return new PostDetailResponseDTO(postResponseDTO, comments);
     }
 
     @Override
     @Transactional
-    public PostResponseDTO updatePost(Long postId, PostUpdateRequestDTO postUpdateRequestDTO) {
+    public PostSliceResponseDTO<PostListResponseDTO> searchPosts(Long universityId, PostCategory category, String keyword, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        String universityName = universityRepository.findUniversityNameById(universityId);
+
+        Slice<PostListResponseDTO> posts = postRepository.searchPostsByUniversityAndKeyword(universityId, category, keyword, pageRequest);
+
+        return new PostSliceResponseDTO<>(universityName, posts.getContent(), posts.hasNext());
+    }
+
+    @Override
+    @Transactional
+    public PostResponseDTO updatePost(long postId, PostUpdateRequestDTO postUpdateRequestDTO) {
         PostEntity postEntity = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         postEntity.update(
                 postUpdateRequestDTO.title(),
                 postUpdateRequestDTO.contents()
         );
-        return postMapper.postToDTO(postEntity);
+        return postRepository.findPostWithWriter(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
     }
 
     @Override
-    public void deletePost(Long postId) {
+    public void deletePost(long postId) {
+        postCommentRepository.deleteByPostId(postId);
         postRepository.deleteById(postId);
     }
 

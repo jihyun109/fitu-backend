@@ -3,7 +3,7 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.WorkoutDetailLogRequestDTO;
 import com.hsp.fitu.dto.WorkoutLogRequestDTO;
 import com.hsp.fitu.entity.WorkoutDetailLogEntity;
-import com.hsp.fitu.entity.WorkoutEntity;
+import com.hsp.fitu.entity.OldWorkoutEntity;
 import com.hsp.fitu.entity.WorkoutLogEntity;
 import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.repository.WorkoutDetailLogRepository;
@@ -34,7 +34,7 @@ public class WorkoutDetailLogServiceImpl implements WorkoutDetailLogService {
         for (WorkoutDetailLogRequestDTO detailDTO : requestDTO.getWorkoutList()) {
             Workout workoutEnum = Workout.valueOf(detailDTO.getWorkoutName().toUpperCase());//enum변환
 
-            WorkoutEntity workoutEntity = workoutRepository.findByName(workoutEnum); //enum이름으로 id 조회
+            OldWorkoutEntity workoutEntity = workoutRepository.findByName(workoutEnum); //enum이름으로 id 조회
 
             WorkoutDetailLogEntity detail = WorkoutDetailLogEntity.builder()
                     .workoutLogId(savedLog.getId())
