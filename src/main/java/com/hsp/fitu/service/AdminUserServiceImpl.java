@@ -1,7 +1,7 @@
 package com.hsp.fitu.service;
 
-import com.hsp.fitu.dto.admin.AdminSuspendRequestDTO;
-import com.hsp.fitu.dto.admin.AdminUserResponseDTO;
+import com.hsp.fitu.dto.AdminSuspendRequestDTO;
+import com.hsp.fitu.dto.AdminUserResponseDTO;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

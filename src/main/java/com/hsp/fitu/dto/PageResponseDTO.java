@@ -1,4 +1,4 @@
-package com.hsp.fitu.dto.admin;
+package com.hsp.fitu.dto;
 
 import java.util.List;
 

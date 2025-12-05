@@ -1,8 +1,8 @@
 package com.hsp.fitu.controller;
 
-import com.hsp.fitu.dto.admin.AdminWorkoutVerifyDetailResponseDTO;
-import com.hsp.fitu.dto.admin.AdminWorkoutVerifyResponseDTO;
-import com.hsp.fitu.dto.admin.PageResponseDTO;
+import com.hsp.fitu.dto.AdminWorkoutVerifyDetailResponseDTO;
+import com.hsp.fitu.dto.AdminWorkoutVerifyResponseDTO;
+import com.hsp.fitu.dto.PageResponseDTO;
 import com.hsp.fitu.service.AdminWorkoutVerifyService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

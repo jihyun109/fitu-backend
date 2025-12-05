@@ -1,8 +1,8 @@
 package com.hsp.fitu.service;
 
-import com.hsp.fitu.dto.admin.AdminWorkoutVerifyDetailResponseDTO;
-import com.hsp.fitu.dto.admin.AdminWorkoutVerifyResponseDTO;
-import com.hsp.fitu.dto.admin.PageResponseDTO;
+import com.hsp.fitu.dto.AdminWorkoutVerifyDetailResponseDTO;
+import com.hsp.fitu.dto.AdminWorkoutVerifyResponseDTO;
+import com.hsp.fitu.dto.PageResponseDTO;
 
 public interface AdminWorkoutVerifyService {
 
