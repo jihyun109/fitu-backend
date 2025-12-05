@@ -10,18 +10,19 @@ import lombok.Getter;
 public class WorkoutEntity {
     @Id
     private long id;
+
     private long categoryId;
+
+    @Column(name = "equipment_id")
+    private long equipmentId;
 
     @Enumerated(EnumType.STRING)
     private Workout name;
-    private String imageUrl;
-    private String gifUrl;
 
-    public void updateImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
+    @Column(name = "image_id")
+    private String imageId;
 
-    public void updateGifUrl(String gifUrl) {
-        this.gifUrl = gifUrl;
-    }
+    @Column(name = "gif_id")
+    private String gifId;
+
 }
