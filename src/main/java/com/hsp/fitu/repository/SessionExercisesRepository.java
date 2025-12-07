@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface SessionExercisesRepository extends JpaRepository<SessionExercisesEntity, Long> {
     List<SessionExercisesEntity> findBySessionId(long sessionId);
+    List<SessionExercisesEntity> findBySessionIdOrderByOrderIndex(long sessionId);
 }
