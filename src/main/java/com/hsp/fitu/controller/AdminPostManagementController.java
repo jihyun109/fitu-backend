@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminPostManagementController {
     private final AdminPostManagementService adminPostManagementService;
 
-    @Operation(summary = "회원 관리 by 조민기")
+    @Operation(summary = "게시물 관리 by 조민기")
     @PostMapping("/by-university")
     public ResponseEntity<PostSliceResponseDTO<AdminPostManagementResponseDTO>> getPostsByUniversity(
             @RequestBody AdminPostManagementRequestDTO requestDTO,
