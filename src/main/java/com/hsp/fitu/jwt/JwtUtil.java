@@ -1,11 +1,12 @@
 package com.hsp.fitu.jwt;
 
 import com.hsp.fitu.entity.enums.Role;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import com.hsp.fitu.error.customExceptions.JwtExpiredException;
+import com.hsp.fitu.error.customExceptions.JwtInvalidException;
+import com.hsp.fitu.error.customExceptions.JwtSignatureInvalidException;
+import com.hsp.fitu.error.customExceptions.JwtUnsupportedException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,6 @@ import java.util.Date;
 import java.util.Map;
 
 @Component
-@Slf4j
 public class JwtUtil {
     private final SecretKey secretKey;
     private final Long accessExpMs;
@@ -75,6 +75,28 @@ public class JwtUtil {
             return true;
         } catch (JwtException e) {
             return false;
+        }
+    }
+
+    // 2) 토큰 유효성 검증 + Claims 반환
+    public Claims validateAndGetClaims(String token) throws Exception {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+        } catch (ExpiredJwtException e) {
+            throw new JwtExpiredException();
+        } catch (MalformedJwtException e) {
+            throw new JwtInvalidException();
+        } catch (JwtSignatureInvalidException e) {
+            throw new JwtSignatureInvalidException();
+        } catch (JwtUnsupportedException e) {
+            throw new JwtUnsupportedException();
+        } catch (Exception e) {
+            throw new Exception();
         }
     }
 
