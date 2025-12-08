@@ -2,6 +2,7 @@ package com.hsp.fitu.config.websocket;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -14,6 +15,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+    private final WebSocketAuthChannelInterceptor webSocketAuthChannelInterceptor;
 
     // 클라이언트가 최초 WebSocket 연결을 시도할 엔드포인트를 등록
     @Override
@@ -29,6 +31,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/pub");         // 클라이언트 → 서버 방향 메시지(prefix)
         registry.enableSimpleBroker("/sub");       // 서버 → 클라이언트 방향 메시지(prefix)
+    }
+
+    // 채널 인터셉터 등록
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(webSocketAuthChannelInterceptor);
     }
 }
 
