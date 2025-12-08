@@ -1,4 +1,4 @@
-package com.hsp.fitu.config;
+package com.hsp.fitu.config.websocket;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
