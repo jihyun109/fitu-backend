@@ -50,7 +50,13 @@ public enum ErrorCode {
 
     // 친구 관계 관련 에러 (FRIENDSHIP)
     FRIENDSHIP_ALREADY_EXISTS(409, "FRIENDSHIP-409", "이미 친구 관계입니다."),
-    INVALID_FRIEND_REQUEST(400, "FRIENDSHIP-400", "자기 자신은 친구로 추가할 수 없습니다.");
+    INVALID_FRIEND_REQUEST(400, "FRIENDSHIP-400", "자기 자신은 친구로 추가할 수 없습니다."),
+
+    INVALID_JWT(401, "AUTH-401", "유효하지 않은 JWT 토큰입니다"),
+    JWT_EXPIRED(401, "AUTH-401", "JWT 토큰이 만료되었습니다"),
+    JWT_SIGNATURE_INVALID(401, "AUTH-401", "JWT 서명이 유효하지 않습니다"),
+    JWT_UNSUPPORTED(401, "AUTH-401", "지원되지 않는 JWT 토큰입니다"),
+    JWT_EMPTY(400, "AUTH-400", "토큰이 비어있습니다");
 
     private int status;
     private String errorCode;
