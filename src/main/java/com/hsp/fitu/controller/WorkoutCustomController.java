@@ -25,7 +25,7 @@ public class WorkoutCustomController {
     }
 
     @Operation(summary = "커스텀하기 검색 by 조민기")
-    @GetMapping
+    @GetMapping("/custom/search")
     public List<WorkoutCustomDetailResponseDTO> searchWorkoutCustom (
             @RequestParam String keyword
     ) {
