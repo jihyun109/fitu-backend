@@ -18,7 +18,6 @@ import java.util.Date;
 @Table(name = "reports")
 public class ReportsEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "reporter_id")
