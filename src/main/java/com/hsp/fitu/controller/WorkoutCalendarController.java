@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/workouts/calendar")
+@RequestMapping("/api/v2/workouts/calendar")
 @RequiredArgsConstructor
 public class WorkoutCalendarController {
 
