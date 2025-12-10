@@ -20,6 +20,7 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
     private final WorkoutNewRepository workoutNewRepository;
     private final SetsRepository setsRepository;
     private final WorkoutCategoryRepository workoutCategoryRepository;
+    private final MediaFilesRepository mediaFilesRepository;
 
     @Override
     public List<WorkoutCalendarSummaryDTO> getFullWorkoutCalendar(Long userId, int year, int month) {
@@ -35,6 +36,14 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
 
         return sessionsEntities.stream()
                 .map(sessions -> {
+                    String imageUrl = null;
+
+                    if (sessions.getExerciseImageId() != null) {
+                        imageUrl = mediaFilesRepository.findById(sessions.getExerciseImageId())
+                                .map(MediaFilesEntity::getUrl)
+                                .orElse(null);
+                    }
+
                     List<SessionExercisesEntity> sessionExEntities =
                             sessionExercisesRepository.findBySessionIdOrderByOrderIndex(sessions.getId());
 
@@ -58,7 +67,7 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
                             sessions.getStartTime().toLocalDate(),
                             categoryId,
                             categoryName,
-                            String.valueOf(sessions.getExerciseImageId())
+                            imageUrl
                     );
                 })
                 .toList();
@@ -99,13 +108,23 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
                     );
                 }).toList();
 
+        String todayImageUrl = null;
+        if (sessionsEntity.getExerciseImageId() != null) {
+            todayImageUrl = mediaFilesRepository.findById(sessionsEntity.getExerciseImageId())
+                    .map(MediaFilesEntity::getUrl)
+                    .orElse(null);
+        }
+
         int totalMinutes =
-                (int) java.time.Duration.between(sessionsEntity.getStartTime(),
-                        sessionsEntity.getEndTime()).toMinutes();
+                (int) java.time.Duration.between(
+                        sessionsEntity.getStartTime(),
+                        sessionsEntity.getEndTime()
+                ).toMinutes();
 
         return new WorkoutCalendarFullDTO(
                 sessionsEntity.getStartTime().toLocalDate(),
                 totalMinutes,
+                todayImageUrl,
                 exerciseDTOs
         );
     }
