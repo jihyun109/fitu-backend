@@ -16,4 +16,6 @@ public interface WorkoutRepository extends JpaRepository<OldWorkoutEntity, Long>
 
     @Query("SELECT w FROM WorkoutEntity w WHERE w.categoryId = :categoryId AND w.name <> :mainWorkoutName")
     List<OldWorkoutEntity> findSimilarWorkouts(@Param("mainWorkoutName") Workout mainWorkoutName, @Param("categoryId") Long categoryId);
+
+
 }

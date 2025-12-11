@@ -25,12 +25,12 @@ public class WorkoutEntity {
     private String workoutDescription;
 
     @Column(name = "image_id")
-    private long imageId;
+    private Long imageId;
 
     private String imageUrl;
 
     @Column(name = "gif_id")
-    private long gifId;
+    private Long gifId;
 
     private String gifUrl;
 }
