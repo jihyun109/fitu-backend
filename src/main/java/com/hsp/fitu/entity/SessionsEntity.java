@@ -27,5 +27,5 @@ public class SessionsEntity {
     private LocalDateTime endTime;
 
     @Column(name = "exercise_image_id")
-    private long exerciseImageId;
+    private Long exerciseImageId;
 }
