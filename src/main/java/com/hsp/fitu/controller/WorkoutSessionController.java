@@ -36,7 +36,7 @@ public class WorkoutSessionController {
     @PostMapping("/end")
     public ResponseEntity<SessionEndResponseDTO> endSession(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestPart("requestDTO") SessionEndRequestDTO requestDTO, //requestDTO에서 다른걸로 바꿔도 좋을듯
+            @RequestPart("requestDTO") SessionEndRequestDTO requestDTO,
             @RequestPart(value = "image", required = false) MultipartFile image
             ) {
         Long userId = userDetails.getId();
