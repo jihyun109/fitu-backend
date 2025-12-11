@@ -1,9 +1,7 @@
 package com.hsp.fitu.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "sessions")
 public class SessionsEntity {
     @Id
@@ -23,9 +22,12 @@ public class SessionsEntity {
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
+    @Setter
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @Setter
     @Column(name = "exercise_image_id")
-    private long exerciseImageId;
+    private Long exerciseImageId;
+
 }
