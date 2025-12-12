@@ -5,6 +5,7 @@ import java.util.List;
 
 public record PostCommentResponseDTO(
         Long id,
+        Long currentUserId,
         Long writerId,
         String writerName,
         String writerProfileImgUrl,
