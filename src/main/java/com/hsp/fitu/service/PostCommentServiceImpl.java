@@ -4,7 +4,6 @@ import com.hsp.fitu.dto.PostCommentCreateRequestDTO;
 import com.hsp.fitu.dto.PostCommentResponseDTO;
 import com.hsp.fitu.entity.PostCommentsEntity;
 import com.hsp.fitu.entity.UserEntity;
-import com.hsp.fitu.entity.enums.Role;
 import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -61,19 +60,14 @@ public class PostCommentServiceImpl implements PostCommentService{
 
         List<PostCommentResponseDTO> processed = rawComments.stream()
                 .map(c -> {
-                    boolean canView = !c.isSecret() ||
-                            Objects.equals(getUserNameById(currentUserId), c.writerName()) ||
-                            Objects.equals(currentUserId, postWriterId) ||
-                            isAdmin(currentUserId) ||
-                            isParentWriter(c, currentUserId);
-
                     PostCommentResponseDTO dto = new PostCommentResponseDTO(
                             c.id(),
+                            currentUserId,
                             c.writerId(),
                             c.writerName(),
                             c.writerProfileImgUrl(),
                             c.rootId(),
-                            canView ? c.contents() : null,
+                            c.contents(),
                             c.createdAt(),
                             Objects.equals(c.writerName(), getUserNameById(postWriterId)),
                             c.isSecret(),
@@ -98,24 +92,10 @@ public class PostCommentServiceImpl implements PostCommentService{
 
         return rootComments;
     }
-    private boolean isAdmin(Long userId) {
-        return userRepository.findById(userId)
-                .map(u -> u.getRole().equals(Role.ADMIN))
-                .orElse(false);
-    }
     private String getUserNameById(Long userId) {
         return userRepository.findById(userId)
                 .map(UserEntity::getName)
                 .orElse("Unknown");
-    }
-
-    private boolean isParentWriter(PostCommentResponseDTO dto, Long currentUserId) {
-        if (Objects.equals(dto.id(), dto.rootId())) {
-            return false; // 루트 댓글이면 부모 아님
-        }
-        PostCommentsEntity rootComment = postCommentRepository.findById(dto.rootId())
-                .orElse(null);
-        return rootComment != null && Objects.equals(rootComment.getWriterId(), currentUserId);
     }
 
     @Override
