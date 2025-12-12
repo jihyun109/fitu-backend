@@ -45,8 +45,8 @@ public class PostController {
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        Long currentUserId = userDetails.getId();
-        PostDetailResponseDTO detailResponseDTO = postService.getPost(postId, currentUserId);
+        Long userId = userDetails.getId();
+        PostDetailResponseDTO detailResponseDTO = postService.getPost(postId, userId);
 
         return ResponseEntity.ok(detailResponseDTO);
     }
