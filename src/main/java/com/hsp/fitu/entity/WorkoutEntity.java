@@ -19,10 +19,18 @@ public class WorkoutEntity {
     @Enumerated(EnumType.STRING)
     private Workout name;
 
+    private String workoutName;
+
+    @Column(name = "description")
+    private String workoutDescription;
+
     @Column(name = "image_id")
-    private String imageId;
+    private Long imageId;
+
+    private String imageUrl;
 
     @Column(name = "gif_id")
-    private String gifId;
+    private Long gifId;
 
+    private String gifUrl;
 }
