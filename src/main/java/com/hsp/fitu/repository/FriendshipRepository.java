@@ -1,6 +1,6 @@
 package com.hsp.fitu.repository;
 
-import com.hsp.fitu.dto.FriendListResponseDTO;
+import com.hsp.fitu.dto.FriendInfo;
 import com.hsp.fitu.entity.FriendshipEntity;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +12,7 @@ public interface FriendshipRepository extends JpaRepository<FriendshipEntity, Lo
     boolean existsByUserIdAAndUserIdB(Long idA, Long idB);
 
     @Query("""
-            SELECT new com.hsp.fitu.dto.FriendListResponseDTO.FriendInfo(
+            SELECT new com.hsp.fitu.dto.FriendInfo(
                         u.id,
                         u.name,
                         m.url
@@ -28,5 +28,5 @@ public interface FriendshipRepository extends JpaRepository<FriendshipEntity, Lo
                     WHERE f.userIdA = :userId
                        OR f.userIdB = :userId
             """)
-    List<FriendListResponseDTO.FriendInfo> findFriends(@Param("userId") Long userId);
+    List<FriendInfo> findFriends(@Param("userId") Long userId);
 }
