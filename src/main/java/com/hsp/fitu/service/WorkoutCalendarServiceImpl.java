@@ -90,6 +90,10 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
                     WorkoutEntity workoutEntity = workoutNewRepository.findById(ex.getWorkoutId())
                             .orElseThrow();
 
+                    String categoryName = workoutCategoryRepository.findById(workoutEntity.getCategoryId())
+                            .map(cat -> cat.getName().getKorean())
+                            .orElse(null);
+
                     List<SetsEntity> setsEntities =
                             setsRepository.findBySessionExerciseIdOrderBySetIndex(ex.getId());
 
@@ -103,6 +107,7 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
 
                     return new WorkoutCalendarDetailDTO(
                             workoutEntity.getWorkoutName(),
+                            categoryName,
                             workoutEntity.getImageUrl(),
                             setDetailDTOs
                     );
