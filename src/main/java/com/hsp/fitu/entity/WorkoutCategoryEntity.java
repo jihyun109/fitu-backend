@@ -13,4 +13,6 @@ public class WorkoutCategoryEntity {
 
     @Enumerated(EnumType.STRING)
     private WorkoutCategory name;
+
+    private int priority;
 }

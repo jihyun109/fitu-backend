@@ -2,6 +2,7 @@ package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.*;
 import com.hsp.fitu.service.WorkoutService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,13 @@ public class WorkoutController {
     @PostMapping("/old/recommendations")
     public ResponseEntity<List<OldRoutineResponseDTO>> oldRecommendWorkouts(@RequestBody RoutineRecommendationRequestDTO requestDTO) {
         return ResponseEntity.ok(workoutService.suggestRoutine(requestDTO));
+    }
+
+    @PostMapping("/recommendations")
+    @Operation(summary = "운동 루틴 추천 by 장지현")
+    public ResponseEntity<WorkoutSelectResponseDTO> recommendWorkouts(@RequestBody RoutineRecommendationRequestDTO requestDTO) {
+        WorkoutSelectResponseDTO responseDTO = workoutService.recommendRoutine(requestDTO);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @PostMapping("/gifs")
