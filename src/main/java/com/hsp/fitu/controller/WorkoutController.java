@@ -1,7 +1,7 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.RoutineRecommendationRequestDTO;
-import com.hsp.fitu.dto.RoutineRecommendationResponseDTO;
+import com.hsp.fitu.dto.OldRoutineResponseDTO;
 import com.hsp.fitu.dto.WorkoutGifRequestDTO;
 import com.hsp.fitu.dto.WorkoutGifResponseDTO;
 import com.hsp.fitu.service.WorkoutService;
@@ -19,7 +19,7 @@ public class WorkoutController {
     private final WorkoutService workoutService;
 
     @PostMapping("/old/recommendations")
-    public ResponseEntity<List<RoutineRecommendationResponseDTO>> recommendWorkouts(@RequestBody RoutineRecommendationRequestDTO requestDTO) {
+    public ResponseEntity<List<OldRoutineResponseDTO>> recommendWorkouts(@RequestBody RoutineRecommendationRequestDTO requestDTO) {
         return ResponseEntity.ok(workoutService.suggestRoutine(requestDTO));
     }
 
