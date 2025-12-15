@@ -2,6 +2,7 @@ package com.hsp.fitu.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -19,10 +20,12 @@ public class SessionsEntity {
     @Column(name = "user_id")
     private long userId;
 
+    @Setter
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
     @Setter
+    @CreationTimestamp
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
