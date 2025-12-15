@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 
 public interface WorkoutNewRepository extends JpaRepository<WorkoutEntity, Long> {
     @Query("""
@@ -37,6 +39,5 @@ public interface WorkoutNewRepository extends JpaRepository<WorkoutEntity, Long>
     """)
     List<WorkoutCustomDetailResponseDTO> searchByKeyword(@Param("keyword") String keyword);
 
-    @Query("SELECT w.id FROM WorkoutEntity w WHERE w.name = :name")
-    Long findIdByName(@Param("name") Workout enumValue);
+    Optional<WorkoutEntity> findByWorkoutName(String workoutName);
 }
