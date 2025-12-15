@@ -102,7 +102,7 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
                             .toList();
 
                     return new WorkoutCalendarDetailDTO(
-                            workoutEntity.getName(),
+                            workoutEntity.getWorkoutName(),
                             workoutEntity.getImageUrl(),
                             setDetailDTOs
                     );
