@@ -10,6 +10,8 @@ public interface WorkoutService {
 
     WorkoutSelectResponseDTO recommendRoutine(RoutineRecommendationRequestDTO requestDTO);
 
+    WorkoutSelectResponseDTO selectRoutine(WorkoutCustomRequestDTO requestDTO);
+
     List<WorkoutGifResponseDTO> getWorkoutGifs(WorkoutGifRequestDTO requestDTO);
 
     void updateWorkoutImage(long workoutId, MultipartFile image);
