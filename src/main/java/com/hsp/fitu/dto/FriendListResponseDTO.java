@@ -11,12 +11,4 @@ import java.util.List;
 @Builder
 public class FriendListResponseDTO {
     private List<FriendInfo> friendInfoList;
-
-    @Getter
-    @AllArgsConstructor
-    public static class FriendInfo {
-        private Long userId;
-        private String userName;
-        private String profileImageUrl;
-    }
 }
