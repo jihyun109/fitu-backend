@@ -28,6 +28,12 @@ public class WorkoutController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @PostMapping("/custom/result")
+    @Operation(summary = "커스텀 후 by 장지현")
+    public ResponseEntity<WorkoutSelectResponseDTO> selectedWorkouts(@RequestBody WorkoutCustomRequestDTO requestDTO) {
+        return ResponseEntity.ok(workoutService.selectRoutine(requestDTO));
+    }
+
     @PostMapping("/gifs")
     public ResponseEntity<List<WorkoutGifResponseDTO>> getGifUrlsByWorkoutNames(@RequestBody WorkoutGifRequestDTO requestDTO) {
         return ResponseEntity.ok(workoutService.getWorkoutGifs(requestDTO));
