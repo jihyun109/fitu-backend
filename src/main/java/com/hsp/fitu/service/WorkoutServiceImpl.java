@@ -27,14 +27,14 @@ public class WorkoutServiceImpl implements WorkoutService {
     private final S3Service s3Service;
 
     @Override
-    public List<RoutineRecommendationResponseDTO> suggestRoutine(RoutineRecommendationRequestDTO requestDTO) {
+    public List<OldRoutineResponseDTO> suggestRoutine(RoutineRecommendationRequestDTO requestDTO) {
         List<OldWorkoutCategoryEntity> sortedCategories =
                 workoutCategoryRepository.findByNameInOrderByPriority(requestDTO.getWorkoutCategoryList());
 
         Map<WorkoutCategory, Integer> workoutCountMap = allocateWorkoutCounts(sortedCategories);
 
         Set<Workout> selectedMainWorkouts = new HashSet<>();
-        List<RoutineRecommendationResponseDTO> responseList = new ArrayList<>();
+        List<OldRoutineResponseDTO> responseList = new ArrayList<>();
 
         for (OldWorkoutCategoryEntity category : sortedCategories) {
 
@@ -74,7 +74,7 @@ public class WorkoutServiceImpl implements WorkoutService {
                                 .build())
                         .toList();
 
-                responseList.add(RoutineRecommendationResponseDTO.builder()
+                responseList.add(OldRoutineResponseDTO.builder()
                         .mainWorkout(WorkoutWithImageDTO.builder()
                                 .name(mainWorkout)
                                 .imageUrl(mainImageUrl).build())
