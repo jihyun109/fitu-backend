@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.KeyStore;
 import java.util.*;
 
 @Service
@@ -107,11 +108,22 @@ public class WorkoutServiceImpl implements WorkoutService {
         // 4. 최종 추천 루틴을 담을 리스트
         List<SelectedWorkout> responseList = new ArrayList<>();
 
+
+        System.out.println("workoutCountMap: ");
+        for (Map.Entry<WorkoutCategory, Integer> entry : workoutCountMap.entrySet()) {
+            System.out.println(entry.getKey() + " " + entry.getValue());
+        }
+
         // 5. 카테고리 순회하며 추천 운동 생성
         for (OldWorkoutCategoryEntity category : sortedCategories) {
 
             // 카테고리 이름과 할당된 운동 개수 가져오기
             WorkoutCategory categoryName = category.getName();
+
+            System.out.println();
+
+            System.out.println(categoryName);
+
             int count = workoutCountMap.get(categoryName);
 
             // 해당 카테고리의 모든 운동 조회 후 랜덤 섞기
@@ -199,6 +211,19 @@ public class WorkoutServiceImpl implements WorkoutService {
         WorkoutCategory workoutCategory;
 
         switch (sortedCategories.size()) {
+            case 1:
+                // 카테고리가 1개일 경우 5개 배정
+                workoutCategory = sortedCategories.get(0).getName();
+                workoutCountMap.put(workoutCategory, 5);
+                break;
+            case 2:
+                // 카테고리가 2개일 경우 3개, 2개 배정
+                workoutCategory = sortedCategories.get(0).getName();
+                workoutCountMap.put(workoutCategory, 3);
+
+                workoutCategory = sortedCategories.get(1).getName();
+                workoutCountMap.put(workoutCategory, 2);
+                break;
             case 3:
                 for (int i = 0; i < 2; i++) {
                     workoutCategory = sortedCategories.get(i).getName();
