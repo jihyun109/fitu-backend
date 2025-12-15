@@ -2,13 +2,13 @@ package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.ApiResponseDTO;
 import com.hsp.fitu.dto.FriendAddRequestDTO;
+import com.hsp.fitu.dto.FriendListResponseDTO;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.FriendService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,5 +26,12 @@ public class FriendController {
         friendService.addFriend(requestDTO, userId);
 
         return ResponseEntity.ok(new ApiResponseDTO("친구 추가가 완료되었습니다"));
+    }
+
+    @GetMapping()
+    @Operation(summary = "사용자의 친구 list 조회 by 장지현")
+    public ResponseEntity<FriendListResponseDTO> getFriends(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return ResponseEntity.ok(friendService.getFriends(userDetails.getId()));
     }
 }
