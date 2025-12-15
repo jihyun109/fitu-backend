@@ -1,12 +1,8 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.*;
-import com.hsp.fitu.entity.MediaFilesEntity;
-import com.hsp.fitu.entity.SessionExercisesEntity;
-import com.hsp.fitu.entity.SessionsEntity;
-import com.hsp.fitu.entity.SetsEntity;
+import com.hsp.fitu.entity.*;
 import com.hsp.fitu.entity.enums.MediaCategory;
-import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -86,25 +82,15 @@ public class WorkoutSessionServiceImpl implements WorkoutSessionService {
         return new SessionEndResponseDTO(sessions.getId(), "OK");
     }
 
-    private Long resolveWorkoutIdByName(String workoutNameStr) {
-        if (workoutNameStr == null) {
+    private Long resolveWorkoutIdByName(String workoutName) {
+        if (workoutName == null || workoutName.isBlank()) {
             throw new IllegalArgumentException("workoutName is null");
         }
 
-        String normalized = workoutNameStr.trim().replace(" ", "_").toUpperCase();
-        try {
-            Workout enumValue = Workout.valueOf(normalized);
-
-            Long workoutId = workoutNewRepository.findIdByName(enumValue);
-
-            if (workoutId == null) {
-                throw new EntityNotFoundException("Workout not for for name");
-            }
-
-            return workoutId;
-
-        }catch (IllegalArgumentException e) {
-            throw new EntityNotFoundException("Invalid workout name: " + workoutNameStr);
-        }
+        return workoutNewRepository.findByWorkoutName(workoutName.trim())
+                .map(WorkoutEntity::getId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Workout not found" + workoutName)
+                );
     }
 }
