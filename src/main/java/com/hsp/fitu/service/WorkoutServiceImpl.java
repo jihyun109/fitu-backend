@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.security.KeyStore;
 import java.util.*;
 
 @Service
@@ -154,6 +153,14 @@ public class WorkoutServiceImpl implements WorkoutService {
 
         return WorkoutSelectResponseDTO.builder()
                 .selectedWorkouts(responseList)
+                .build();
+    }
+
+    @Override
+    public WorkoutSelectResponseDTO selectRoutine(WorkoutCustomRequestDTO requestDTO) {
+        List<SelectedWorkout> selectedWorkouts = workoutRepository.findAllByIds(requestDTO.getWorkoutIds());
+        return WorkoutSelectResponseDTO.builder()
+                .selectedWorkouts(selectedWorkouts)
                 .build();
     }
 
