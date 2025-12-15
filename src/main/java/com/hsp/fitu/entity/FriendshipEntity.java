@@ -1,5 +1,6 @@
 package com.hsp.fitu.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -17,6 +18,10 @@ import lombok.NoArgsConstructor;
 public class FriendshipEntity {
     @Id
     private Long id;
+
+    @Column(name = "user_id_a")
     private Long userIdA;   // 둘 중 더 작은 ID
+
+    @Column(name = "user_id_b")
     private Long userIdB;
 }
