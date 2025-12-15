@@ -8,7 +8,7 @@ import com.hsp.fitu.entity.WorkoutLogEntity;
 import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.repository.WorkoutDetailLogRepository;
 import com.hsp.fitu.repository.WorkoutLogRepository;
-import com.hsp.fitu.repository.WorkoutRepository;
+import com.hsp.fitu.repository.OldWorkoutRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WorkoutDetailLogServiceImpl implements WorkoutDetailLogService {
 
-    private final WorkoutRepository workoutRepository;
+    private final OldWorkoutRepository oldWorkoutRepository;
     private final WorkoutLogRepository workoutLogRepository;
     private final WorkoutDetailLogRepository workoutDetailLogRepository;
 
@@ -34,7 +34,7 @@ public class WorkoutDetailLogServiceImpl implements WorkoutDetailLogService {
         for (WorkoutDetailLogRequestDTO detailDTO : requestDTO.getWorkoutList()) {
             Workout workoutEnum = Workout.valueOf(detailDTO.getWorkoutName().toUpperCase());//enum변환
 
-            OldWorkoutEntity workoutEntity = workoutRepository.findByName(workoutEnum); //enum이름으로 id 조회
+            OldWorkoutEntity workoutEntity = oldWorkoutRepository.findByName(workoutEnum); //enum이름으로 id 조회
 
             WorkoutDetailLogEntity detail = WorkoutDetailLogEntity.builder()
                     .workoutLogId(savedLog.getId())

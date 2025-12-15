@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Getter
-public class RoutineRecommendationResponseDTO {
+public class OldRoutineResponseDTO {
     private WorkoutCategory bodyPart;
     private WorkoutWithImageDTO mainWorkout;
     private List<WorkoutWithImageDTO> similarWorkouts;
