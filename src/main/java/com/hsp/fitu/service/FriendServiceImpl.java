@@ -1,6 +1,7 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.FriendAddRequestDTO;
+import com.hsp.fitu.dto.FriendListResponseDTO;
 import com.hsp.fitu.entity.FriendshipEntity;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.error.customExceptions.CustomException;
@@ -9,6 +10,8 @@ import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -31,6 +34,13 @@ public class FriendServiceImpl implements FriendService {
 
         // 친구 관계 저장
         saveFriendship(userIdA, userIdB);
+    }
+
+    @Override
+    public FriendListResponseDTO getFriends(Long userId) {
+        return FriendListResponseDTO.builder()
+                .friendInfoList(friendshipRepository.findFriends(userId))
+                .build();
     }
 
     private void validFriendRequest(Long userIdToAdd, Long userId, Long userIdA, Long userIdB) {
