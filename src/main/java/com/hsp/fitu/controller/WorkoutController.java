@@ -18,7 +18,7 @@ import java.util.List;
 public class WorkoutController {
     private final WorkoutService workoutService;
 
-    @PostMapping("/recommendations")
+    @PostMapping("/old/recommendations")
     public ResponseEntity<List<RoutineRecommendationResponseDTO>> recommendWorkouts(@RequestBody RoutineRecommendationRequestDTO requestDTO) {
         return ResponseEntity.ok(workoutService.suggestRoutine(requestDTO));
     }
