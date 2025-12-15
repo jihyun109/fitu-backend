@@ -10,5 +10,6 @@ import java.util.Optional;
 public interface SessionsRepository extends JpaRepository<SessionsEntity, Long> {
     List<SessionsEntity> findByUserIdAndStartTimeBetween(Long userId, LocalDateTime start, LocalDateTime end);
     Optional<SessionsEntity> findFirstByUserIdAndStartTimeBetween(Long userId, LocalDateTime start, LocalDateTime end);
+    Optional<SessionsEntity> findTopByUserIdAndEndTimeIsNullOrderByIdDesc(Long userId);
 
 }

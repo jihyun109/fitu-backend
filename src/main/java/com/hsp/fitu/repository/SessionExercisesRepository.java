@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface SessionExercisesRepository extends JpaRepository<SessionExercisesEntity, Long> {
-    List<SessionExercisesEntity> findBySessionId(long sessionId);
     List<SessionExercisesEntity> findBySessionIdOrderByOrderIndex(long sessionId);
 }

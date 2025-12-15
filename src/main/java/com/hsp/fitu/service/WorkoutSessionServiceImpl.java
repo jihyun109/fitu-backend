@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class WorkoutSessionServiceImpl implements WorkoutSessionService {
-    private final SessionRespository sessionRepository;
+    private final SessionsRepository sessionRepository;
     private final MediaFilesRepository mediaFilesRepository;
     private final WorkoutNewRepository workoutNewRepository;
     private final SessionExerciseRepository sessionExerciseRepository;
@@ -28,23 +28,22 @@ public class WorkoutSessionServiceImpl implements WorkoutSessionService {
 
     @Override
     @Transactional
-    public SessionStartResponseDTO startSession(Long userId) {
-        SessionsEntity sessions = SessionsEntity.builder()
-                .userId(userId)
-                .startTime(LocalDateTime.now())
-                .exerciseImageId(null)
-                .build();
-
-        SessionsEntity saved = sessionRepository.save(sessions);
-
-        return new SessionStartResponseDTO(saved.getId(), saved.getStartTime());
-    }
-
-    @Override
-    @Transactional
     public SessionEndResponseDTO endSession(Long userId, SessionEndRequestDTO requestDTO, MultipartFile image) {
-        SessionsEntity sessions = sessionRepository.findById(requestDTO.sessionId())
-                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+
+        Integer totalMinutes = requestDTO.totalMinutes();
+        if (totalMinutes <= 0) {
+            throw new IllegalArgumentException("Invalid totalMinutes");
+        }
+
+        LocalDateTime endTime = LocalDateTime.now();
+        LocalDateTime startTime = endTime.minusMinutes(totalMinutes);
+
+        SessionsEntity sessions = sessionRepository.save(
+                SessionsEntity.builder()
+                        .userId(userId)
+                        .startTime(startTime)
+                        .build()
+        );
 
         Long mediaId = null;
 
@@ -59,10 +58,7 @@ public class WorkoutSessionServiceImpl implements WorkoutSessionService {
             );
             mediaId = mediaFiles.getId();
         }
-
-        sessions.setEndTime(LocalDateTime.now());
         sessions.setExerciseImageId(mediaId);
-        sessionRepository.save(sessions);
 
         for (SessionExerciseRequestDTO exerciseRequestDTO : requestDTO.exercises()) {
 
