@@ -18,5 +18,4 @@ public class ChatRoomMemberEntity {
     private Long id;
     private Long chatRoomId;
     private Long userId;
-    private Integer unreadCount;
 }
