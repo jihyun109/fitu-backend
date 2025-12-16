@@ -7,4 +7,5 @@ import lombok.Getter;
 @Getter
 public class TokenResponseDTO {
     private String token;
+    private Long userId;
 }
