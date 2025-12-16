@@ -8,4 +8,5 @@ import lombok.Getter;
 public class LoginDTO {
     private String token;
     private boolean isNewUser;
+    private Long userId;
 }

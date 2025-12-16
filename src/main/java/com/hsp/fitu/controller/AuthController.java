@@ -21,7 +21,10 @@ public class AuthController {
     public ResponseEntity<TokenResponseDTO> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
         LoginDTO loginDTO = authService.oAuthLogin(accessCode, httpServletResponse);
 
-        TokenResponseDTO tokenResponseDTO = TokenResponseDTO.builder().token(loginDTO.getToken()).build();
+        TokenResponseDTO tokenResponseDTO = TokenResponseDTO.builder()
+                .token(loginDTO.getToken())
+                .userId(loginDTO.getUserId())
+                .build();
 
         if (loginDTO.isNewUser()) {
             return ResponseEntity.status(201).body(tokenResponseDTO);
