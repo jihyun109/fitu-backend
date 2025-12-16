@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         AntPathMatcher pathMatcher = new AntPathMatcher();
 
         // 특정 경로를 필터에서 제외
-        if (path.equals("/login") || path.equals("/signup") || path.equals("/auth/login/kakao") || path.equals("/auth/reissue") || pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/v3/api-docs/**", path)) {
+        if (path.equals("/login") || path.equals("/signup") || path.equals("/auth/login/kakao") || path.equals("/auth/reissue") || pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/v3/api-docs/**", path) || pathMatcher.match("/ws/**", path)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .getBody();
 
         Number userIdNumber = (Number) claims.get("userId");
-        Long userId = userIdNumber.longValue();
+        Long userId = claims.get("userId", Long.class);
         String role = (String) claims.get("role");
         Number universityIdNumber = (Number) claims.get("universityId");
         Long universityId = universityIdNumber != null ? universityIdNumber.longValue() : null;
