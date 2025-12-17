@@ -45,6 +45,14 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             "WHERE u.id = :userId")
     void updateAccountStatusById(Long userId, AccountStatus status);
 
+    @Modifying
+    @Query("""
+        UPDATE UserEntity w
+        SET w.profileImgId = :profileImgId
+        WHERE w.id = :userId
+    """)
+    void updateProfileImgId(@Param("userId") Long userId, @Param("profileImgId") Long profileImgId);
+
     //관리자 사용자 이름 검색으로 이름, 학교명 조회
     @Query("""
         SELECT new com.hsp.fitu.dto.AdminUserResponseDTO(
