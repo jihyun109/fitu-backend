@@ -3,6 +3,7 @@ package com.hsp.fitu.controller;
 import com.hsp.fitu.dto.WorkoutVerificationRequestDTO;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.WorkoutVerificationService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ public class WorkoutVerificationController {
     private final WorkoutVerificationService workoutVerificationService;
 
     @PostMapping()
+    @Operation(summary = "3대 500 인증 요청 by 장지현")
     public ResponseEntity<String> requestWorkoutVerification(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                              @RequestPart WorkoutVerificationRequestDTO requestDTO,
                                                              @RequestPart(value = "video", required = false) MultipartFile workoutVerificationVideo) {
