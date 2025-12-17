@@ -57,4 +57,12 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
         WHERE u.name LIKE %:name%
         """)
     List<AdminUserResponseDTO> findByNameContaining(@Param("name") String name);
+
+    // 사용자 id로 profile img id 조회
+    @Query("""
+            SELECT u.profileImgId
+            FROM UserEntity u
+            WHERE u.id = :userId
+            """)
+    Long findProfileImgIdById(@Param("userId") Long userId);
 }
