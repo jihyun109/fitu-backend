@@ -20,7 +20,7 @@ public class WorkoutVerificationController {
     @PostMapping()
     @Operation(summary = "3대 500 인증 요청 by 장지현")
     public ResponseEntity<String> requestWorkoutVerification(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                             @RequestPart WorkoutVerificationRequestDTO requestDTO,
+                                                             @RequestPart (value = "request")WorkoutVerificationRequestDTO requestDTO,
                                                              @RequestPart(value = "video", required = false) MultipartFile workoutVerificationVideo) {
         workoutVerificationService.requestWorkoutVerification(requestDTO, workoutVerificationVideo, userDetails.getId());
 
