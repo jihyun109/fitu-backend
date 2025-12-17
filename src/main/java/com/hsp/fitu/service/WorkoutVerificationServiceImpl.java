@@ -25,14 +25,13 @@ public class WorkoutVerificationServiceImpl implements WorkoutVerificationServic
 
     @Override
     @Transactional
-    public void requestWorkoutVerification(WorkoutVerificationRequestDTO workoutVerificationRequestDTO) {
+    public void requestWorkoutVerification(WorkoutVerificationRequestDTO workoutVerificationRequestDTO, MultipartFile workoutVerificationVideo, long userId) {
+
         // 운동 인증 영상 유효성 검사
-        validateWorkoutVerificationRequest(workoutVerificationRequestDTO);
+        validateWorkoutVerificationRequest(workoutVerificationVideo);
 
         // 동영상 파일 S3에 저장 & url get
-        String fileUrl = s3Service.upload(workoutVerificationRequestDTO.getWorkoutVerificationVideo(), MediaCategory.WORKOUT_VERIFICATION_VIDEO);
-
-        Long userId = workoutVerificationRequestDTO.getUserId();
+        String fileUrl = s3Service.upload(workoutVerificationVideo, MediaCategory.WORKOUT_VERIFICATION_VIDEO);
 
         // db에 동영상 파일 데이터 저장
         MediaFilesEntity mediaFilesEntity = mediaFilesRepository.save(MediaFilesEntity.builder()
@@ -45,7 +44,7 @@ public class WorkoutVerificationServiceImpl implements WorkoutVerificationServic
 
         // db에 운동 인증 데이터 저장
         workoutVerificationRepository.save(WorkoutVerificationEntity.builder()
-                .userId(workoutVerificationRequestDTO.getUserId())
+                .userId(userId)
                 .videoId(mediaFileId)
                 .workoutType(workoutVerificationType)
                 .status(WorkoutVerificationRequestStatus.PENDING)
@@ -53,8 +52,7 @@ public class WorkoutVerificationServiceImpl implements WorkoutVerificationServic
     }
 
     // 운동 영상 유효성 검사
-    private void validateWorkoutVerificationRequest(WorkoutVerificationRequestDTO workoutVerificationRequestDTO) {
-        MultipartFile video = workoutVerificationRequestDTO.getWorkoutVerificationVideo();  // 운동 인증 영상
+    private void validateWorkoutVerificationRequest(MultipartFile video) {// 운동 인증 영상
         mediaValidator.validateMedia(video, MediaType.VIDEO);
     }
 }

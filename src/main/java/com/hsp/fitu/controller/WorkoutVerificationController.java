@@ -1,7 +1,6 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.WorkoutVerificationRequestDTO;
-import com.hsp.fitu.entity.enums.WorkoutVerificationType;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.WorkoutVerificationService;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +18,9 @@ public class WorkoutVerificationController {
 
     @PostMapping()
     public ResponseEntity<String> requestWorkoutVerification(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                             @RequestParam WorkoutVerificationType workoutVerificationType,
+                                                             @RequestPart WorkoutVerificationRequestDTO requestDTO,
                                                              @RequestPart(value = "video", required = false) MultipartFile workoutVerificationVideo) {
-
-        workoutVerificationService.requestWorkoutVerification(WorkoutVerificationRequestDTO.builder()
-                .userId(userDetails.getId())
-                .workoutVerificationType(workoutVerificationType)
-                .workoutVerificationVideo(workoutVerificationVideo)
-                .build());
+        workoutVerificationService.requestWorkoutVerification(requestDTO, workoutVerificationVideo, userDetails.getId());
 
         return ResponseEntity.ok("Workout verification request succeeded.");
     }
