@@ -17,4 +17,5 @@ public class ChatRoomEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String roomName;
+    private Long thumbnailImgId;
 }
