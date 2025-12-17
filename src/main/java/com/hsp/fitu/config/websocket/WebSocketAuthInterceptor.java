@@ -2,7 +2,6 @@ package com.hsp.fitu.config.websocket;
 
 import com.hsp.fitu.jwt.JwtUtil;
 import com.hsp.fitu.repository.UserRepository;
-import com.hsp.fitu.service.UserService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ import java.util.Map;
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 
     private final JwtUtil jwtUtil;
-    private final UserService userService;
     private final UserRepository userRepository;
 
     @Override
@@ -46,7 +44,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
         Claims claims = jwtUtil.validateAndGetClaims(token);
         if (claims == null) return false;
 
-        Long userId = Long.valueOf(claims.getSubject());
+        Long userId = claims.get("userId", Long.class);
 
         // 4) userId를 WebSocket 세션에 저장
         userRepository.findById(userId)
