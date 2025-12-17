@@ -48,6 +48,7 @@ public class WorkoutVerificationServiceImpl implements WorkoutVerificationServic
                 .videoId(mediaFileId)
                 .workoutType(workoutVerificationType)
                 .status(WorkoutVerificationRequestStatus.PENDING)
+                .weight(workoutVerificationRequestDTO.getWeight())
                 .build());
     }
 
