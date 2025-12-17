@@ -2,10 +2,14 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.BodyImageMainResponseDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
+import com.hsp.fitu.entity.MediaFilesEntity;
 import com.hsp.fitu.entity.enums.MediaCategory;
 import com.hsp.fitu.entity.enums.MediaType;
 import com.hsp.fitu.repository.BodyImageRepository;
+import com.hsp.fitu.repository.MediaFilesRepository;
+import com.hsp.fitu.repository.UserRepository;
 import com.hsp.fitu.validator.MediaValidator;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +22,8 @@ public class ProfileImageServiceImpl implements ProfileImageService {
     private final S3Service s3Service;
     private final MediaValidator mediaValidator;
     private final BodyImageRepository bodyImageRepository;
+    private final MediaFilesRepository mediaFilesRepository;
+    private final UserRepository userRepository;
 
     @Override
     public BodyImageMainResponseDTO getMainProfileImage(long userId) {
@@ -35,6 +41,7 @@ public class ProfileImageServiceImpl implements ProfileImageService {
     }
 
     @Override
+    @Transactional
     public String uploadProfileImage(MultipartFile file, long userId) {
         // 이미지 파일 유효성 검사
         mediaValidator.validateMedia(file, MediaType.IMAGE);
@@ -43,11 +50,14 @@ public class ProfileImageServiceImpl implements ProfileImageService {
         String url = s3Service.upload(file, MediaCategory.PROFILE_IMAGE);
 
         // db에 데이터 저장
-        bodyImageRepository.save(BodyImageEntity.builder()
+        MediaFilesEntity mediaFilesEntity = mediaFilesRepository.save(MediaFilesEntity.builder()
+                .uploaderId(userId)
                 .url(url)
-                .userId(userId)
                 .build());
+        Long mediaFileId = mediaFilesEntity.getId();
 
+        // 사용자 프로필 사진 id 수정
+        userRepository.updateProfileImgId(userId, mediaFileId);
         return url;
     }
 }

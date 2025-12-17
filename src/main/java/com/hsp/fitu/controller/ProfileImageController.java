@@ -7,6 +7,7 @@ import com.hsp.fitu.entity.BodyImageEntity;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.ProfileImageService;
 import com.hsp.fitu.service.S3Service;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ public class ProfileImageController {
     }
 
     @PostMapping()
+    @Operation(summary = "프로필 사진 업로드 by 장지현")
     public ResponseEntity<ProfileImageUploadResponseDTO> uploadProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                             @RequestPart(value = "image", required = false) MultipartFile image) {
         Long userId = userDetails.getId();
