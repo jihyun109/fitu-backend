@@ -14,12 +14,10 @@ import java.util.List;
 @Repository
 public interface MediaFilesRepository extends JpaRepository<MediaFilesEntity, Long> {
     @Query("""
-            SELECT new com.hsp.fitu.dto.BodyImageMainResponseDTO(m.url)
+            SELECT new com.hsp.fitu.dto.ProfileImageResponseDTO(m.url)
             FROM MediaFilesEntity m
-            JOIN UserEntity u ON m.id = u.profileImgId
-            WHERE u.id = :userId AND m.category = 'PROFILE_IMAGE'
-            ORDER BY m.uploadedAt DESC 
-            LIMIT 1
+            JOIN UserEntity u ON u.profileImgId = m.id
+            WHERE u.id = :userId
             """)
     ProfileImageResponseDTO findMainProfileImageByUserId(@Param("userId")long userId);
 
