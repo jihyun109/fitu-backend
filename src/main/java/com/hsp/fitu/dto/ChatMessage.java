@@ -12,4 +12,5 @@ public class ChatMessage {
     private String message;
     private String senderProfileUrl;
     private LocalDateTime sendTime;
+    private long senderId;
 }
