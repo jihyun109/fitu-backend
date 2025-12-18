@@ -49,6 +49,7 @@ public class ProfileImageServiceImpl implements ProfileImageService {
         MediaFilesEntity mediaFilesEntity = mediaFilesRepository.save(MediaFilesEntity.builder()
                 .uploaderId(userId)
                 .url(url)
+                .category(MediaCategory.PROFILE_IMAGE)
                 .build());
         Long mediaFileId = mediaFilesEntity.getId();
 
