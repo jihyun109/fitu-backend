@@ -9,7 +9,6 @@ import com.hsp.fitu.service.ProfileImageService;
 import com.hsp.fitu.service.S3Service;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/v2/profile-image")
 @RequiredArgsConstructor
-@Slf4j
 public class ProfileImageController {
     private final ProfileImageService profileImageService;
     private final S3Service s3Service;

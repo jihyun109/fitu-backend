@@ -7,7 +7,6 @@ import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.error.customExceptions.S3UploadFailException;
 import com.hsp.fitu.repository.MediaFilesRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Slf4j
 @Service
 public class S3ServiceImpl implements S3Service {
     private final S3Client s3Client;
@@ -82,7 +80,6 @@ public class S3ServiceImpl implements S3Service {
         try {
             s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
         } catch (Exception e) {
-            log.error("S3 Upload failed: {}", e.getMessage(), e);
             throw new S3UploadFailException(ErrorCode.S3_UPLOAD_FAILED);
         }
 
