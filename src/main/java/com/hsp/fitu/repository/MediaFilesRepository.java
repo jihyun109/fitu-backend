@@ -17,7 +17,7 @@ public interface MediaFilesRepository extends JpaRepository<MediaFilesEntity, Lo
             SELECT new com.hsp.fitu.dto.BodyImageMainResponseDTO(m.url)
             FROM MediaFilesEntity m
             JOIN UserEntity u ON m.id = u.profileImgId
-            WHERE u.id = :userId
+            WHERE u.id = :userId AND m.category = 'PROFILE_IMAGE'
             ORDER BY m.uploadedAt DESC 
             LIMIT 1
             """)
@@ -28,7 +28,7 @@ public interface MediaFilesRepository extends JpaRepository<MediaFilesEntity, Lo
             SELECT new com.hsp.fitu.dto.ProfileImage(m.url)
             FROM MediaFilesEntity m
             JOIN UserEntity u ON m.uploaderId = u.id
-            WHERE u.id = :userId
+            WHERE u.id = :userId AND m.category = 'PROFILE_IMAGE'
             ORDER BY m.uploadedAt
             """)
     List<ProfileImage> findProfileImgsByUserId(@Param("userId") long userId);

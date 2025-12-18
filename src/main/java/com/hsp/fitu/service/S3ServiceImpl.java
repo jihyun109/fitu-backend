@@ -60,8 +60,9 @@ public class S3ServiceImpl implements S3Service {
 
         return switch (mediaCategory) {
             case PROFILE_IMAGE -> "profile_img";
-            case WORKOUT_VERIFICATION_VIDEO -> "workout_verification_video";
+            case WORKOUT_VERIFICATION -> "workout_verification_video";
             case WORKOUT_COMPLETE -> "today_workout_complete";
+            case INQUIRY -> "inquiry";
         };
     }
 

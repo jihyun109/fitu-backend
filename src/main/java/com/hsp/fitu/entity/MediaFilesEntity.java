@@ -1,5 +1,6 @@
 package com.hsp.fitu.entity;
 
+import com.hsp.fitu.entity.enums.MediaCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,4 +28,7 @@ public class MediaFilesEntity {
     @CreationTimestamp
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
+
+    @Enumerated(EnumType.STRING)
+    private MediaCategory category;
 }
