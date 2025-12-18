@@ -31,4 +31,15 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
             """)
     List<ChatRoom> getChatRoomList(@Param("userId") Long userId);
 
+
+    @Query("""
+            SELECT mf.url
+            FROM ChatRoomEntity cr
+            JOIN ChatRoomMemberEntity crm ON cr.id = crm.chatRoomId
+            JOIN UserEntity u ON u.id = crm.userId
+            JOIN MediaFilesEntity mf ON u.profileImgId = mf.id
+            WHERE cr.id = :chatRoomId AND u.id <> :userId
+            """)
+    String getChatRoomImg(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
+
 }
