@@ -61,6 +61,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
 
         return ChatRoomListResponseDTO.builder()
-                .chatRoomList(chatRoomRepository.getChatRoomList(userId)).build();
+                .chatRoomList(chatRoomListResponseDTO).build();
     }
 }
