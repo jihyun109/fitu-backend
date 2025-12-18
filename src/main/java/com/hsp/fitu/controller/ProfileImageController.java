@@ -3,7 +3,7 @@ package com.hsp.fitu.controller;
 import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
 import com.hsp.fitu.dto.BodyImageMainResponseDTO;
 import com.hsp.fitu.dto.ProfileImageUploadResponseDTO;
-import com.hsp.fitu.entity.BodyImageEntity;
+import com.hsp.fitu.dto.ProfileImagesResponseDTO;
 import com.hsp.fitu.jwt.CustomUserDetails;
 import com.hsp.fitu.service.ProfileImageService;
 import com.hsp.fitu.service.S3Service;
@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/profile-image")
@@ -32,11 +30,11 @@ public class ProfileImageController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<BodyImageEntity>> getProfileImages(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ProfileImagesResponseDTO> getProfileImages(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
 
-        List<BodyImageEntity> bodyImageEntityList = profileImageService.getProfileImages(userId);
-        return ResponseEntity.ok(bodyImageEntityList);
+        ProfileImagesResponseDTO profileImages = profileImageService.getProfileImages(userId);
+        return ResponseEntity.ok(profileImages);
     }
 
     @PostMapping()
