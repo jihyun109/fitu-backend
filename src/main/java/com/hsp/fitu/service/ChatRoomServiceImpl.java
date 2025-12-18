@@ -1,5 +1,6 @@
 package com.hsp.fitu.service;
 
+import com.hsp.fitu.dto.ChatRoom;
 import com.hsp.fitu.dto.ChatRoomCreateRequestDTO;
 import com.hsp.fitu.dto.ChatRoomCreateResponseDTO;
 import com.hsp.fitu.dto.ChatRoomListResponseDTO;
@@ -10,6 +11,8 @@ import com.hsp.fitu.repository.ChatRoomRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +52,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public ChatRoomListResponseDTO getChatRoomList(Long userId) {
+        List<ChatRoom> chatRoomListResponseDTO = chatRoomRepository.getChatRoomList(userId);
+
+        for (ChatRoom chatRoom : chatRoomListResponseDTO) {
+            Long chatRoomId = chatRoom.getRoomId();
+            String url = chatRoomRepository.getChatRoomImg(chatRoomId, userId);
+            chatRoom.setImgUrl(url);
+        }
+
         return ChatRoomListResponseDTO.builder()
                 .chatRoomList(chatRoomRepository.getChatRoomList(userId)).build();
     }
