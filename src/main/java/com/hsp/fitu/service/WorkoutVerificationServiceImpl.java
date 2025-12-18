@@ -31,12 +31,13 @@ public class WorkoutVerificationServiceImpl implements WorkoutVerificationServic
         validateWorkoutVerificationRequest(workoutVerificationVideo);
 
         // 동영상 파일 S3에 저장 & url get
-        String fileUrl = s3Service.upload(workoutVerificationVideo, MediaCategory.WORKOUT_VERIFICATION_VIDEO);
+        String fileUrl = s3Service.upload(workoutVerificationVideo, MediaCategory.WORKOUT_VERIFICATION);
 
         // db에 동영상 파일 데이터 저장
         MediaFilesEntity mediaFilesEntity = mediaFilesRepository.save(MediaFilesEntity.builder()
                 .url(fileUrl)
                 .uploaderId(userId)
+                .category(MediaCategory.WORKOUT_VERIFICATION)
                 .build());
 
         Long mediaFileId = mediaFilesEntity.getId();    // 저장된 미디어파일의 id
