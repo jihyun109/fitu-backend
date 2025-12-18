@@ -1,7 +1,9 @@
 package com.hsp.fitu.service;
 
+import com.hsp.fitu.dto.ChatMessage;
 import com.hsp.fitu.dto.ChatMessageRequestDTO;
 import com.hsp.fitu.dto.ChatMessageResponseDTO;
+import com.hsp.fitu.dto.ChatRoomMessageResponseDTO;
 import com.hsp.fitu.entity.ChatMessageEntity;
 import com.hsp.fitu.repository.ChatMessageRepository;
 import com.hsp.fitu.repository.ChatRoomMemberRepository;
@@ -44,6 +46,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     responseDTO
             );
         }
+    }
+
+    @Override
+    public ChatRoomMessageResponseDTO getChatRoomMessage(Long chatRoomId) {
+        List<ChatMessage> chatMessageList = chatMessageRepository.findChatMessagesByChatRoomId(chatRoomId);
+        return ChatRoomMessageResponseDTO.builder()
+                .messages(chatMessageList).build();
     }
 
     private ChatMessageResponseDTO save(ChatMessageRequestDTO message, long userId) {
