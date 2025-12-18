@@ -1,7 +1,7 @@
 package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
-import com.hsp.fitu.dto.BodyImageMainResponseDTO;
+import com.hsp.fitu.dto.ProfileImageResponseDTO;
 import com.hsp.fitu.dto.ProfileImageUploadResponseDTO;
 import com.hsp.fitu.dto.ProfileImagesResponseDTO;
 import com.hsp.fitu.jwt.CustomUserDetails;
@@ -24,7 +24,7 @@ public class ProfileImageController {
     private final S3Service s3Service;
 
     @GetMapping()
-    public ResponseEntity<BodyImageMainResponseDTO> getMainProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ProfileImageResponseDTO> getMainProfileImage(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getId();
         return ResponseEntity.ok(profileImageService.getMainProfileImage(userId));
     }
