@@ -5,11 +5,12 @@ import com.hsp.fitu.entity.enums.MediaCategory;
 import com.hsp.fitu.error.customExceptions.EmptyFileException;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.error.customExceptions.S3UploadFailException;
-import com.hsp.fitu.repository.BodyImageRepository;
+import com.hsp.fitu.repository.MediaFilesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -30,7 +31,7 @@ import java.util.UUID;
 @Service
 public class S3ServiceImpl implements S3Service {
     private final S3Client s3Client;
-    private final BodyImageRepository bodyImageRepository;
+    private final MediaFilesRepository mediaFilesRepository;
 
     @Value("${cloud.aws.s3.bucket-name}")
     private String bucketName;
@@ -88,6 +89,7 @@ public class S3ServiceImpl implements S3Service {
     }
 
     @Override
+    @Transactional
     public void deleteImageFromS3(BodyImageDeleteRequestDTO dto) {
         String imageUrl = dto.getImageUrl();
         String key = getKeyFromImageAddress(imageUrl);
@@ -98,7 +100,8 @@ public class S3ServiceImpl implements S3Service {
                     .build();
 
             s3Client.deleteObject(deleteObjectRequest);
-            bodyImageRepository.deleteByUrl(imageUrl);
+
+            mediaFilesRepository.deleteByUrl(imageUrl);
         } catch (Exception e) {
             throw new EmptyFileException(ErrorCode.S3_DELETE_FAILED);
         }
