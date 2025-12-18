@@ -1,6 +1,6 @@
 package com.hsp.fitu.repository;
 
-import com.hsp.fitu.dto.BodyImageMainResponseDTO;
+import com.hsp.fitu.dto.ProfileImageResponseDTO;
 import com.hsp.fitu.dto.ProfileImage;
 import com.hsp.fitu.entity.MediaFilesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +21,7 @@ public interface MediaFilesRepository extends JpaRepository<MediaFilesEntity, Lo
             ORDER BY m.uploadedAt DESC 
             LIMIT 1
             """)
-    BodyImageMainResponseDTO findMainProfileImageByUserId(@Param("userId")long userId);
+    ProfileImageResponseDTO findMainProfileImageByUserId(@Param("userId")long userId);
 
 
     @Query("""

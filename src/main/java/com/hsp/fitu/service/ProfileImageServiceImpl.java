@@ -1,6 +1,6 @@
 package com.hsp.fitu.service;
 
-import com.hsp.fitu.dto.BodyImageMainResponseDTO;
+import com.hsp.fitu.dto.ProfileImageResponseDTO;
 import com.hsp.fitu.dto.ProfileImagesResponseDTO;
 import com.hsp.fitu.entity.MediaFilesEntity;
 import com.hsp.fitu.entity.enums.MediaCategory;
@@ -22,12 +22,9 @@ public class ProfileImageServiceImpl implements ProfileImageService {
     private final UserRepository userRepository;
 
     @Override
-    public BodyImageMainResponseDTO getMainProfileImage(long userId) {
-        BodyImageMainResponseDTO responseDTO = mediaFilesRepository.findMainProfileImageByUserId(userId);
-        if (responseDTO.getImageUrl() == null) {
-            return new BodyImageMainResponseDTO("https://fitu-bucket.s3.ap-northeast-2.amazonaws.com/fitu_default_image.png");
-        }
-        return responseDTO;
+    public ProfileImageResponseDTO getMainProfileImage(long userId) {
+
+        return mediaFilesRepository.findMainProfileImageByUserId(userId);
     }
 
     @Override
