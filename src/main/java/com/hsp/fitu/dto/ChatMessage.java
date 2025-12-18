@@ -1,10 +1,12 @@
 package com.hsp.fitu.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@AllArgsConstructor
 public class ChatMessage {
     private String senderName;
     private String message;
