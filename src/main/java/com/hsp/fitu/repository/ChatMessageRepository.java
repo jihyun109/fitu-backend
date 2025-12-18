@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, Long> {
     @Query("""
-            SELECT new com.hsp.fitu.dto.ChatMessage(u.name, cm.content, m.url, cm.createdAt)
+            SELECT new com.hsp.fitu.dto.ChatMessage(u.name, cm.content, m.url, cm.createdAt, u.id)
             FROM ChatMessageEntity cm
             JOIN UserEntity u ON cm.senderId = u.id
             JOIN MediaFilesEntity m ON u.profileImgId = m.id
