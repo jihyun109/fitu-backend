@@ -1,15 +1,13 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.BodyImageMainResponseDTO;
-import com.hsp.fitu.entity.BodyImageEntity;
+import com.hsp.fitu.dto.ProfileImagesResponseDTO;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 public interface ProfileImageService {
     BodyImageMainResponseDTO getMainProfileImage(long userId);
 
-    List<BodyImageEntity> getProfileImages(long userId);
+    ProfileImagesResponseDTO getProfileImages(long userId);
 
     String uploadProfileImage(MultipartFile file, long userId);
 }
