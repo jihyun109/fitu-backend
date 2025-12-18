@@ -1,6 +1,7 @@
 package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.BodyImageMainResponseDTO;
+import com.hsp.fitu.dto.ProfileImagesResponseDTO;
 import com.hsp.fitu.entity.BodyImageEntity;
 import com.hsp.fitu.entity.MediaFilesEntity;
 import com.hsp.fitu.entity.enums.MediaCategory;
@@ -13,8 +14,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +35,9 @@ public class ProfileImageServiceImpl implements ProfileImageService {
     }
 
     @Override
-    public List<BodyImageEntity> getProfileImages(long userId) {
-        return bodyImageRepository.findByUserIdOrderByRecordedAtDesc(userId);
+    public ProfileImagesResponseDTO getProfileImages(long userId) {
+        return ProfileImagesResponseDTO.builder()
+                .profileImages(mediaFilesRepository.findProfileImgsByUserId(userId)).build();
     }
 
     @Override
