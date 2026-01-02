@@ -31,6 +31,19 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # ARM 등 다른 아키텍쳐 지원을 위해 QEMU 설치
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all
+
+      # Buildx builder를 docker-container 드라이버로 생성
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          install: true
+
       - name: Build & Push         # 도커 이미지 빌드 & 푸시
         uses: docker/build-push-action@v6
         with:
