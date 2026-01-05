@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         AntPathMatcher pathMatcher = new AntPathMatcher();
 
         // 특정 경로를 필터에서 제외
-        if (path.equals("/login") || path.equals("/signup") || path.equals("/auth/login/kakao") || path.equals("/auth/reissue") || pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/v3/api-docs/**", path) || pathMatcher.match("/ws/**", path)) {
+        if (path.equals("/login") || path.equals("/signup") || path.equals("/auth/login/kakao") || path.equals("/auth/reissue") || pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/v3/api-docs/**", path) || pathMatcher.match("/ws/**", path) || pathMatcher.match("/actuator/health", path)) {
             filterChain.doFilter(request, response);
             return;
         }
