@@ -16,8 +16,10 @@ services:
 
   app:
     image: jihyun923/fitu:latest
-    env_file:
-      - .env
+    secrets:
+      - app-secrets.yml
+    environment:
+      SPRING_CONFIG_LOCATION: /run/secrets/app-secrets.yml
     deploy:
       replicas: 2               # 백엔드 인스턴스 수
       update_config:
@@ -44,9 +46,7 @@ services:
     configs:
       - source: redis_conf
         target: /usr/local/etc/redis/redis.conf
-    secrets:
-      - redis_acl
-    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" , "--aclfile", "/run/secrets/redis_acl" ]
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
     deploy:
       replicas: 1
       restart_policy:
