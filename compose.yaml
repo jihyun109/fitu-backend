@@ -11,6 +11,10 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 200M
     networks:
       - fitu-prod-web
 
@@ -33,7 +37,7 @@ services:
       resources:
         limits:
           cpus: "0.5"
-          memory: 1000M
+          memory: 1024M
 
     # health check
     healthcheck:
@@ -52,11 +56,17 @@ services:
     configs:
       - source: redis_conf
         target: /usr/local/etc/redis/redis.conf
-    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf",
+               "--maxmemory", "1000mb",
+               "--maxmemory-policy", "allkeys-lru"]
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1024M
     networks:
       - fitu-prod-web
 
