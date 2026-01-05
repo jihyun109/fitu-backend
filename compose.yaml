@@ -17,9 +17,9 @@ services:
   app:
     image: jihyun923/fitu:latest
     secrets:
-      - app-secrets.yml
+      - app-secret.yml
     environment:
-      SPRING_CONFIG_LOCATION: /run/secrets/app-secrets.yml
+      SPRING_CONFIG_LOCATION: /run/secrets/app-secret.yml
     deploy:
       replicas: 2               # 백엔드 인스턴스 수
       update_config:
