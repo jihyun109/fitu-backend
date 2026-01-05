@@ -11,6 +11,10 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 200M
     networks:
       - fitu-prod-web
 
@@ -20,6 +24,7 @@ services:
       - app-secret.yml
     environment:
       SPRING_CONFIG_LOCATION: /run/secrets/app-secret.yml
+      JAVA_OPTS: "-Xms512m -Xmx768m"
     deploy:
       replicas: 2               # 백엔드 인스턴스 수
       update_config:
@@ -29,6 +34,10 @@ services:
         order: start-first      # 새 컨테이너 먼저 띄우고, 그 다음 기존 것 내림
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1024M
 
     # health check
     healthcheck:
@@ -47,11 +56,17 @@ services:
     configs:
       - source: redis_conf
         target: /usr/local/etc/redis/redis.conf
-    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf",
+               "--maxmemory", "1000mb",
+               "--maxmemory-policy", "allkeys-lru"]
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1024M
     networks:
       - fitu-prod-web
 
