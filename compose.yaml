@@ -19,9 +19,13 @@ services:
       - fitu-prod-web
 
   app:
+    ports:
+      - "8080:8080"
     image: jihyun923/fitu:latest
     secrets:
       - app-secret.yml
+#    env_file:
+#      - .env
     environment:
       SPRING_CONFIG_LOCATION: /run/secrets/app-secret.yml
       JAVA_OPTS: "-Xms512m -Xmx768m"
@@ -72,6 +76,7 @@ services:
 
 networks:
   fitu-prod-web:
+    driver: overlay
 
 configs:
   nginx_conf:
