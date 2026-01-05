@@ -66,3 +66,6 @@ configs:
 secrets:
   redis_acl:
     external: true
+
+  app-secret.yml:
+    external: true
