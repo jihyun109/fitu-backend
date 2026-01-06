@@ -3,6 +3,7 @@ services:
     depends_on:
       - app
     image: nginx:1.25-alpine
+    # 외부의 80포트를 열고, nginx 내부의 80포트와 연결
     ports:
       - "80:80"
     configs:
