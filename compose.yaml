@@ -3,6 +3,7 @@ services:
     depends_on:
       - app
     image: nginx:1.25-alpine
+    # 외부의 80포트를 열고, nginx 내부의 80포트와 연결
     ports:
       - "80:80"
     configs:
@@ -19,13 +20,12 @@ services:
       - fitu-prod-web
 
   app:
-    ports:
-      - "8080:8080"
+    # 오버레이 네트워크 안에서 8080 포트 사용
+    expose:
+      - "8080"
     image: jihyun923/fitu:latest
     secrets:
       - app-secret.yml
-#    env_file:
-#      - .env
     environment:
       SPRING_CONFIG_LOCATION: /run/secrets/app-secret.yml
       JAVA_OPTS: "-Xms512m -Xmx768m"
