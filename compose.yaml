@@ -52,6 +52,7 @@ services:
       start_period: 60s
     networks:
       - fitu-prod-web
+      - monitoring-bridge
 
   redis:
     image: redis:7-alpine
@@ -77,6 +78,8 @@ services:
 networks:
   fitu-prod-web:
     driver: overlay
+  monitoring-bridge:
+    external: true
 
 configs:
   nginx_conf:
