@@ -19,7 +19,7 @@ public class VerifyZeroDownTImeController {
     public ResponseEntity<String> getTotal500Ranking(@AuthenticationPrincipal CustomUserDetails userDetails) {
         rankingService.getTotal500Ranking(userDetails.getId());
 
-        return ResponseEntity.ok("Hello FitU V10");
+        return ResponseEntity.ok("Hello FitU V11");
     }
 
 }
