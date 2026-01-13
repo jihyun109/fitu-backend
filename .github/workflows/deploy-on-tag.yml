@@ -55,6 +55,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
 
   deploy: # 2. 배포 단계
+    if: false
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
