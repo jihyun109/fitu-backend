@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
         for (int i = 0; i < 10; i++) {
             String friendCode = generateFriendCode();
 
-            Long id = userRepository.findIdByFriendCode(friendCode);
+            Long id = userRepository.findIdByFriendCode(friendCode).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
             if (id == null) {
                 return friendCode;

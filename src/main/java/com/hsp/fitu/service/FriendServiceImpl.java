@@ -22,7 +22,7 @@ public class FriendServiceImpl implements FriendService {
     public void addFriend(FriendAddRequestDTO dto, Long userId) {
         // code로 사용자 id 검색
         String code = dto.getCode();
-        Long userIdToAdd = userRepository.findIdByFriendCode(code);
+        Long userIdToAdd = userRepository.findIdByFriendCode(code).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         Long userIdA = Math.min(userId, userIdToAdd);
         Long userIdB = Math.max(userId, userIdToAdd);
