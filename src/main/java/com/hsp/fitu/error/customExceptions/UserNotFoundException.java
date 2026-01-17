@@ -1,14 +1,12 @@
 package com.hsp.fitu.error.customExceptions;
 
+import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
 import lombok.Getter;
 
 @Getter
-public class UserNotFoundException extends RuntimeException {
-    private final ErrorCode errorCode;
-
-    public UserNotFoundException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
+public class UserNotFoundException extends BusinessException {
+    public UserNotFoundException() {
+        super(ErrorCode.USER_NOT_FOUND);
     }
 }

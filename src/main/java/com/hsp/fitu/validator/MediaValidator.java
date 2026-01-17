@@ -1,8 +1,8 @@
 package com.hsp.fitu.validator;
 
 import com.hsp.fitu.entity.enums.MediaType;
+import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
-import com.hsp.fitu.error.customExceptions.EmptyFileException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +16,7 @@ public class MediaValidator {
 
     public void validateMedia(MultipartFile mediaFile, MediaType mediaType) {
         if (mediaFile == null || mediaFile.isEmpty()) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
+            throw new BusinessException(ErrorCode.EMPTY_FILE);
         }
 
         String filename = mediaFile.getOriginalFilename();    // 파일 이름
@@ -24,19 +24,19 @@ public class MediaValidator {
 
         // 파일의 확장자가 없는 경우
         if (lastDotIndex == -1) {
-            throw new EmptyFileException(ErrorCode.MISSING_FILE_EXTENSION);
+            throw new BusinessException(ErrorCode.MISSING_FILE_EXTENSION);
         }
 
         // 확장자가 유효한지 확인
         switch (mediaType) {
             case IMAGE:
                 if (!allowedImageExtentions.contains(filename.substring(lastDotIndex + 1).toLowerCase())) {
-                    throw new EmptyFileException(ErrorCode.INVALID_FILE_EXTENSION);
+                    throw new BusinessException(ErrorCode.INVALID_FILE_EXTENSION);
                 }
                 break;
             case VIDEO:
                 if (!allowedVideoExtentions.contains(filename.substring(lastDotIndex + 1).toLowerCase())) {
-                    throw new EmptyFileException(ErrorCode.INVALID_FILE_EXTENSION);
+                    throw new BusinessException(ErrorCode.INVALID_FILE_EXTENSION);
                 }
                 break;
         }
