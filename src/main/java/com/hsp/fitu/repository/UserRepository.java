@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     // 친구 초대 코드로 사용자 id 조회
     @Query("SELECT u.id FROM UserEntity u WHERE u.friendCode = :code")
-    Long findIdByFriendCode(@Param("code") String code);
+    Optional<Long> findIdByFriendCode(@Param("code") String code);
 
     // 사용자 프로필 사진과 공유 여부 조회
     @Query("SELECT new com.hsp.fitu.dto.UserProfileImageResponseDto(m.url, u.profileVisibility) " +
