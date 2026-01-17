@@ -3,6 +3,8 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.PostEntity;
 import com.hsp.fitu.entity.enums.PostCategory;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.PostRepository;
 import com.hsp.fitu.repository.UniversityRepository;
@@ -37,7 +39,7 @@ public class PostServiceImpl implements PostService {
 
         PostEntity saved = postRepository.save(postEntity);
         return postRepository.findPostWithWriter(saved.getId())
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
 
     @Override
@@ -56,11 +58,11 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDetailResponseDTO getPost(long postId, Long currentUserId) {
         PostResponseDTO postResponseDTO = postRepository.findPostWithWriter(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
         Long postWriterId = postRepository.findById(postId)
                 .map(PostEntity::getWriterId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 작성자를 찾을 수 없다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_WRITER_NOT_FOUND));
 
         List<PostCommentResponseDTO> comments = postCommentService.getComments(postId, currentUserId, postWriterId);
 
@@ -83,13 +85,13 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostResponseDTO updatePost(long postId, PostUpdateRequestDTO postUpdateRequestDTO) {
         PostEntity postEntity = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
         postEntity.update(
                 postUpdateRequestDTO.title(),
                 postUpdateRequestDTO.contents()
         );
         return postRepository.findPostWithWriter(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
 
     @Override

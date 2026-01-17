@@ -2,9 +2,8 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.BodyImageDeleteRequestDTO;
 import com.hsp.fitu.entity.enums.MediaCategory;
-import com.hsp.fitu.error.customExceptions.EmptyFileException;
+import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
-import com.hsp.fitu.error.customExceptions.S3UploadFailException;
 import com.hsp.fitu.repository.MediaFilesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,8 +38,13 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String upload(MultipartFile file, MediaCategory mediaCategory) {
-        String folderName = getFolderName(mediaCategory);   // 폴더 이름
+        // 1. 파일 비어있는지 검증
+        validateFileExists(file);
 
+        // 2. 확장자 체크
+        validateExtension(file);
+
+        String folderName = getFolderName(mediaCategory);   // 폴더 이름
         // 미디어 파일 S3에 업로드 & get media file url
         return this.uploadFileToS3(file, folderName);
     }
@@ -48,27 +52,15 @@ public class S3ServiceImpl implements S3Service {
     @Override
     public String uploadFileToS3(MultipartFile file, String folder) {
         try {
-            return this.uploadImageToS3(file, folder);
+            return this.uploadToS3(file, folder);
         } catch (IOException e) {
-            throw new EmptyFileException(ErrorCode.FILE_UPLOAD_FAILED);
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
-    private String getFolderName(MediaCategory mediaCategory) {
-
-        return switch (mediaCategory) {
-            case PROFILE_IMAGE -> "profile_img";
-            case WORKOUT_VERIFICATION -> "workout_verification_video";
-            case WORKOUT_COMPLETE -> "today_workout_complete";
-            case INQUIRY -> "inquiry";
-        };
-    }
-
-    private String uploadImageToS3(MultipartFile file, String folder) throws IOException {
+    private String uploadToS3(MultipartFile file, String folder) throws IOException {
         // 저장할 파일 이름 생성
         String s3FileName = generateFileName(file, folder);
-
-        byte[] bytes = file.getBytes();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -78,12 +70,13 @@ public class S3ServiceImpl implements S3Service {
                 .build();
 
         try {
-            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
         } catch (Exception e) {
-            throw new S3UploadFailException(ErrorCode.S3_UPLOAD_FAILED);
+            throw new BusinessException(ErrorCode.S3_UPLOAD_FAILED);
         }
 
-        return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + s3FileName;
+        // todo : 정적 팩토리 메서드나 별도 유틸로 분리
+        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucketName, region, s3FileName);
     }
 
     @Override
@@ -91,6 +84,7 @@ public class S3ServiceImpl implements S3Service {
     public void deleteImageFromS3(BodyImageDeleteRequestDTO dto) {
         String imageUrl = dto.getImageUrl();
         String key = getKeyFromImageAddress(imageUrl);
+
         try {
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                     .bucket(bucketName)
@@ -99,10 +93,36 @@ public class S3ServiceImpl implements S3Service {
 
             s3Client.deleteObject(deleteObjectRequest);
 
+            // DB에서도 삭제
             mediaFilesRepository.deleteByUrl(imageUrl);
         } catch (Exception e) {
-            throw new EmptyFileException(ErrorCode.S3_DELETE_FAILED);
+            throw new BusinessException(ErrorCode.S3_DELETE_FAILED);
         }
+    }
+
+    // --- Helper Methods ---
+
+    private String getFolderName(MediaCategory mediaCategory) {
+        return switch (mediaCategory) {
+            case PROFILE_IMAGE -> "profile_img/";
+            case WORKOUT_VERIFICATION -> "workout_verification_video/";
+            case WORKOUT_COMPLETE -> "today_workout_complete/";
+            case INQUIRY -> "inquiry/";
+        };
+    }
+
+    private void validateFileExists(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException(ErrorCode.EMPTY_FILE);
+        }
+    }
+
+    private void validateExtension(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.contains(".")) {
+            throw new BusinessException(ErrorCode.MISSING_FILE_EXTENSION);
+        }
+        // 확장자 추출 후 검증 로직 추가 가능
     }
 
     private String getKeyFromImageAddress(String imageUrl) {
@@ -111,15 +131,13 @@ public class S3ServiceImpl implements S3Service {
             String decodingKey = URLDecoder.decode(url.getPath(), "UTF-8");
             return decodingKey.substring(1); // 맨 앞의 '/' 제거
         } catch (MalformedURLException | UnsupportedEncodingException e) {
-            throw new EmptyFileException(ErrorCode.INVALID_IMAGE_FILE);
+            throw new BusinessException(ErrorCode.INVALID_IMAGE_FILE);
         }
     }
 
     private String generateFileName(MultipartFile file, String folder) {
         String originalFilename = file.getOriginalFilename(); //원본 파일 명
         String ext = originalFilename.substring(originalFilename.lastIndexOf(".")); // 확장자
-        String timestamp = String.valueOf(System.currentTimeMillis());
-        String random = UUID.randomUUID().toString().substring(0, 6);
-        return folder + timestamp + "_" + random + ext;
+        return folder + UUID.randomUUID() + ext;
     }
 }

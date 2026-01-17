@@ -43,6 +43,8 @@ public enum ErrorCode {
     WORKOUT_NOT_FOUND(404, "WORKOUT-404", "운동을 찾을 수 없습니다"),
     WORKOUT_CALENDAR_NOT_FOUND(404, "WORKOUT-404", "운동 일정을 찾을 수 없습니다"),
     INVALID_WORKOUT_ID(400, "WORKOUT-400", "유효하지 않은 운동 ID입니다"),
+    WORKOUT_RECORD_NOT_FOUND(404, "WORKOUT-RECORD-404", "운동 기록을 찾을 수 없습니다"),
+    INVALID_TOTAL_MIN(400, "MIN-400", "총 minute이 유효하지 않습니다"),
 
     // 피지컬 정보 관련 에러 (PHYSICAL)
     PHYSICAL_INFO_NOT_FOUND(404, "PHYSICAL-404", "신체 정보를 찾을 수 없습니다"),
@@ -56,7 +58,16 @@ public enum ErrorCode {
     JWT_EXPIRED(401, "AUTH-401", "JWT 토큰이 만료되었습니다"),
     JWT_SIGNATURE_INVALID(401, "AUTH-401", "JWT 서명이 유효하지 않습니다"),
     JWT_UNSUPPORTED(401, "AUTH-401", "지원되지 않는 JWT 토큰입니다"),
-    JWT_EMPTY(400, "AUTH-400", "토큰이 비어있습니다");
+    JWT_EMPTY(400, "AUTH-400", "토큰이 비어있습니다"),
+
+    // 댓글 관련 에러 (COMMENT)
+    COMMENT_NOT_FOUND(404, "COMMENT-404", "댓글을 찾을 수 없습니다"),
+    INVALID_COMMENT_AUTHOR(401, "COMMENT-401", "댓글 작성자가 아닙니다"),
+
+    // 게시글 관련 에러 (POST)
+    POST_NOT_FOUND(404, "POST-404", "게시글을 찾을 수 없습니다"),
+    POST_WRITER_NOT_FOUND(404, "POST-404", "게시글 작성자를 찾을 수 없습니다")
+    ;
 
     private int status;
     private String errorCode;

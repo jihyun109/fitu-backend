@@ -3,6 +3,8 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.*;
 import com.hsp.fitu.entity.enums.MediaCategory;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class WorkoutSessionServiceImpl implements WorkoutSessionService {
 
         Integer totalMinutes = requestDTO.totalMinutes();
         if (totalMinutes <= 0) {
-            throw new IllegalArgumentException("Invalid totalMinutes");
+            throw new BusinessException(ErrorCode.INVALID_TOTAL_MIN);
         }
 
         LocalDateTime endTime = LocalDateTime.now();

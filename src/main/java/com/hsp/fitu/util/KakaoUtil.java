@@ -46,7 +46,6 @@ public class KakaoUtil {
         KakaoDTO.OAuthToken oAuthToken = null;
         try {
             oAuthToken = objectMapper.readValue(response.getBody(), KakaoDTO.OAuthToken.class);
-            log.info("oAuthToken : " + oAuthToken.getAccess_token());
         } catch (JsonProcessingException e) {
             log.warn("failed");
 //            throw new AuthHandler(ErrorStatus._PARSING_ERROR);
