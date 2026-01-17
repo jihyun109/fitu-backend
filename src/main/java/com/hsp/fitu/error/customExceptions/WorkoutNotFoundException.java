@@ -1,14 +1,13 @@
 package com.hsp.fitu.error.customExceptions;
 
+import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
 import lombok.Getter;
 
 @Getter
-public class WorkoutNotFoundException extends RuntimeException {
-    private final ErrorCode errorCode;
+public class WorkoutNotFoundException extends BusinessException {
 
-    public WorkoutNotFoundException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
+    public WorkoutNotFoundException() {
+        super(ErrorCode.WORKOUT_NOT_FOUND);
     }
 }

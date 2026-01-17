@@ -1,9 +1,10 @@
 package com.hsp.fitu.error.customExceptions;
 
+import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
 
-public class JwtSignatureInvalidException extends RuntimeException {
+public class JwtSignatureInvalidException extends BusinessException {
     public JwtSignatureInvalidException() {
-        super(String.valueOf(ErrorCode.JWT_SIGNATURE_INVALID));
+        super(ErrorCode.JWT_SIGNATURE_INVALID);
     }
 }
