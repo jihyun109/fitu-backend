@@ -36,11 +36,17 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
-        log.warn("BusinessException: {}", e.getErrorCode().getMessage());
-
         ErrorCode errorCode = e.getErrorCode();
-        ErrorResponse response = ErrorResponse.from(errorCode);
-        return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatus()));
+
+        if (errorCode.getStatus() >= 500) {
+            log.error("Server Error: ", e);
+        } else {
+            log.warn("Business Warning: {}", e.getMessage());
+        }
+
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ErrorResponse.from(errorCode));
     }
 
     /**
