@@ -7,6 +7,8 @@ import com.hsp.fitu.dto.UserSaveInfoResponseDTO;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.AccountStatus;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.jwt.JwtUtil;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
 import com.hsp.fitu.repository.UniversityRepository;
@@ -29,7 +31,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserSaveInfoResponseDTO saveInfo(Long userId, UserInfoRequestDTO userInfoRequestDTO, String authHeader) {
         UserEntity userEntity = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // friend code 부여
         String friendCode = assignFriendCode();
@@ -81,7 +83,7 @@ public class UserServiceImpl implements UserService {
         for (int i = 0; i < 10; i++) {
             String friendCode = generateFriendCode();
 
-            Long id = userRepository.findIdByFriendCode(friendCode);
+            Long id = userRepository.findIdByFriendCode(friendCode).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
             if (id == null) {
                 return friendCode;
