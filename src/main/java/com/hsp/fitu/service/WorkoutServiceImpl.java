@@ -6,8 +6,8 @@ import com.hsp.fitu.entity.OldWorkoutEntity;
 import com.hsp.fitu.entity.WorkoutEntity;
 import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.entity.enums.WorkoutCategory;
+import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
-import com.hsp.fitu.error.customExceptions.EmptyFileException;
 import com.hsp.fitu.error.customExceptions.WorkoutNotFoundException;
 import com.hsp.fitu.repository.WorkoutCategoryRepository;
 import com.hsp.fitu.repository.OldWorkoutRepository;
@@ -191,7 +191,7 @@ public class WorkoutServiceImpl implements WorkoutService {
                 .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.INVALID_WORKOUT_ID));
 
         if (image.isEmpty()) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
+            throw new BusinessException(ErrorCode.EMPTY_FILE);
         }
 
         String newImageUrl = s3Service.uploadFileToS3(image, "workouts/images/");
@@ -205,7 +205,7 @@ public class WorkoutServiceImpl implements WorkoutService {
                 .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.INVALID_WORKOUT_ID));
 
         if (gif.isEmpty()) {
-            throw new EmptyFileException(ErrorCode.EMPTY_FILE);
+            throw new BusinessException(ErrorCode.EMPTY_FILE);
         }
 
         String newGifUrl = s3Service.uploadFileToS3(gif, "workouts/gifs/");
