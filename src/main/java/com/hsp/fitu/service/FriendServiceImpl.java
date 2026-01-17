@@ -3,9 +3,8 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.FriendAddRequestDTO;
 import com.hsp.fitu.dto.FriendListResponseDTO;
 import com.hsp.fitu.entity.FriendshipEntity;
-import com.hsp.fitu.error.customExceptions.FriendshipAlreadyExistsException;
-import com.hsp.fitu.error.customExceptions.InvalidFriendCodeException;
-import com.hsp.fitu.error.customExceptions.InvalidFriendRequestException;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.repository.FriendshipRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,17 +44,17 @@ public class FriendServiceImpl implements FriendService {
     private void validFriendRequest(Long userIdToAdd, Long userId, Long userIdA, Long userIdB) {
         // 해당되는 사용자가 없을 경우
         if (userIdToAdd == null) {
-            throw new InvalidFriendCodeException();
+            throw new BusinessException(ErrorCode.INVALID_FRIEND_CODE);
         }
 
         // 자기 자신을 친구로 추가하려는 경우
         if (userIdToAdd.equals(userId)) {
-            throw new InvalidFriendRequestException();
+            throw new BusinessException(ErrorCode.INVALID_FRIEND_REQUEST);
         }
 
         // 이미 친구인 경우
         if (friendshipRepository.existsByUserIdAAndUserIdB(userIdA, userIdB)) {
-            throw new FriendshipAlreadyExistsException();
+            throw new BusinessException(ErrorCode.FRIENDSHIP_ALREADY_EXISTS);
         }
     }
 

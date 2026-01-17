@@ -5,8 +5,8 @@ import com.hsp.fitu.dto.LoginDTO;
 import com.hsp.fitu.dto.TokenResponseDTO;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.Role;
+import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
-import com.hsp.fitu.error.customExceptions.UnauthorizedException;
 import com.hsp.fitu.jwt.JwtUtil;
 import com.hsp.fitu.repository.UserRepository;
 import com.hsp.fitu.util.KakaoUtil;
@@ -74,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public TokenResponseDTO reissue(String refreshToken) {
         if (!jwtUtil.validateToken(refreshToken)) {
-            throw new UnauthorizedException();
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
         }
 
         Long userId = jwtUtil.getUserId(refreshToken);

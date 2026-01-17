@@ -5,7 +5,8 @@ import com.hsp.fitu.dto.UserProfileRequestDTO;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.PhysicalInfoEntity;
 import com.hsp.fitu.entity.enums.Role;
-import com.hsp.fitu.error.customExceptions.UserNotFoundException;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.jwt.JwtUtil;
 import com.hsp.fitu.repository.PhysicalInfoRepository;
 import com.hsp.fitu.repository.UserRepository;
@@ -24,7 +25,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Override
     public AdditionalInfoResponseDTO inputProfileOnce(long userId, UserProfileRequestDTO dto) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // UserEntity(gender) 수정
         Role role = dto.getRole();
