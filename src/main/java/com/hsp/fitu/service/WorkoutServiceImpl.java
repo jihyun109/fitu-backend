@@ -8,6 +8,7 @@ import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.entity.enums.WorkoutCategory;
 import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
+import com.hsp.fitu.error.customExceptions.InvalidWorkoutIdException;
 import com.hsp.fitu.error.customExceptions.WorkoutNotFoundException;
 import com.hsp.fitu.repository.WorkoutCategoryRepository;
 import com.hsp.fitu.repository.OldWorkoutRepository;
@@ -173,7 +174,7 @@ public class WorkoutServiceImpl implements WorkoutService {
                     OldWorkoutEntity entity = oldWorkoutRepository.findByName(workout);
 
                     if (entity == null) {
-                        throw new WorkoutNotFoundException(ErrorCode.WORKOUT_NOT_FOUND);
+                        throw new WorkoutNotFoundException();
                     }
 
                     return WorkoutGifResponseDTO.builder()
@@ -188,7 +189,7 @@ public class WorkoutServiceImpl implements WorkoutService {
     @Override
     public void updateWorkoutImage(long workoutId, MultipartFile image) {
         OldWorkoutEntity workout = oldWorkoutRepository.findById(workoutId)
-                .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.INVALID_WORKOUT_ID));
+                .orElseThrow(InvalidWorkoutIdException::new);
 
         if (image.isEmpty()) {
             throw new BusinessException(ErrorCode.EMPTY_FILE);
@@ -202,7 +203,7 @@ public class WorkoutServiceImpl implements WorkoutService {
     @Override
     public void updateWorkoutGif(long workoutId, MultipartFile gif) {
         OldWorkoutEntity workout = oldWorkoutRepository.findById(workoutId)
-                .orElseThrow(() -> new WorkoutNotFoundException(ErrorCode.INVALID_WORKOUT_ID));
+                .orElseThrow(InvalidWorkoutIdException::new);
 
         if (gif.isEmpty()) {
             throw new BusinessException(ErrorCode.EMPTY_FILE);
