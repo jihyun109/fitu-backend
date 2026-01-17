@@ -1,12 +1,12 @@
 package com.hsp.fitu.jwt;
 
 import com.hsp.fitu.entity.enums.Role;
-import com.hsp.fitu.error.customExceptions.JwtExpiredException;
-import com.hsp.fitu.error.customExceptions.JwtInvalidException;
-import com.hsp.fitu.error.customExceptions.JwtSignatureInvalidException;
-import com.hsp.fitu.error.customExceptions.JwtUnsupportedException;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class JwtUtil {
     private final SecretKey secretKey;
@@ -88,15 +89,16 @@ public class JwtUtil {
                     .getBody();
 
         } catch (ExpiredJwtException e) {
-            throw new JwtExpiredException();
+            throw new BusinessException(ErrorCode.JWT_EXPIRED);
         } catch (MalformedJwtException e) {
-            throw new JwtInvalidException();
-        } catch (JwtSignatureInvalidException e) {
-            throw new JwtSignatureInvalidException();
-        } catch (JwtUnsupportedException e) {
-            throw new JwtUnsupportedException();
+            throw new BusinessException(ErrorCode.INVALID_JWT);
+        } catch (SignatureException e) {
+            throw new BusinessException(ErrorCode.JWT_SIGNATURE_INVALID);
+        } catch (UnsupportedJwtException e) {
+            throw new BusinessException(ErrorCode.JWT_UNSUPPORTED);
         } catch (Exception e) {
-            throw new Exception();
+            log.error("JWT parsing error", e); // 서버 에러는 로그 남기기
+            throw new BusinessException(ErrorCode.INTER_SERVER_ERROR);
         }
     }
 

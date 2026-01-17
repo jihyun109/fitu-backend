@@ -3,6 +3,8 @@ package com.hsp.fitu.service;
 import com.hsp.fitu.dto.AdminSuspendRequestDTO;
 import com.hsp.fitu.dto.AdminUserResponseDTO;
 import com.hsp.fitu.entity.UserEntity;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,7 @@ public class AdminUserServiceImpl implements AdminUserService{
     @Transactional
     public void suspendUser(Long userId, AdminSuspendRequestDTO dto) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         LocalDateTime suspendEndAt = LocalDateTime.now().plusDays(dto.suspendDays());
 
@@ -38,7 +40,7 @@ public class AdminUserServiceImpl implements AdminUserService{
     @Transactional
     public void unsuspendUser(Long userId) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         user.unsuspend();
         userRepository.save(user);
     }

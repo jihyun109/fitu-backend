@@ -1,6 +1,5 @@
 package com.hsp.fitu.error;
 
-import com.hsp.fitu.error.customExceptions.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

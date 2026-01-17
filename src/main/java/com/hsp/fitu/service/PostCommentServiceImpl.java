@@ -4,6 +4,8 @@ import com.hsp.fitu.dto.PostCommentCreateRequestDTO;
 import com.hsp.fitu.dto.PostCommentResponseDTO;
 import com.hsp.fitu.entity.PostCommentsEntity;
 import com.hsp.fitu.entity.UserEntity;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.repository.PostCommentRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class PostCommentServiceImpl implements PostCommentService{
+public class PostCommentServiceImpl implements PostCommentService {
     private final PostCommentRepository postCommentRepository;
     private final UserRepository userRepository;
 
@@ -92,6 +94,7 @@ public class PostCommentServiceImpl implements PostCommentService{
 
         return rootComments;
     }
+
     private String getUserNameById(Long userId) {
         return userRepository.findById(userId)
                 .map(UserEntity::getName)
@@ -103,10 +106,10 @@ public class PostCommentServiceImpl implements PostCommentService{
     public void deleteComment(Long postId, Long commentId, Long writerId) {
 
         PostCommentsEntity postComments = postCommentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
 
         if (postComments.getWriterId() != writerId) {
-            throw new IllegalArgumentException("삭제 권한이 없습니다.");
+            throw new BusinessException(ErrorCode.INVALID_COMMENT_AUTHOR);
         }
 
         postCommentRepository.deleteById(commentId);

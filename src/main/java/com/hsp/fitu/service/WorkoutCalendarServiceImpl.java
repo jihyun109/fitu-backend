@@ -5,6 +5,8 @@ import com.hsp.fitu.dto.WorkoutCalendarDetailDTO;
 import com.hsp.fitu.dto.WorkoutCalendarSummaryDTO;
 import com.hsp.fitu.dto.WorkoutSetDetailDTO;
 import com.hsp.fitu.entity.*;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -80,7 +82,7 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
                 date.atStartOfDay(),
                 date.atTime(23,59,59)
         )
-                .orElseThrow(() -> new RuntimeException("운동기록이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.WORKOUT_RECORD_NOT_FOUND));
 
         List<SessionExercisesEntity> exercisesEntities =
                 sessionExercisesRepository.findBySessionIdOrderByOrderIndex(sessionsEntity.getId());
@@ -88,7 +90,7 @@ public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
         List<WorkoutCalendarDetailDTO> exerciseDTOs = exercisesEntities.stream()
                 .map(ex -> {
                     WorkoutEntity workoutEntity = workoutNewRepository.findById(ex.getWorkoutId())
-                            .orElseThrow();
+                            .orElseThrow(() -> new BusinessException(ErrorCode.WORKOUT_NOT_FOUND));
 
                     String categoryName = workoutCategoryRepository.findById(workoutEntity.getCategoryId())
                             .map(cat -> cat.getName().getKorean())
