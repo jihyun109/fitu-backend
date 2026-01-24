@@ -2,7 +2,6 @@ package com.hsp.fitu.jwt;
 
 import com.hsp.fitu.config.SecurityConstants;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,29 +22,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final SecretKey secretKey;
-    private final TokenBlackListService tokenBlackListService;
+    private final JwtTokenService jwtTokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 2. 토큰 추출
-        String jwt = request.getHeader("Authorization");
-        // 3. 토큰 형식 오류 & 블랙리스트 확인 -> 분리
-        if (jwt == null || !jwt.startsWith("Bearer ") || tokenBlackListService.isTokenBlacklisted(jwt)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("JWT token missing or invalid");
-            return;
-        }
-
-        // 4. 'Bearer ' 접두어를 제거하고 실제 JWT 토큰만 가져오기
-        jwt = jwt.substring(7);
-
-        // 5. 토큰 검증.
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(jwt)
-                .getBody();
+        String token = jwtTokenService.extractTokenFromHeader(request);
+        Claims claims = jwtTokenService.validateToken(token);
 
         // 6. 클레임 파싱
         Long userId = claims.get("userId", Long.class);
