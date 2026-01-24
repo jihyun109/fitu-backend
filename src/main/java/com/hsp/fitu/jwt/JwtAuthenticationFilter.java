@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,12 +26,12 @@ import java.util.List;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final RedisTemplate<String, String> redisTemplate;
-    private SecretKey secretKey;
+    private final SecretKey secretKey;
+    private final TokenBlackListService tokenBlackListService;
 
-    public JwtAuthenticationFilter(RedisTemplate<String, String> redisTemplate, @Value("${jwt.secret}") String signingKey) {
-        this.redisTemplate = redisTemplate;
+    public JwtAuthenticationFilter(@Value("${jwt.secret}") String signingKey, TokenBlackListService tokenBlackListService) {
         this.secretKey = new SecretKeySpec(signingKey.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS256.getJcaName());
+        this.tokenBlackListService = tokenBlackListService;
     }
 
     @Override
@@ -41,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 2. 토큰 추출
         String jwt = request.getHeader("Authorization");
         // 3. 토큰 형식 오류 & 블랙리스트 확인 -> 분리
-        if (jwt == null || !jwt.startsWith("Bearer ") || isTokenBlacklisted(jwt)) {
+        if (jwt == null || !jwt.startsWith("Bearer ") || tokenBlackListService.isTokenBlacklisted(jwt)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("JWT token missing or invalid");
             return;
@@ -84,9 +83,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         return SecurityConstants.PERMIT_ALL_MATCHERS.stream()
                 .anyMatch(matcher -> matcher.matches(request));
-    }
-
-    private boolean isTokenBlacklisted(String token) {
-        return redisTemplate.hasKey("blacklist: " + token);
     }
 }
