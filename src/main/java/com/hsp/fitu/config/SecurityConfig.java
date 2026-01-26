@@ -23,20 +23,6 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public static final String[] ALLOW_URLS = {
-            "/v3/api-docs/**",
-            "/api/v1/posts/**",
-            "/api/v1/replies/**",
-            "/login",
-            "/auth/login/kakao/**",
-            "/auth/reissue",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/actuator/health/**",
-            "/actuator/**",
-            "/ws/**"
-    };
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
