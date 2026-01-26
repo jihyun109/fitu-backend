@@ -22,7 +22,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
 
         // 2. 레코드 생성
-        ErrorResponse errorResponse = ErrorResponse.of(errorCode, request.getRequestURI());
+        ErrorResponse errorResponse = ErrorResponse.of(errorCode, (String) request.getAttribute("jakarta.servlet.error.request_uri"));
 
         // 3. 응답 설정
         response.setStatus(errorCode.getStatus());
