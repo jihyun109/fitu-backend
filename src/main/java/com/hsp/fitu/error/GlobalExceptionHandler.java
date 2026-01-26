@@ -1,5 +1,6 @@
 package com.hsp.fitu.error;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ public class GlobalExceptionHandler {
      * @Valid 또는 @Validated 바인딩 에러 처리 (필드 유효성 검증 실패)
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    protected ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
         log.error("handleMethodArgumentNotValidException", e);
 
         List<ErrorResponse.FieldError> fieldErrors = e.getBindingResult().getFieldErrors().stream()
@@ -27,7 +28,7 @@ public class GlobalExceptionHandler {
                         error.getDefaultMessage()))
                 .toList();
 
-        ErrorResponse response = ErrorResponse.of(ErrorCode.METHOD_ARGUMENT_NOT_VALID, fieldErrors);
+        ErrorResponse response = ErrorResponse.of(ErrorCode.METHOD_ARGUMENT_NOT_VALID, fieldErrors, request.getRequestURI());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -35,11 +36,11 @@ public class GlobalExceptionHandler {
      * 모든 비즈니스 로직 예외 처리 (최상위 BusinessException 하나로 통합)
      */
     @ExceptionHandler(BusinessException.class)
-    protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
+    protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e, HttpServletRequest request) {
         log.warn("BusinessException: {}", e.getErrorCode().getMessage());
 
         ErrorCode errorCode = e.getErrorCode();
-        ErrorResponse response = ErrorResponse.from(errorCode);
+        ErrorResponse response = ErrorResponse.of(errorCode, request.getRequestURI());
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatus()));
     }
 
@@ -47,10 +48,10 @@ public class GlobalExceptionHandler {
      * 나머지 예상치 못한 모든 예외 처리
      */
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<ErrorResponse> handleException(Exception e) {
+    protected ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
         log.error("handleException", e);
 
-        ErrorResponse response = ErrorResponse.from(ErrorCode.INTER_SERVER_ERROR);
+        ErrorResponse response = ErrorResponse.of(ErrorCode.INTER_SERVER_ERROR, request.getRequestURI());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
