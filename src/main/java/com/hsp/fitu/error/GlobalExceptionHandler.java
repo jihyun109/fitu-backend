@@ -1,13 +1,16 @@
 package com.hsp.fitu.error;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.naming.AuthenticationException;
 import java.util.List;
 
 @Slf4j
@@ -44,12 +47,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatus()));
     }
 
+    // JWT 및 보안 예외 전용 핸들러
+    @ExceptionHandler({ExpiredJwtException.class, InsufficientAuthenticationException.class})
+    protected ResponseEntity<ErrorResponse> handleAuthenticationException(Exception e, HttpServletRequest request) {
+        log.warn("인증 실패: {} | 경로: {}", e.getMessage(), request.getRequestURI());
+
+        ErrorCode errorCode = (e instanceof ExpiredJwtException) ? ErrorCode.JWT_EXPIRED : ErrorCode.UNAUTHORIZED;
+        ErrorResponse response = ErrorResponse.of(errorCode, request.getRequestURI());
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
     /**
      * 나머지 예상치 못한 모든 예외 처리
      */
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
-        log.error("handleException", e);
+        log.error("handleException", e.getMessage(), e);
 
         ErrorResponse response = ErrorResponse.of(ErrorCode.INTER_SERVER_ERROR, request.getRequestURI());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
