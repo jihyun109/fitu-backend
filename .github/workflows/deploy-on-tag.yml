@@ -35,7 +35,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: all
+          platforms: linux/arm64
 
       # Buildx builder를 docker-container 드라이버로 생성
       - name: Set up Docker Buildx
@@ -49,7 +49,7 @@ jobs:
         with:
           context: .               # 현재 저장소에서 빌드
           push: true               # 빌드한 이미지를 푸시
-          platforms: linux/amd64, linux/arm64 # x86, ARM64 동시에 지원
+          platforms: linux/arm64
           tags: |                  # 태그 2개로 푸시
             ${{ env.IMAGE_NAME }}:${{ steps.set_version.outputs.VERSION }}
             ${{ env.IMAGE_NAME }}:latest
