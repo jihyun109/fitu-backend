@@ -153,23 +153,7 @@ jobs:
           script: |
             set -e
             
-            if ! command -v docker >/dev/null 2>&1; then
-              curl -fsSL https://get.docker.com | sudo sh
-              sudo systemctl enable --now docker
-            fi
-            
-            if ! docker compose version >/dev/null 2>&1; then
-              sudo apt-get update
-              sudo apt-get install -y docker-compose-plugin
-            fi
-            
-            sudo usermod -aG docker $USER
-            newgrp docker || true
-            
             echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
-            
-            sudo docker version
-            sudo docker compose version || true
             
             # Docker Swarm Init (없으면)
             if ! docker info | grep -q "Swarm: active"; then
@@ -183,7 +167,7 @@ jobs:
             # monitoring bridge 네트워크 생성
             docker network create --driver overlay monitoring-bridge
             
-            echo "user default on >${{ secrets.REDIS_PASSWORD }} ~* +@all" | docker secret create redis_acl -
+            # echo "user default on >${{ secrets.REDIS_PASSWORD }} ~* +@all" | docker secret create redis_acl -
             
             docker stack deploy -c /home/ubuntu/deploy/fitu-prod/compose.yaml --with-registry-auth ${{ env.STACK_NAME }}
 
