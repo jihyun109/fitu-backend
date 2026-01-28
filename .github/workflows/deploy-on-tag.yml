@@ -63,6 +63,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4  # 저장소 코드 다시 체크아웃
 
+      # AWS CLI 자격 증명 설정 (보안 그룹 제어를 위해 필요)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 현재 러너의 공인 IP 확인
+      - name: Get Github action IP
+        id: ip
+        run: |
+          echo "ipv4=$(curl -s https://ipv4.icanhazip.com)" >> $GITHUB_OUTPUT
+
+      # AWS 보안 그룹에 현재 IP 허용 (Port 22)
+      - name: Add Github Actions IP to Security group
+        run: |
+            aws ec2 authorize-security-group-ingress \
+              --group-id ${{ secrets.AWS_SG_ID }} \
+              --protocol tcp \
+              --port 22 \
+              --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
+      # 배포 로직
       - name: Ensure remote dir     # 원격 배포 디렉터리 생성 (없으면 생성)
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -147,17 +171,28 @@ jobs:
             sudo docker version
             sudo docker compose version || true
             
-            cd ~/deploy/${{ env.STACK_NAME }} && \
+            # Docker Swarm Init (없으면)
             if ! docker info | grep -q "Swarm: active"; then
               docker swarm init
             fi
             
-            docker config rm redis_conf || true
+            cd ~/deploy/${{ env.STACK_NAME }}
             
-            docker config create redis_conf ./redis.conf
+            # Config / Secret 갱신 (이미 존재하면 에러 무시하고 삭제 후 재생성)
             
-            docker secret rm redis_acl || true
+            # monitoring bridge 네트워크 생성
+            docker network create --driver overlay monitoring-bridge
             
             echo "user default on >${{ secrets.REDIS_PASSWORD }} ~* +@all" | docker secret create redis_acl -
             
             docker stack deploy -c /home/ubuntu/deploy/fitu-prod/compose.yaml --with-registry-auth ${{ env.STACK_NAME }}
+
+      # 배포 후 보안 그룹 규칙 삭제 (실패 시에도 실행됨)
+      - name: Remove Github Actions IP from Security group
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id ${{ secrets.AWS_SG_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
