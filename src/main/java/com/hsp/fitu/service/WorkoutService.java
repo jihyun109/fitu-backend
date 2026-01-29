@@ -6,7 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface WorkoutService {
-    List<OldRoutineResponseDTO> suggestRoutine(RoutineRecommendationRequestDTO requestDTO);
 
     WorkoutSelectResponseDTO recommendRoutine(RoutineRecommendationRequestDTO requestDTO);
 

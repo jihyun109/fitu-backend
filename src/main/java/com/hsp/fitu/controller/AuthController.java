@@ -3,6 +3,7 @@ package com.hsp.fitu.controller;
 import com.hsp.fitu.dto.LoginDTO;
 import com.hsp.fitu.dto.TokenResponseDTO;
 import com.hsp.fitu.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login/kakao")
+    @Operation(summary = "카카오 로그인")
     public ResponseEntity<TokenResponseDTO> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
         LoginDTO loginDTO = authService.oAuthLogin(accessCode, httpServletResponse);
 
@@ -34,6 +36,7 @@ public class AuthController {
     }
 
     @GetMapping("/reissue")
+    @Operation(summary = "토큰 재발급")
     public ResponseEntity<TokenResponseDTO> reissue(@CookieValue("refreshToken") String refreshToken) {
         TokenResponseDTO tokenResponseDTO = authService.reissue(refreshToken);
 

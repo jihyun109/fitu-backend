@@ -29,69 +29,6 @@ public class WorkoutServiceImpl implements WorkoutService {
     private final S3Service s3Service;
 
     @Override
-    public List<OldRoutineResponseDTO> suggestRoutine(RoutineRecommendationRequestDTO requestDTO) {
-        List<OldWorkoutCategoryEntity> sortedCategories =
-                workoutCategoryRepository.findByNameInOrderByPriority(requestDTO.getWorkoutCategoryList());
-
-        Map<WorkoutCategory, Integer> workoutCountMap = allocateWorkoutCounts(sortedCategories);
-
-        Set<Workout> selectedMainWorkouts = new HashSet<>();
-        List<OldRoutineResponseDTO> responseList = new ArrayList<>();
-
-        for (OldWorkoutCategoryEntity category : sortedCategories) {
-
-            WorkoutCategory categoryName = category.getName();
-            int count = workoutCountMap.get(categoryName);
-
-            List<OldWorkoutEntity> allWorkouts = oldWorkoutRepository.findAllByCategoryId(category.getId());
-            Collections.shuffle(allWorkouts);
-
-            int added = 0;
-
-            // mainWorkout 선정
-            for (OldWorkoutEntity workout : allWorkouts) {
-                Workout mainWorkout = workout.getName();
-                if (selectedMainWorkouts.contains(mainWorkout)) continue;
-
-                // similar workout 선정
-                List<OldWorkoutEntity> similarCandidates = oldWorkoutRepository.findSimilarWorkouts(mainWorkout, category.getId());
-                Collections.shuffle(similarCandidates);
-
-                selectedMainWorkouts.add(mainWorkout);
-
-                // body part 받아오기
-                long bodyPartId = workout.getCategoryId();
-                Optional<OldWorkoutCategoryEntity> workoutCategoryEntity = workoutCategoryRepository.findById(bodyPartId);
-                WorkoutCategory bodyPart = workoutCategoryEntity.get().getName();
-
-                // response 생성
-                String mainImageUrl = workout.getImageUrl();
-
-                List<WorkoutWithImageDTO> similarList = similarCandidates.stream()
-                        .filter(alt -> !alt.equals(workout))
-                        .limit(4)
-                        .map(alt -> WorkoutWithImageDTO.builder()
-                                .name(alt.getName())
-                                .imageUrl(alt.getImageUrl()) // 이미지 URL 조회
-                                .build())
-                        .toList();
-
-                responseList.add(OldRoutineResponseDTO.builder()
-                        .mainWorkout(WorkoutWithImageDTO.builder()
-                                .name(mainWorkout)
-                                .imageUrl(mainImageUrl).build())
-                        .similarWorkouts(similarList)
-                        .bodyPart(bodyPart)
-                        .build());
-
-                if (++added == count) break;
-            }
-        }
-
-        return responseList;
-    }
-
-    @Override
     public WorkoutSelectResponseDTO recommendRoutine(RoutineRecommendationRequestDTO requestDTO) {
         // 1. 요청된 카테고리 이름 목록을 우선순위(priority) 순서대로 DB에서 조회
         List<OldWorkoutCategoryEntity> sortedCategories =

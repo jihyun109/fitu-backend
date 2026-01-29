@@ -3,6 +3,7 @@ package com.hsp.fitu.controller;
 import com.hsp.fitu.dto.SendEmailRequestDTO;
 import com.hsp.fitu.dto.VerifyEmailRequestDTO;
 import com.hsp.fitu.service.EmailVerificationService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ public class EmailVerificationController {
     private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/send")
+    @Operation(summary = "이메일 인증 코드 전송")
     public ResponseEntity<Void> send(@RequestBody SendEmailRequestDTO req) {
         // 필요시 로그인 사용자와 req.email 매칭 검증
         emailVerificationService.sendVerificationCode(req.getEmail());
@@ -26,6 +28,7 @@ public class EmailVerificationController {
     }
 
     @PostMapping("/verify")
+    @Operation(summary = "이메일 인증 코드 확인")
     public ResponseEntity<Map<String, Object>> verify(@RequestBody VerifyEmailRequestDTO req) {
         boolean ok = emailVerificationService.verifyCode(req.getEmail(), req.getCode());
         if (ok) {
