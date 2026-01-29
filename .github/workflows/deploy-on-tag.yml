@@ -127,9 +127,6 @@ jobs:
             
             # Config / Secret 갱신 (이미 존재하면 에러 무시하고 삭제 후 재생성)
             
-            # monitoring bridge 네트워크 생성
-            docker network create --driver overlay monitoring-bridge
-            
             # echo "user default on >${{ secrets.REDIS_PASSWORD }} ~* +@all" | docker secret create redis_acl -
             
             docker stack deploy -c /home/ubuntu/deploy/fitu-prod/compose.yaml --with-registry-auth ${{ env.STACK_NAME }}
