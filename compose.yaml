@@ -65,7 +65,7 @@ services:
   redis:
     image: redis:7-alpine
     volumes:
-      - ./srv/redis-data:/data
+      - redis-data:/data
     configs:
       - source: redis_conf
         target: /usr/local/etc/redis/redis.conf
@@ -103,3 +103,6 @@ secrets:
 
   app-secret.yml:
     external: true
+
+volumes:
+  redis-data:
