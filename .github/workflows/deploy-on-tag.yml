@@ -6,7 +6,7 @@ on:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/fitu
-  STACK_NAME: fitu-prod
+  STACK_NAME: fitu
 
 jobs:
   build-and-push:
