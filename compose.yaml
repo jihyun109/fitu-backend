@@ -32,6 +32,10 @@ services:
       SPRING_CONFIG_LOCATION: /run/secrets/app-secret.yml
       # Xmx(최대 힙)를 400m로 제한하여 컨테이너가 죽는 것을 방지
       JAVA_OPTS: "-Xms256m -Xmx400m -XX:+UseSerialGC"
+      # 리눅스 시스템 시간 설정
+      TZ: Asia/Seoul
+      # JVM(Java) 시간 설정 (Spring Boot가 이를 감지함)
+      JAVA_TOOL_OPTIONS: "-Duser.timezone=Asia/Seoul"
     deploy:
       replicas: 1               # 백엔드 인스턴스 수
       update_config:
