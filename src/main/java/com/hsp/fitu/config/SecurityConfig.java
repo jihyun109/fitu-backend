@@ -5,7 +5,6 @@ import com.hsp.fitu.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -35,8 +34,6 @@ public class SecurityConfig {
                         .requestMatchers(SecurityConstants.PERMIT_ALL_MATCHERS
                                 .toArray(org.springframework.security.web.util.matcher.RequestMatcher[]::new))
                         .permitAll()
-
-                        .requestMatchers(HttpMethod.POST, "/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
