@@ -23,14 +23,19 @@ public class JwtTokenService {
     private final SecretKey secretKey;
 
     public String extractTokenFromHeader(HttpServletRequest request) {
-        String jwt = request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-        if (jwt == null || !jwt.startsWith("Bearer ") || tokenBlackListService.isTokenBlacklisted(jwt)) {
-            throw new JwtException("JWT token missing or invalid");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return null;
+        }
+
+        String token = header.substring(7);
+        if (tokenBlackListService.isTokenBlacklisted(header)) {
+            throw new JwtException("로그아웃 됨");
         }
 
         // 'Bearer ' 접두어를 제거하고 실제 JWT 토큰만 반환
-        return jwt.substring(7);
+        return token;
     }
 
     public Claims validateToken(String token) throws JwtException {
