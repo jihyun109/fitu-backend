@@ -1,15 +1,13 @@
 package com.hsp.fitu.jwt;
 
-import com.hsp.fitu.config.SecurityConstants;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,25 +31,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = jwtTokenService.extractTokenFromHeader(request);
 
+            // 토큰이 있을 때만 인증 시도
             if (token != null) {
                 Claims claims = jwtTokenService.validateToken(token);
 
                 // SecurityContext 에 Authentication 인스턴스 추가
-                SecurityContextHolder.getContext()
-                        .setAuthentication(jwtTokenService.createAuthentication(claims));
+                Authentication auth = jwtTokenService.createAuthentication(claims);
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
+
             filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException | MalformedJwtException e) {
-            // [핵심] 로그를 찍지 않고 바로 Resolver에게 배달합니다.
-            exceptionResolver.resolveException(request, response, null, e);
-        } catch (Exception e) {
+        } catch (JwtException e) {
             exceptionResolver.resolveException(request, response, null, e);
         }
-    }
-
-    @Override
-    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        return SecurityConstants.PERMIT_ALL_MATCHERS.stream()
-                .anyMatch(matcher -> matcher.matches(request));
     }
 }
