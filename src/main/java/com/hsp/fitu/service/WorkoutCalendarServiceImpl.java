@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class WorkoutCalendarServiceImpl implements WorkoutCalendarService {
-    private final SessionsRepository sessionsRepository;
+    private final SessionRepository sessionsRepository;
     private final SessionExercisesRepository sessionExercisesRepository;
     private final WorkoutNewRepository workoutNewRepository;
     private final SetsRepository setsRepository;

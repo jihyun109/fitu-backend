@@ -4,7 +4,7 @@ import com.hsp.fitu.dto.RankingItem;
 import com.hsp.fitu.dto.RankingTotal500ResponseDTO;
 import com.hsp.fitu.dto.RankingWorkoutCountResponseDTO;
 import com.hsp.fitu.entity.Total500Info;
-import com.hsp.fitu.repository.SessionRespository;
+import com.hsp.fitu.repository.SessionRepository;
 import com.hsp.fitu.repository.WorkoutVerificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.List;
 public class RankingServiceImpl implements RankingService {
 
     private final WorkoutVerificationRepository workoutVerificationRepository;
-    private final SessionRespository sessionRespository;
+    private final SessionRepository sessionRepository;
 
     @Override
     public RankingTotal500ResponseDTO getTotal500Ranking(Long userId) {
@@ -39,10 +39,10 @@ public class RankingServiceImpl implements RankingService {
     @Override
     public RankingWorkoutCountResponseDTO getWorkoutCountRanking(Long userId) {
         // 랭킹 list get
-        List<RankingItem> rankingItems = sessionRespository.findAllRankingWorkoutCountByUserId(userId);
+        List<RankingItem> rankingItems = sessionRepository.findAllRankingWorkoutCountByUserId(userId);
 
         // 나의 랭킹 get
-        RankingItem myRanking = sessionRespository.findRankingWorkoutCountByUserId(userId);
+        RankingItem myRanking = sessionRepository.findRankingWorkoutCountByUserId(userId);
 
         return RankingWorkoutCountResponseDTO.builder()
                 .rankingItems(rankingItems)

@@ -5,9 +5,15 @@ import com.hsp.fitu.entity.SessionsEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-public interface SessionRespository extends JpaRepository<SessionsEntity, Long> {
+public interface SessionRepository extends JpaRepository<SessionsEntity, Long> {
+    List<SessionsEntity> findByUserIdAndStartTimeBetween(Long userId, LocalDateTime start, LocalDateTime end);
+
+    Optional<SessionsEntity> findFirstByUserIdAndStartTimeBetween(Long userId, LocalDateTime start, LocalDateTime end);
+
     @Query(value = """
             SELECT ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT s.id) DESC, SUM(s.end_time - s.start_time) DESC) AS ranking,
             		u.name AS userName,
