@@ -6,7 +6,6 @@ import com.hsp.fitu.entity.enums.MediaCategory;
 import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.repository.*;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,13 +85,13 @@ public class WorkoutSessionServiceImpl implements WorkoutSessionService {
 
     private Long resolveWorkoutIdByName(String workoutName) {
         if (workoutName == null || workoutName.isBlank()) {
-            throw new IllegalArgumentException("workoutName is null");
+            throw new BusinessException(ErrorCode.WORKOUT_NOT_FOUND);
         }
 
         return workoutNewRepository.findByWorkoutName(workoutName.trim())
                 .map(WorkoutEntity::getId)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Workout not found" + workoutName)
+                        new BusinessException(ErrorCode.WORKOUT_NOT_FOUND)
                 );
     }
 }
