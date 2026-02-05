@@ -26,11 +26,9 @@ public class TestAuthenticationFilter extends OncePerRequestFilter {
 
         // 2. 헤더가 존재하면 강제 인증 처리
         if (testUserId != null) {
-            Authentication auth = new UsernamePasswordAuthenticationToken(
-                    Long.valueOf(testUserId), // Principal
-                    null,
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")) // 권한
-            );
+            Long userId = Long.valueOf(testUserId);
+
+            Authentication auth = getAuthentication(userId);
 
             // SecurityContext에 인증 정보 주입
             SecurityContextHolder.getContext().setAuthentication(auth);
@@ -38,5 +36,21 @@ public class TestAuthenticationFilter extends OncePerRequestFilter {
 
         // 3. 다음 필터로 진행
         filterChain.doFilter(request, response);
+    }
+
+    private static Authentication getAuthentication(Long userId) {
+        CustomUserDetails userDetails = new CustomUserDetails(
+                userId,                  // ID
+                "test@fitu.com",         // 더미 이메일
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")), // 권한
+                1L
+        );
+
+        // Principal 자리에 'userDetails' 객체를 넣음
+        return new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
     }
 }
