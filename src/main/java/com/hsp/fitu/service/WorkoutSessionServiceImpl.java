@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class WorkoutSessionServiceImpl implements WorkoutSessionService {
-    private final SessionsRepository sessionRepository;
+    private final SessionRepository sessionRepository;
     private final MediaFilesRepository mediaFilesRepository;
     private final WorkoutNewRepository workoutNewRepository;
     private final SessionExerciseRepository sessionExerciseRepository;
