@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface SessionRespository extends JpaRepository<SessionsEntity, Long> {
+public interface SessionRepository extends JpaRepository<SessionsEntity, Long> {
     @Query(value = """
             SELECT ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT s.id) DESC, SUM(s.end_time - s.start_time) DESC) AS ranking,
             		u.name AS userName,
