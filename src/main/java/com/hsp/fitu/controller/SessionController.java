@@ -2,8 +2,8 @@ package com.hsp.fitu.controller;
 
 import com.hsp.fitu.dto.SessionEndRequestDTO;
 import com.hsp.fitu.dto.SessionEndResponseDTO;
+import com.hsp.fitu.facade.SessionFacade;
 import com.hsp.fitu.jwt.CustomUserDetails;
-import com.hsp.fitu.service.SessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/workouts/sessions")
 public class SessionController {
-    private final SessionService sessionService;
+    private final SessionFacade  sessionFacade;
 
     @Operation(summary = "운동 종료 및 운동 저장 by 조민기")
     @PostMapping("/end")
@@ -29,7 +29,7 @@ public class SessionController {
     ) {
         Long userId = userDetails.getId();
 
-        SessionEndResponseDTO responseDTO = sessionService.saveSessionData(userId, requestDTO, image);
+        SessionEndResponseDTO responseDTO = sessionFacade.endSessionWithImage(userId, requestDTO, image);
 
         return ResponseEntity.ok(responseDTO);
     }

@@ -2,16 +2,19 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.*;
 import com.hsp.fitu.entity.*;
-import com.hsp.fitu.entity.enums.MediaCategory;
 import com.hsp.fitu.error.BusinessException;
 import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,67 +23,87 @@ public class SessionServiceImpl implements SessionService {
     private final MediaFilesRepository mediaFilesRepository;
     private final WorkoutNewRepository workoutNewRepository;
     private final SessionExerciseRepository sessionExerciseRepository;
-    private final SetsRepository setsRepository;
-    private final S3Service s3Service;
+    private final WorkoutBulkRepository workoutBulkRepository;
 
     @Override
     @Transactional
-    public SessionEndResponseDTO saveSessionData(Long userId, SessionEndRequestDTO requestDTO, MultipartFile image) {
+    public SessionEndResponseDTO saveSessionData(Long userId, SessionEndRequestDTO requestDTO, String imageUrl) {
+        // 1. 세션 및 이미지 정보 저장
+        SessionsEntity savedSession = saveSessionWithImage(userId, requestDTO.totalMinutes(), imageUrl);
 
-        Integer totalMinutes = requestDTO.totalMinutes();
-        if (totalMinutes <= 0) {
-            throw new BusinessException(ErrorCode.INVALID_TOTAL_MIN);
-        }
+        // 2. 운동 종목 ID 매핑 조회
+        Map<String, Long> workoutMap = findWorkoutIdsByName(requestDTO);
 
-        LocalDateTime endTime = LocalDateTime.now();
-        LocalDateTime startTime = endTime.minusMinutes(totalMinutes);
+        // 3. Exercise 엔티티 생성 및 저장 (Sets DTO 매핑 정보 포함)
+        ExerciseSaveResult exerciseResult = saveExercises(savedSession.getId(), requestDTO.exercises(), workoutMap);
 
-        SessionsEntity sessions = sessionRepository.save(
-                SessionsEntity.builder()
-                        .userId(userId)
-                        .startTime(startTime)
-                        .build()
-        );
+        // 4. Sets 엔티티 생성 및 Bulk Insert
+        bulkInsertSets(exerciseResult);
 
-        Long mediaId = null;
+        return new SessionEndResponseDTO(savedSession.getId(), "OK");
+    }
 
-        if (image != null && !image.isEmpty()) {
-            String url = s3Service.upload(image, MediaCategory.WORKOUT_COMPLETE);
+    private SessionsEntity saveSessionWithImage(Long userId, Integer totalMinutes, String imageUrl) {
+        SessionsEntity session = SessionsEntity.builder()
+                .userId(userId)
+                .startTime(calculateStartTime(totalMinutes))
+                .build();
 
-            MediaFilesEntity mediaFiles = mediaFilesRepository.save(
-                    MediaFilesEntity.builder()
-                            .uploaderId(userId)
-                            .url(url)
-                            .build()
+        if (imageUrl != null) {
+            MediaFilesEntity media = mediaFilesRepository.save(
+                    MediaFilesEntity.builder().uploaderId(userId).url(imageUrl).build()
             );
-            mediaId = mediaFiles.getId();
+            session.setExerciseImageId(media.getId());
         }
-        sessions.setExerciseImageId(mediaId);
+        return sessionRepository.save(session);
+    }
 
-        for (SessionExerciseRequestDTO exerciseRequestDTO : requestDTO.exercises()) {
+    private Map<String, Long> findWorkoutIdsByName(SessionEndRequestDTO requestDTO) {
+        List<String> names = requestDTO.exercises().stream()
+                .map(SessionExerciseRequestDTO::workoutName)
+                .toList();
 
-            long workoutId = resolveWorkoutIdByName(exerciseRequestDTO.workoutName());
+        return workoutNewRepository.findByNameIn(names).stream()
+                .collect(Collectors.toMap(WorkoutEntity::getWorkoutName, WorkoutEntity::getId));
+    }
 
-            SessionExercisesEntity sessionExercises = SessionExercisesEntity.builder()
-                    .sessionId(sessions.getId())
+    private ExerciseSaveResult saveExercises(Long sessionId, List<SessionExerciseRequestDTO> exerciseDtos, Map<String, Long> workoutMap) {
+        List<SessionExercisesEntity> entities = new ArrayList<>();
+        Map<SessionExercisesEntity, List<WorkoutSetRequestDTO>> setsMap = new HashMap<>();
+
+        for (SessionExerciseRequestDTO exDto : exerciseDtos) {
+            Long workoutId = workoutMap.get(exDto.workoutName());
+
+            SessionExercisesEntity entity = SessionExercisesEntity.builder()
+                    .sessionId(sessionId)
                     .workoutId(workoutId)
-                    .orderIndex(exerciseRequestDTO.orderIndex())
+                    .orderIndex(exDto.orderIndex())
                     .build();
 
-            SessionExercisesEntity savedSE = sessionExerciseRepository.save(sessionExercises);
+            entities.add(entity);
+            setsMap.put(entity, exDto.sets());
+        }
 
-            for (WorkoutSetRequestDTO setRequestDTO : exerciseRequestDTO.sets()) {
-                SetsEntity setsEntity = SetsEntity.builder()
-                        .sessionExerciseId(savedSE.getId())
-                        .setIndex(setRequestDTO.setIndex())
-                        .weight(setRequestDTO.weight())
-                        .reps(setRequestDTO.reps())
-                        .build();
+        List<SessionExercisesEntity> savedExercises = sessionExerciseRepository.saveAll(entities);
+        return new ExerciseSaveResult(savedExercises, setsMap);
+    }
 
-                setsRepository.save(setsEntity);
+    private void bulkInsertSets(ExerciseSaveResult exerciseResult) {
+        List<SetsEntity> allSets = new ArrayList<>();
+
+        for (SessionExercisesEntity savedExercise : exerciseResult.savedExercises()) {
+            List<WorkoutSetRequestDTO> setDtos = exerciseResult.setsMap().get(savedExercise);
+
+            for (WorkoutSetRequestDTO setDto : setDtos) {
+                allSets.add(SetsEntity.builder()
+                        .sessionExerciseId(savedExercise.getId())
+                        .setIndex(setDto.setIndex())
+                        .weight(setDto.weight())
+                        .reps(setDto.reps())
+                        .build());
             }
         }
-        return new SessionEndResponseDTO(sessions.getId(), "OK");
+        workoutBulkRepository.bulkInsertSets(allSets);
     }
 
     private Long resolveWorkoutIdByName(String workoutName) {
@@ -93,5 +116,17 @@ public class SessionServiceImpl implements SessionService {
                 .orElseThrow(() ->
                         new BusinessException(ErrorCode.WORKOUT_NOT_FOUND)
                 );
+    }
+
+    private LocalDateTime calculateStartTime(Integer totalMinutes) {
+        if (totalMinutes <= 0) throw new BusinessException(ErrorCode.INVALID_TOTAL_MIN);
+        return LocalDateTime.now().minusMinutes(totalMinutes);
+    }
+
+    // 클래스 내부에 선언된 private record
+    private record ExerciseSaveResult(
+            List<SessionExercisesEntity> savedExercises,
+            Map<SessionExercisesEntity, List<WorkoutSetRequestDTO>> setsMap
+    ) {
     }
 }
