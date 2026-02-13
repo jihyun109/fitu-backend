@@ -6,5 +6,5 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface SessionService {
 
-    SessionEndResponseDTO endSession(Long userId, SessionEndRequestDTO requestDTO, MultipartFile image);
+    SessionEndResponseDTO saveSessionData(Long userId, SessionEndRequestDTO requestDTO, MultipartFile image);
 }

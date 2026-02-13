@@ -25,7 +25,7 @@ public class SessionServiceImpl implements SessionService {
 
     @Override
     @Transactional
-    public SessionEndResponseDTO endSession(Long userId, SessionEndRequestDTO requestDTO, MultipartFile image) {
+    public SessionEndResponseDTO saveSessionData(Long userId, SessionEndRequestDTO requestDTO, MultipartFile image) {
 
         Integer totalMinutes = requestDTO.totalMinutes();
         if (totalMinutes <= 0) {
