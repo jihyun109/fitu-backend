@@ -61,6 +61,7 @@ public class SessionServiceImpl implements SessionService {
     private Map<String, Long> findWorkoutIdsByName(SessionEndRequestDTO requestDTO) {
         List<String> names = requestDTO.exercises().stream()
                 .map(SessionExerciseRequestDTO::workoutName)
+                .distinct()
                 .toList();
 
         return workoutNewRepository.findByWorkoutNameIn(names).stream()
