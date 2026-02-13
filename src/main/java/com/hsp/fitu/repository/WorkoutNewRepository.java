@@ -2,13 +2,11 @@ package com.hsp.fitu.repository;
 
 import com.hsp.fitu.dto.WorkoutCustomDetailResponseDTO;
 import com.hsp.fitu.entity.WorkoutEntity;
-import com.hsp.fitu.entity.enums.Workout;
 import com.hsp.fitu.entity.enums.WorkoutCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,4 +38,6 @@ public interface WorkoutNewRepository extends JpaRepository<WorkoutEntity, Long>
     List<WorkoutCustomDetailResponseDTO> searchByKeyword(@Param("keyword") String keyword);
 
     Optional<WorkoutEntity> findByWorkoutName(String workoutName);
+
+    List<WorkoutEntity> findByNameIn(List<String> names);
 }
