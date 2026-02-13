@@ -26,10 +26,10 @@ public class SessionController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart("requestDTO") SessionEndRequestDTO requestDTO,
             @RequestPart(value = "image", required = false) MultipartFile image
-            ) {
+    ) {
         Long userId = userDetails.getId();
 
-        SessionEndResponseDTO responseDTO = sessionService.endSession(userId, requestDTO, image);
+        SessionEndResponseDTO responseDTO = sessionService.saveSessionData(userId, requestDTO, image);
 
         return ResponseEntity.ok(responseDTO);
     }
