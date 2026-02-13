@@ -39,5 +39,5 @@ public interface WorkoutNewRepository extends JpaRepository<WorkoutEntity, Long>
 
     Optional<WorkoutEntity> findByWorkoutName(String workoutName);
 
-    List<WorkoutEntity> findByNameIn(List<String> names);
+    List<WorkoutEntity> findByWorkoutNameIn(List<String> names);
 }

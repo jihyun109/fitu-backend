@@ -63,7 +63,7 @@ public class SessionServiceImpl implements SessionService {
                 .map(SessionExerciseRequestDTO::workoutName)
                 .toList();
 
-        return workoutNewRepository.findByNameIn(names).stream()
+        return workoutNewRepository.findByWorkoutNameIn(names).stream()
                 .collect(Collectors.toMap(WorkoutEntity::getWorkoutName, WorkoutEntity::getId));
     }
 
