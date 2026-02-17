@@ -31,29 +31,32 @@ services:
     environment:
       SPRING_CONFIG_LOCATION: /run/secrets/app-secret.yml
       # Xmx(최대 힙)를 400m로 제한하여 컨테이너가 죽는 것을 방지
-      JAVA_OPTS: "-Xms256m -Xmx400m -XX:+UseSerialGC"
+#      JAVA_OPTS: "-Xms256m -Xmx400m -XX:+UseSerialGC"
+      JAVA_OPTS: "-Xms128m -Xmx200m -XX:+UseSerialGC"
       # 리눅스 시스템 시간 설정
       TZ: Asia/Seoul
       # JVM(Java) 시간 설정 (Spring Boot가 이를 감지함)
       JAVA_TOOL_OPTIONS: "-Duser.timezone=Asia/Seoul"
     deploy:
-      replicas: 1               # 백엔드 인스턴스 수
+      replicas: 2               # 백엔드 인스턴스 수
       update_config:
         parallelism: 1          # 롤링업데이트 시 한 번에 1개씩만 교체
         delay: 5s               # 레플리카가 교체된 후 다음 레플리카가 교체를 시작하기 전까지 기다리는 시간
         failure_action: rollback
-        order: stop-first
-#        order: start-first      # 새 컨테이너 먼저 띄우고, 그 다음 기존 것 내림
-#        monitor: 30s            # Healthy라고 판단한 직후에 바로 기존 것을 죽이지 않고, 30초 동안 더 지켜
+#        order: stop-first
+        order: start-first      # 새 컨테이너 먼저 띄우고, 그 다음 기존 것 내림
+        monitor: 30s            # Healthy라고 판단한 직후에 바로 기존 것을 죽이지 않고, 30초 동안 더 지켜
       restart_policy:
         condition: on-failure
       resources:
         limits:
-          cpus: "1.0"
-          memory: 650M          # JVM Heap(400) + Metaspace/Stack 여유분
+#          cpus: "1.0"
+          cpus: "0.6"
+#          memory: 650M          # JVM Heap(400) + Metaspace/Stack 여유분
+          memory: 360M
         reservations:
-          cpus: "0.1"
-          memory: 300M
+          cpus: "0.05"
+          memory: 150M
 
     # health check
     healthcheck:
