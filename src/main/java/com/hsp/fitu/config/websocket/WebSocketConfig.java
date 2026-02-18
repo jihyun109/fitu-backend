@@ -13,7 +13,6 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
     private final WebSocketAuthChannelInterceptor webSocketAuthChannelInterceptor;
 
     // 클라이언트가 최초 WebSocket 연결을 시도할 엔드포인트를 등록
