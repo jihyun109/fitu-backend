@@ -2,14 +2,14 @@ package com.hsp.fitu.service;
 
 import com.hsp.fitu.dto.ChatMessage;
 import com.hsp.fitu.dto.ChatMessageRequestDTO;
-import com.hsp.fitu.dto.ChatMessageResponseDTO;
 import com.hsp.fitu.dto.ChatRoomMessageResponseDTO;
 import com.hsp.fitu.entity.ChatMessageEntity;
+import com.hsp.fitu.messaging.ChatBrokerMessage;
+import com.hsp.fitu.messaging.MessageBrokerPort;
 import com.hsp.fitu.repository.ChatMessageRepository;
 import com.hsp.fitu.repository.ChatRoomMemberRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,31 +21,30 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
-    private final SimpMessageSendingOperations messagingTemplate;
+    private final MessageBrokerPort messageBrokerPort;
 
     @Override
     public void sendMessage(ChatMessageRequestDTO message, long userId) {
-        // 1. 인증된 유저인지 확인 (Principal)
+        // 1. 메시지 DB 저장
+        ChatMessageEntity saved = chatMessageRepository.save(ChatMessageEntity.builder()
+                .chatRoomId(message.getRoomId())
+                .content(message.getMessage())
+                .messageType(ChatMessageEntity.ChatMessageType.TALK)
+                .senderId(userId)
+                .build());
 
-        // 2. 메시지 저장
-        ChatMessageResponseDTO responseDTO = save(message, userId);
+        // 2. 전송자 이름 및 멤버 목록 조회
+        String senderName = userRepository.findNameById(userId);
+        List<Long> roomMemberIds = chatRoomMemberRepository.findAllUserIdsByChatRoomId(saved.getChatRoomId());
 
-        // 3. 같은 방에 브로드캐스트
-        Long roomId = responseDTO.getRoomId();
-        messagingTemplate.convertAndSend(
-                "/sub/chat/room/" + roomId,
-                responseDTO
-        );
-
-        // 4. 해당 방의 멤버들에게 브로드 캐스트
-        // 방의 멤버 리스트 get
-        List<Long> roomMemberIds = chatRoomMemberRepository.findAllUserIdsByChatRoomId(roomId);
-        for (Long memberId : roomMemberIds) {
-            messagingTemplate.convertAndSend(
-                    "/sub/chat/room/list/" + memberId,
-                    responseDTO
-            );
-        }
+        // 3. 브로커를 통해 브로드캐스트 (Redis → 전체 인스턴스의 WebSocket 구독자에게 전달)
+        messageBrokerPort.publish(ChatBrokerMessage.builder()
+                .roomId(saved.getChatRoomId())
+                .senderId(userId)
+                .senderName(senderName)
+                .content(saved.getContent())
+                .roomMemberIds(roomMemberIds)
+                .build());
     }
 
     @Override
@@ -53,25 +52,5 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         List<ChatMessage> chatMessageList = chatMessageRepository.findChatMessagesByChatRoomId(chatRoomId);
         return ChatRoomMessageResponseDTO.builder()
                 .messages(chatMessageList).build();
-    }
-
-    private ChatMessageResponseDTO save(ChatMessageRequestDTO message, long userId) {
-        // 메시지 db에 저장
-        ChatMessageEntity chatMessageEntity = chatMessageRepository.save(ChatMessageEntity.builder()
-                .chatRoomId(message.getRoomId())
-                .content(message.getMessage())
-                .messageType(ChatMessageEntity.ChatMessageType.TALK)
-                .senderId(userId)
-                .build());
-
-        // 전송자 이름 get
-        String senderName = userRepository.findNameById(userId);
-
-        return ChatMessageResponseDTO.builder()
-                .message(chatMessageEntity.getContent())
-                .roomId(chatMessageEntity.getChatRoomId())
-                .senderId(userId)
-                .senderName(senderName)
-                .build();
     }
 }
