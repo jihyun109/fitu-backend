@@ -17,6 +17,7 @@ public final class SecurityConstants {
             new AntPathRequestMatcher("/login", "POST"),
             new AntPathRequestMatcher("/signup", "POST"),
             new AntPathRequestMatcher("/auth/login/kakao/**"),
+            new AntPathRequestMatcher("/auth/login/local", "POST"),
             new AntPathRequestMatcher("/auth/reissue"),
 
             // API 및 데이터 관련
