@@ -14,6 +14,13 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
+/**
+ * HTTP Handshake 단계의 WebSocket 인증 인터셉터.
+ *
+ * WebSocket 연결 수립 전 HTTP Upgrade 요청에서 JWT를 검증한다.
+ * 현재 WebSocketConfig에서 등록이 비활성화되어 있으며,
+ * 인증은 STOMP CONNECT 단계의 WebSocketAuthChannelInterceptor가 담당한다.
+ */
 @Component
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
@@ -21,9 +28,13 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
+    /**
+     * WebSocket Handshake 전 실행. false 반환 시 연결이 거부된다.
+     * SockJS 환경에서는 HTTP 요청 타입이 다를 수 있으므로 먼저 타입을 확인한다.
+     */
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-        // 일반 HTTP 요청으로 변환 가능해야 헤더 접근 가능
+        // SockJS 등 non-servlet 요청은 헤더 접근 불가 → 거부
         if (!(request instanceof ServletServerHttpRequest)) {
             return false;
         }
@@ -31,31 +42,28 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
         HttpServletRequest servletRequest =
                 ((ServletServerHttpRequest) request).getServletRequest();
 
-        // 2) Authorization 헤더에서 토큰 추출
         String authHeader = servletRequest.getHeader("Authorization");
-
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return false;
         }
 
-        String token = authHeader.substring(7); // "Bearer " 제거
+        String token = authHeader.substring(7);
 
-        // 3) 토큰 검증
         Claims claims = jwtUtil.validateAndGetClaims(token);
         if (claims == null) return false;
 
         Long userId = claims.get("userId", Long.class);
 
-        // 4) userId를 WebSocket 세션에 저장
+        // 검증된 userId를 WebSocket 세션 attributes에 저장
+        // (이후 핸들러에서 attributes로 접근 가능)
         userRepository.findById(userId)
                 .ifPresent(user -> attributes.put("userId", user.getId()));
 
-        // 5) userId가 저장된 경우에만 연결 허용
         return attributes.containsKey("userId");
     }
 
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
-
+        // Handshake 이후 별도 처리 없음
     }
 }

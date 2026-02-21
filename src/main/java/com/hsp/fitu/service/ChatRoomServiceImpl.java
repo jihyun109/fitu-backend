@@ -23,23 +23,24 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public ChatRoomCreateResponseDTO createChatRoom(Long userId, ChatRoomCreateRequestDTO chatRoomCreateRequestDTO) {
-        // 채팅방 thumbnail img get
+        // 첫 번째 초대 멤버의 프로필 이미지를 채팅방 썸네일로 사용
         Long memberProfileImgId = userRepository.findProfileImgIdById(chatRoomCreateRequestDTO.getMemberIds().get(0));
 
-        // 채팅방 db에 저장
+        // 채팅방 생성 및 저장
         Long chatRoomId = chatRoomRepository.save(ChatRoomEntity.builder()
                         .roomName(chatRoomCreateRequestDTO.getName())
                         .thumbnailImgId(memberProfileImgId)
                         .build())
                 .getId();
 
-        // 채팅방 멤버 db에 저장
+        // 초대된 멤버들을 채팅방 멤버로 등록
         for (Long memberId : chatRoomCreateRequestDTO.getMemberIds()) {
             chatRoomMemberRepository.save(ChatRoomMemberEntity.builder()
                     .chatRoomId(chatRoomId)
                     .userId(memberId)
                     .build());
         }
+        // 채팅방 생성자(요청자) 본인도 멤버로 등록
         chatRoomMemberRepository.save(ChatRoomMemberEntity.builder()
                 .chatRoomId(chatRoomId)
                 .userId(userId)
@@ -54,6 +55,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public ChatRoomListResponseDTO getChatRoomList(Long userId) {
         List<ChatRoom> chatRoomListResponseDTO = chatRoomRepository.getChatRoomList(userId);
 
+        // 채팅방 목록 조회 후, 각 채팅방의 썸네일 이미지 URL을 별도로 세팅한다.
+        // 요청자 본인을 제외한 상대방 프로필 이미지를 썸네일로 표시한다.
         for (ChatRoom chatRoom : chatRoomListResponseDTO) {
             Long chatRoomId = chatRoom.getRoomId();
             String url = chatRoomRepository.getChatRoomImg(chatRoomId, userId);

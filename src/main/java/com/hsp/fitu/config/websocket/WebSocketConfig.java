@@ -8,6 +8,10 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+/**
+ * WebSocket(STOMP) 전반 설정.
+ * 연결 엔드포인트, 메시지 라우팅 prefix, 채널 인터셉터를 등록한다.
+ */
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
@@ -15,23 +19,34 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final WebSocketAuthChannelInterceptor webSocketAuthChannelInterceptor;
 
-    // 클라이언트가 최초 WebSocket 연결을 시도할 엔드포인트를 등록
+    /**
+     * 클라이언트가 WebSocket 연결을 맺을 엔드포인트 등록.
+     * SockJS 폴백을 활성화하여 WebSocket을 지원하지 않는 환경도 대응한다.
+     * (HTTP Handshake 단계 인증은 현재 비활성화 — STOMP CONNECT에서 처리)
+     */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws")    // 웹소켓 연결 주소를 /ws/chat 로 만듦
-//                .addInterceptors(webSocketAuthInterceptor)
-                .setAllowedOriginPatterns("*")      // cors 허용
-                .withSockJS();                      // 웹소켓을 지원하지 않는 브라우저를 위해 SockJS 사용
+        registry.addEndpoint("/ws")
+//                .addInterceptors(webSocketAuthInterceptor)  // HTTP Handshake 단계 인증 (현재 미사용)
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 
-    // STOMP 메시지가 들어가고, 어디로 나가는 곳을 지정하는 라우팅 규칙 설정
+    /**
+     * STOMP 메시지 라우팅 규칙 설정.
+     * /pub/** : 클라이언트 → 서버 (MessageController의 @MessageMapping과 매핑)
+     * /sub/** : 서버 → 클라이언트 (클라이언트가 subscribe할 목적지 prefix)
+     */
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.setApplicationDestinationPrefixes("/pub");         // 클라이언트 → 서버 방향 메시지(prefix)
-        registry.enableSimpleBroker("/sub");       // 서버 → 클라이언트 방향 메시지(prefix)
+        registry.setApplicationDestinationPrefixes("/pub");
+        registry.enableSimpleBroker("/sub");
     }
 
-    // 채널 인터셉터 등록
+    /**
+     * 인바운드 채널에 JWT 인증 인터셉터 등록.
+     * STOMP CONNECT 프레임 수신 시 WebSocketAuthChannelInterceptor가 먼저 실행된다.
+     */
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(webSocketAuthChannelInterceptor);
