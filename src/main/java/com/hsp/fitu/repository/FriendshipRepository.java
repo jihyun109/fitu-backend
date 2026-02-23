@@ -23,7 +23,7 @@ public interface FriendshipRepository extends JpaRepository<FriendshipEntity, Lo
                                     WHEN f.userIdA = :userId THEN f.userIdB
                                     ELSE f.userIdA
                                 END
-                    JOIN MediaFilesEntity m
+                    LEFT JOIN MediaFilesEntity m
                               ON m.id = u.profileImgId
                     WHERE f.userIdA = :userId
                        OR f.userIdB = :userId
