@@ -21,15 +21,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     /**
      * 클라이언트가 WebSocket 연결을 맺을 엔드포인트 등록.
-     * SockJS 폴백을 활성화하여 WebSocket을 지원하지 않는 환경도 대응한다.
      * (HTTP Handshake 단계 인증은 현재 비활성화 — STOMP CONNECT에서 처리)
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
 //                .addInterceptors(webSocketAuthInterceptor)  // HTTP Handshake 단계 인증 (현재 미사용)
-                .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .setAllowedOriginPatterns("*");
     }
 
     /**
