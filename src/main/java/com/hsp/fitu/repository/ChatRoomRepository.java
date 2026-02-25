@@ -16,7 +16,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
     @Query("""
             SELECT new com.hsp.fitu.dto.ChatRoom(
                 cr.id,
-                cr.roomName,
+                otherUser.name,
                 (   SELECT cm.content
                     FROM ChatMessageEntity cm
                     WHERE cm.chatRoomId = cr.id
@@ -25,21 +25,11 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity, Long> 
                 ),
                 mf.url)
             FROM ChatRoomEntity cr
-            JOIN ChatRoomMemberEntity crm ON cr.id = crm.chatRoomId
-            LEFT JOIN MediaFilesEntity mf ON cr.thumbnailImgId = mf.id
-            WHERE crm.userId = :userId
+            JOIN ChatRoomMemberEntity crm ON cr.id = crm.chatRoomId AND crm.userId = :userId
+            JOIN ChatRoomMemberEntity otherCrm ON cr.id = otherCrm.chatRoomId AND otherCrm.userId <> :userId
+            JOIN UserEntity otherUser ON otherUser.id = otherCrm.userId
+            LEFT JOIN MediaFilesEntity mf ON otherUser.profileImgId = mf.id
             """)
     List<ChatRoom> getChatRoomList(@Param("userId") Long userId);
-
-
-    @Query("""
-            SELECT mf.url
-            FROM ChatRoomEntity cr
-            JOIN ChatRoomMemberEntity crm ON cr.id = crm.chatRoomId
-            JOIN UserEntity u ON u.id = crm.userId
-            JOIN MediaFilesEntity mf ON u.profileImgId = mf.id
-            WHERE cr.id = :chatRoomId AND u.id <> :userId
-            """)
-    String getChatRoomImg(@Param("chatRoomId") Long chatRoomId, @Param("userId") Long userId);
 
 }
