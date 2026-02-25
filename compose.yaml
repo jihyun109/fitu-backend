@@ -100,8 +100,10 @@ networks:
 
 configs:
   nginx_conf:
+    name: nginx_conf-${NGINX_CONF_HASH:-default}
     file: ./nginx.conf
   redis_conf:
+    name: redis_conf-${REDIS_CONF_HASH:-default}
     file: ./redis.conf
 
 secrets:
