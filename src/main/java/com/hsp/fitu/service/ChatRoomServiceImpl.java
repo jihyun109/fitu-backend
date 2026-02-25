@@ -55,14 +55,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public ChatRoomListResponseDTO getChatRoomList(Long userId) {
         List<ChatRoom> chatRoomListResponseDTO = chatRoomRepository.getChatRoomList(userId);
 
-        // 채팅방 목록 조회 후, 각 채팅방의 썸네일 이미지 URL을 별도로 세팅한다.
-        // 요청자 본인을 제외한 상대방 프로필 이미지를 썸네일로 표시한다.
-        for (ChatRoom chatRoom : chatRoomListResponseDTO) {
-            Long chatRoomId = chatRoom.getRoomId();
-            String url = chatRoomRepository.getChatRoomImg(chatRoomId, userId);
-            chatRoom.setImgUrl(url);
-        }
-
         return ChatRoomListResponseDTO.builder()
                 .chatRoomList(chatRoomListResponseDTO).build();
     }
