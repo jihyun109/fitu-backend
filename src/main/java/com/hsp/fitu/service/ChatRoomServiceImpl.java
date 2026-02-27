@@ -23,8 +23,19 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     @Override
     public ChatRoomCreateResponseDTO createChatRoom(Long userId, ChatRoomCreateRequestDTO chatRoomCreateRequestDTO) {
+        // 1:1 채팅인 경우 기존 채팅방이 있는지 확인
+        List<Long> memberIds = chatRoomCreateRequestDTO.getMemberIds();
+        if (memberIds.size() == 1) {
+            List<Long> existingRoomIds = chatRoomMemberRepository.findDirectChatRoomBetween(userId, memberIds.get(0));
+            if (!existingRoomIds.isEmpty()) {
+                return ChatRoomCreateResponseDTO.builder()
+                        .id(existingRoomIds.get(0))
+                        .build();
+            }
+        }
+
         // 첫 번째 초대 멤버의 프로필 이미지를 채팅방 썸네일로 사용
-        Long memberProfileImgId = userRepository.findProfileImgIdById(chatRoomCreateRequestDTO.getMemberIds().get(0));
+        Long memberProfileImgId = userRepository.findProfileImgIdById(memberIds.get(0));
 
         // 채팅방 생성 및 저장
         Long chatRoomId = chatRoomRepository.save(ChatRoomEntity.builder()
@@ -34,7 +45,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .getId();
 
         // 초대된 멤버들을 채팅방 멤버로 등록
-        for (Long memberId : chatRoomCreateRequestDTO.getMemberIds()) {
+        for (Long memberId : memberIds) {
             chatRoomMemberRepository.save(ChatRoomMemberEntity.builder()
                     .chatRoomId(chatRoomId)
                     .userId(memberId)
