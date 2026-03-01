@@ -38,7 +38,7 @@ services:
       # JVM(Java) 시간 설정 (Spring Boot가 이를 감지함)
       JAVA_TOOL_OPTIONS: "-Duser.timezone=Asia/Seoul"
     deploy:
-      replicas: 2               # 백엔드 인스턴스 수
+      replicas: 2             # 백엔드 인스턴스 수
       update_config:
         parallelism: 1          # 롤링업데이트 시 한 번에 1개씩만 교체
         delay: 5s               # 레플리카가 교체된 후 다음 레플리카가 교체를 시작하기 전까지 기다리는 시간
@@ -53,10 +53,10 @@ services:
 #          cpus: "1.0"
           cpus: "0.6"
 #          memory: 650M          # JVM Heap(400) + Metaspace/Stack 여유분
-          memory: 360M
+          memory: 512M
         reservations:
           cpus: "0.05"
-          memory: 150M
+          memory: 256M
 
     # health check
     healthcheck:
