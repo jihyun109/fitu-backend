@@ -9,9 +9,12 @@ import com.hsp.fitu.service.ChatMessageService;
 import com.hsp.fitu.service.ChatRoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 /**
  * 채팅 REST API 컨트롤러.
@@ -49,12 +52,17 @@ public class ChatController {
 
     /**
      * 특정 채팅방의 메시지 이력 조회.
-     * 채팅방 입장 시 과거 메시지를 불러올 때 사용한다.
+     * after 파라미터가 있으면 해당 시각 이후 메시지만 반환한다 (재연결 후 누락 메시지 보충용).
      */
     @GetMapping("/message/{chatRoomId}")
     @Operation(summary = "채팅방 메시지 조회 by 장지현")
-    public ResponseEntity<ChatRoomMessageResponseDTO> getChatMessage(@PathVariable Long chatRoomId) {
+    public ResponseEntity<ChatRoomMessageResponseDTO> getChatMessage(
+            @PathVariable Long chatRoomId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after) {
 
+        if (after != null) {
+            return ResponseEntity.ok(chatMessageService.getChatRoomMessageAfter(chatRoomId, after));
+        }
         return ResponseEntity.ok(chatMessageService.getChatRoomMessage(chatRoomId));
     }
 }
