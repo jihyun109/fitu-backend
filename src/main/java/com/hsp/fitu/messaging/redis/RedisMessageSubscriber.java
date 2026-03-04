@@ -45,6 +45,7 @@ public class RedisMessageSubscriber implements MessageListener {
                 .senderId(brokerMessage.getSenderId())
                 .senderName(brokerMessage.getSenderName())
                 .message(brokerMessage.getContent())
+                .sendTime(brokerMessage.getSendTime())
                 .build();
 
         // 채팅방 구독자에게 메시지 전달

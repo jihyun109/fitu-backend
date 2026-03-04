@@ -3,6 +3,8 @@ package com.hsp.fitu.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 public class ChatMessageResponseDTO {
@@ -10,4 +12,5 @@ public class ChatMessageResponseDTO {
     private Long senderId;
     private String senderName;
     private String message;
+    private LocalDateTime sendTime;
 }

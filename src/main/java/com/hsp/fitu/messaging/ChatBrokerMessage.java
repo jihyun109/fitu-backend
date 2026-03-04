@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -21,6 +22,7 @@ public class ChatBrokerMessage {
     private Long senderId;
     private String senderName;
     private String content;
+    private LocalDateTime sendTime;
 
     /** 채팅 목록 업데이트 대상 멤버 ID 목록 */
     private List<Long> roomMemberIds;
