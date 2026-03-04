@@ -12,6 +12,7 @@ import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -45,6 +46,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .senderId(userId)
                 .senderName(senderName)
                 .content(saved.getContent())
+                .sendTime(saved.getCreatedAt())
                 .roomMemberIds(roomMemberIds)
                 .build());
     }
@@ -56,6 +58,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     public ChatRoomMessageResponseDTO getChatRoomMessage(Long chatRoomId) {
         List<ChatMessage> chatMessageList = chatMessageRepository.findChatMessagesByChatRoomId(chatRoomId);
+        return ChatRoomMessageResponseDTO.builder()
+                .messages(chatMessageList).build();
+    }
+
+    /**
+     * 재연결 후 누락된 메시지를 보충할 때 사용한다.
+     * after 이후에 저장된 메시지만 반환한다.
+     */
+    @Override
+    public ChatRoomMessageResponseDTO getChatRoomMessageAfter(Long chatRoomId, LocalDateTime after) {
+        List<ChatMessage> chatMessageList = chatMessageRepository.findChatMessagesByChatRoomIdAfter(chatRoomId, after);
         return ChatRoomMessageResponseDTO.builder()
                 .messages(chatMessageList).build();
     }
