@@ -1,8 +1,6 @@
 package com.hsp.fitu.config.websocket;
 
-import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.jwt.JwtUtil;
-import com.hsp.fitu.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -12,8 +10,6 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 /**
  * STOMP 채널 인터셉터 — WebSocket 인증 처리.
@@ -26,7 +22,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
     @SneakyThrows
     @Override
@@ -46,13 +41,8 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
             Claims claims = jwtUtil.validateAndGetClaims(token);
             Long userId = claims.get("userId", Long.class);
 
-            Optional<UserEntity> userEntity = userRepository.findById(userId);
-            if (userEntity.isEmpty()) {
-                return null; // DB에 존재하지 않는 사용자 → 연결 거부
-            }
-
             // StompPrincipal 등록: convertAndSendToUser() 등에서 사용자 식별에 활용
-            StompPrincipal principal = new StompPrincipal(String.valueOf(userEntity.get().getId()));
+            StompPrincipal principal = new StompPrincipal(String.valueOf(userId));
             accessor.setUser(principal);
             // sessionAttributes에 저장: MessageController에서 @Header로 꺼내 사용
             accessor.getSessionAttributes().put("userId", userId);
