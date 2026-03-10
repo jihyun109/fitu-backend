@@ -26,4 +26,8 @@ public class ChatBrokerMessage {
 
     /** 채팅 목록 업데이트 대상 멤버 ID 목록 */
     private List<Long> roomMemberIds;
+
+    /** 부하테스트 레이턴시 측정용 패스스루 필드 (null이면 무시) */
+    private Long vuId;
+    private Integer seq;
 }
