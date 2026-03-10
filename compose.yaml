@@ -58,9 +58,9 @@ services:
 
     # health check
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/ping" ]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
       start_period: 90s
     networks:
@@ -89,6 +89,24 @@ services:
           memory: 50M
     networks:
       - fitu-prod-web
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    expose:
+      - "9115"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: "0.05"
+          memory: 32M
+        reservations:
+          memory: 16M
+    networks:
+      - fitu-prod-web
+      - monitoring-bridge
 
   redis-exporter:
     image: oliver006/redis_exporter:v1.62.0
