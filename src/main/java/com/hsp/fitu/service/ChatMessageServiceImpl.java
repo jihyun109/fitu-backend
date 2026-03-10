@@ -48,6 +48,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .content(saved.getContent())
                 .sendTime(saved.getCreatedAt())
                 .roomMemberIds(roomMemberIds)
+                .vuId(message.getVuId())
+                .seq(message.getSeq())
                 .build());
     }
 
