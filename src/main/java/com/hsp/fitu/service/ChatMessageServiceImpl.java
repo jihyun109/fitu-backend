@@ -7,7 +7,6 @@ import com.hsp.fitu.entity.ChatMessageEntity;
 import com.hsp.fitu.messaging.ChatBrokerMessage;
 import com.hsp.fitu.messaging.MessageBrokerPort;
 import com.hsp.fitu.repository.ChatMessageRepository;
-import com.hsp.fitu.repository.ChatRoomMemberRepository;
 import com.hsp.fitu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
-    private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final MessageBrokerPort messageBrokerPort;
 
     @Override
@@ -34,10 +32,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .senderId(userId)
                 .build());
 
-        // 2. 클라이언트에 노출할 발신자 이름과, Redis 구독자가 라우팅에 사용할 멤버 목록 조회
-        //    roomMemberIds를 payload에 포함시켜 구독자가 DB 재조회 없이 브로드캐스트 가능하게 한다
+        // 2. 발신자 이름 조회 
         String senderName = userRepository.findNameById(userId);
-        List<Long> roomMemberIds = chatRoomMemberRepository.findAllUserIdsByChatRoomId(saved.getChatRoomId());
 
         // 3. Redis Pub/Sub을 통해 전체 서버 인스턴스에 메시지 발행
         //    어느 인스턴스에 WebSocket이 연결된 클라이언트든 수신 가능하게 한다
@@ -47,7 +43,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .senderName(senderName)
                 .content(saved.getContent())
                 .sendTime(saved.getCreatedAt())
-                .roomMemberIds(roomMemberIds)
                 .vuId(message.getVuId())
                 .seq(message.getSeq())
                 .build());

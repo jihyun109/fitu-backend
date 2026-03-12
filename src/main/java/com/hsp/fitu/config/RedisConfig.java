@@ -41,7 +41,6 @@ public class RedisConfig {
         return RedisCacheManager.builder(cf)
                 .withCacheConfiguration("user:name", base.entryTtl(Duration.ofHours(24)))
                 .withCacheConfiguration("room:members", base.entryTtl(Duration.ofDays(7)))
-                .build();
     }
 
     @Bean

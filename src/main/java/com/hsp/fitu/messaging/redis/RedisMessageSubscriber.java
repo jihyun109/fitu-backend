@@ -77,21 +77,11 @@ public class RedisMessageSubscriber implements MessageListener {
             headerMap.put(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
             MessageHeaders headers = new MessageHeaders(headerMap);
 
-            // 채팅방 구독자에게 메시지 전달
             messagingTemplate.convertAndSend(
                     "/sub/chat/room/" + brokerMessage.getRoomId(),
                     jsonBytes,
                     headers
             );
-
-            // 각 멤버의 채팅 목록 업데이트
-            for (Long memberId : brokerMessage.getRoomMemberIds()) {
-                messagingTemplate.convertAndSend(
-                        "/sub/chat/room/list/" + memberId,
-                        jsonBytes,
-                        headers
-                );
-            }
         } catch (JsonProcessingException e) {
             log.error("채팅 브로드캐스트 직렬화 실패: roomId={}", brokerMessage.getRoomId(), e);
         }
