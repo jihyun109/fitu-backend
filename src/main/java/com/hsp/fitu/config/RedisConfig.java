@@ -1,12 +1,20 @@
 package com.hsp.fitu.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.time.Duration;
+
+@EnableCaching
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
@@ -18,6 +26,24 @@ public class RedisConfig {
      * Redis CLI에서 직접 데이터를 확인할 수 있고, 다른 언어/서버와 호환이 가능하다.
      * 채팅 메시지는 ObjectMapper로 JSON 직렬화한 뒤 이 템플릿으로 Pub/Sub 발행한다.
      */
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory cf) {
+        RedisSerializationContext.SerializationPair<Object> jsonPair =
+                RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer());
+        RedisSerializationContext.SerializationPair<String> stringPair =
+                RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer());
+
+        RedisCacheConfiguration base = RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(stringPair)
+                .serializeValuesWith(jsonPair)
+                .disableCachingNullValues();
+
+        return RedisCacheManager.builder(cf)
+                .withCacheConfiguration("user:name", base.entryTtl(Duration.ofHours(24)))
+                .withCacheConfiguration("room:members", base.entryTtl(Duration.ofDays(7)))
+                .build();
+    }
+
     @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory cf) {
         RedisTemplate<String, String> t = new RedisTemplate<>();

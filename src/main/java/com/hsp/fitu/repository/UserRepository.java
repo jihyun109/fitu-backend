@@ -4,6 +4,7 @@ import com.hsp.fitu.dto.AdminUserResponseDTO;
 import com.hsp.fitu.dto.UserProfileImageResponseDto;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.AccountStatus;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     // 사용자 이름 조회
+    @Cacheable(value = "user:name", key = "#userId")
     @Query("SELECT u.name " +
             "FROM UserEntity u " +
             "WHERE u.id = :userId")
