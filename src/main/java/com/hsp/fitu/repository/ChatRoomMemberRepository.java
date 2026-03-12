@@ -1,7 +1,6 @@
 package com.hsp.fitu.repository;
 
 import com.hsp.fitu.entity.ChatRoomMemberEntity;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMemberEntity, Long> {
-    @Cacheable(value = "room:members", key = "#chatRoomId")
     @Query("""
             SELECT c.userId
             FROM ChatRoomMemberEntity c
