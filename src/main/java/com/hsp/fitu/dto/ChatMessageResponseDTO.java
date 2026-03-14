@@ -13,4 +13,6 @@ public class ChatMessageResponseDTO {
     private String senderName;
     private String message;
     private LocalDateTime sendTime;
+    private Long _vuId;
+    private Long _seq;
 }

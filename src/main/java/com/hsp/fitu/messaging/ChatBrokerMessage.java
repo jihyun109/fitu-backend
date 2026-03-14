@@ -26,4 +26,7 @@ public class ChatBrokerMessage {
 
     /** 채팅 목록 업데이트 대상 멤버 ID 목록 */
     private List<Long> roomMemberIds;
+
+    private Long _vuId;
+    private Long _seq;
 }

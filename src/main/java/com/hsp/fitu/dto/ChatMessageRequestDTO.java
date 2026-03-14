@@ -6,4 +6,6 @@ import lombok.Getter;
 public class ChatMessageRequestDTO {
     private long roomId;
     private String message;
+    private Long _vuId;
+    private Long _seq;
 }
