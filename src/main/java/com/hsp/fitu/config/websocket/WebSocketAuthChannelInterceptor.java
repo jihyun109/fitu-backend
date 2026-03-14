@@ -1,8 +1,6 @@
 package com.hsp.fitu.config.websocket;
 
-import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.jwt.JwtUtil;
-import com.hsp.fitu.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -13,20 +11,21 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 /**
  * STOMP 채널 인터셉터 — WebSocket 인증 처리.
  *
  * STOMP CONNECT 프레임의 Authorization 헤더에서 JWT를 검증하고,
  * 인증된 userId를 세션 속성과 Principal에 저장한다.
  * 이후 메시지 핸들러(MessageController)에서 세션 속성으로 userId를 꺼내 사용한다.
+ *
+ * [개선] CONNECT 시 DB 조회 제거:
+ * JWT 서명 검증(HMAC-SHA384)이 이미 토큰의 무결성과 만료 여부를 보장하므로
+ * userRepository.findById() 조회는 불필요. Claims에서 userId를 직접 사용한다.
  */
 @Component
 @RequiredArgsConstructor
 public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
     @SneakyThrows
     @Override
@@ -43,16 +42,12 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
             if (token.startsWith("Bearer ")) token = token.substring(7);
 
             // JWT 서명 검증 및 Claims 추출 (만료·변조 시 예외 발생)
+            // DB 조회 없이 Claims의 userId를 신뢰: 서명이 유효하면 발급 당시 인증된 사용자임이 보장됨
             Claims claims = jwtUtil.validateAndGetClaims(token);
             Long userId = claims.get("userId", Long.class);
 
-            Optional<UserEntity> userEntity = userRepository.findById(userId);
-            if (userEntity.isEmpty()) {
-                return null; // DB에 존재하지 않는 사용자 → 연결 거부
-            }
-
             // StompPrincipal 등록: convertAndSendToUser() 등에서 사용자 식별에 활용
-            StompPrincipal principal = new StompPrincipal(String.valueOf(userEntity.get().getId()));
+            StompPrincipal principal = new StompPrincipal(String.valueOf(userId));
             accessor.setUser(principal);
             // sessionAttributes에 저장: MessageController에서 @Header로 꺼내 사용
             accessor.getSessionAttributes().put("userId", userId);
