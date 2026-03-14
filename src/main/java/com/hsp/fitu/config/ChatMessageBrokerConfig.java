@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.Executor;
 
 /**
  * 채팅 메시지 브로커 설정 (Redis Pub/Sub).
@@ -19,6 +22,21 @@ public class ChatMessageBrokerConfig {
     @Bean
     public ChannelTopic chatMessageTopic() {
         return new ChannelTopic("chat:messages");
+    }
+
+    /**
+     * redis-listener 스레드에서 팬아웃 작업을 분리하기 위한 전용 Executor.
+     * redis-listener는 즉시 반환하여 다음 메시지 수신을 놓치지 않는다.
+     */
+    @Bean
+    public Executor broadcastExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(8);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("broadcast-");
+        executor.initialize();
+        return executor;
     }
 
     @Bean

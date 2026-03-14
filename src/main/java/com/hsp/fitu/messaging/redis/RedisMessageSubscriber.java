@@ -6,12 +6,19 @@ import com.hsp.fitu.dto.ChatMessageResponseDTO;
 import com.hsp.fitu.messaging.ChatBrokerMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MimeTypeUtils;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageType;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executor;
 
 /**
  * Redis Pub/Sub 구독자.
@@ -22,18 +29,28 @@ import java.nio.charset.StandardCharsets;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class RedisMessageSubscriber implements MessageListener {
 
     private final SimpMessageSendingOperations messagingTemplate;
     private final ObjectMapper objectMapper;
+    private final Executor broadcastExecutor;
+
+    public RedisMessageSubscriber(
+            SimpMessageSendingOperations messagingTemplate,
+            ObjectMapper objectMapper,
+            @Qualifier("broadcastExecutor") Executor broadcastExecutor) {
+        this.messagingTemplate = messagingTemplate;
+        this.objectMapper = objectMapper;
+        this.broadcastExecutor = broadcastExecutor;
+    }
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
         String payload = new String(message.getBody(), StandardCharsets.UTF_8);
         try {
             ChatBrokerMessage brokerMessage = objectMapper.readValue(payload, ChatBrokerMessage.class);
-            broadcast(brokerMessage);
+            // redis-listener 스레드 즉시 해방 — 팬아웃은 broadcastExecutor에 위임
+            broadcastExecutor.execute(() -> broadcast(brokerMessage));
         } catch (JsonProcessingException e) {
             log.error("Redis 채팅 메시지 역직렬화 실패: payload={}", payload, e);
         }
@@ -50,18 +67,31 @@ public class RedisMessageSubscriber implements MessageListener {
                 ._seq(brokerMessage.get_seq())
                 .build();
 
+        // DTO를 byte[]로 1회만 직렬화 — 이후 모든 목적지에 동일 bytes 재사용
+        byte[] serialized;
+        try {
+            serialized = objectMapper.writeValueAsBytes(responseDTO);
+        } catch (JsonProcessingException e) {
+            log.error("채팅 메시지 직렬화 실패: roomId={}", brokerMessage.getRoomId(), e);
+            return;
+        }
+
         // 채팅방 구독자에게 메시지 전달
-        messagingTemplate.convertAndSend(
-                "/sub/chat/room/" + brokerMessage.getRoomId(),
-                responseDTO
-        );
+        send("/sub/chat/room/" + brokerMessage.getRoomId(), serialized);
 
         // 각 멤버의 채팅 목록 업데이트
         for (Long memberId : brokerMessage.getRoomMemberIds()) {
-            messagingTemplate.convertAndSend(
-                    "/sub/chat/room/list/" + memberId,
-                    responseDTO
-            );
+            send("/sub/chat/room/list/" + memberId, serialized);
         }
+    }
+
+    private void send(String destination, byte[] payload) {
+        SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
+        accessor.setDestination(destination);
+        accessor.setContentType(MimeTypeUtils.APPLICATION_JSON);
+        accessor.setLeaveMutable(true);
+        org.springframework.messaging.Message<byte[]> msg =
+                MessageBuilder.createMessage(payload, accessor.getMessageHeaders());
+        messagingTemplate.send(destination, msg);
     }
 }
