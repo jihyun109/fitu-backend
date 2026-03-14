@@ -36,7 +36,7 @@ services:
       # 리눅스 시스템 시간 설정
       TZ: Asia/Seoul
       # JVM(Java) 시간 설정 (Spring Boot가 이를 감지함)
-      JAVA_TOOL_OPTIONS: "-Duser.timezone=Asia/Seoul"
+      JAVA_TOOL_OPTIONS: "-Duser.timezone=Asia/Seoul -Xmx300m"
     deploy:
       replicas: 2             # 백엔드 인스턴스 수
       update_config:
