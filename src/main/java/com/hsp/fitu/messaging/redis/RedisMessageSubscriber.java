@@ -78,11 +78,7 @@ public class RedisMessageSubscriber implements MessageListener {
 
         // 채팅방 구독자에게 메시지 전달
         send("/sub/chat/room/" + brokerMessage.getRoomId(), serialized);
-
-        // 각 멤버의 채팅 목록 업데이트
-        for (Long memberId : brokerMessage.getRoomMemberIds()) {
-            send("/sub/chat/room/list/" + memberId, serialized);
-        }
+        
     }
 
     private void send(String destination, byte[] payload) {
