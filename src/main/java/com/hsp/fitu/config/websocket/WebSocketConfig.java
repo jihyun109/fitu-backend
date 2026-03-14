@@ -48,6 +48,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(webSocketAuthChannelInterceptor);
+        // 0.6 vCPU 환경에서 스레드 폭발 방지 — 큐 상한으로 무제한 적재 차단
+        registration.taskExecutor()
+                .corePoolSize(4)
+                .maxPoolSize(8)
+                .queueCapacity(200);
     }
 }
 
