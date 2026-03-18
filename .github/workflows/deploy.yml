@@ -99,13 +99,16 @@ jobs:
             sudo mkdir -p ./srv/redis-data
             sudo chown 1000:1000 ./srv/redis-data
 
+      - name: Create app-secret.yml from GitHub Secrets
+        run: echo "${{ secrets.APP_SECRET_YML }}" > app-secret.yml
+
       - name: Copy files to Swarm manager  # Swarm 매니저 노드에 배포 관련 파일 업로드
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}     # 서버 주소
           username: ${{ secrets.SSH_USER }} # 서버 유저명
           key: ${{ secrets.SSH_KEY }}       # SSH 개인키
-          source: "compose.yaml, nginx.conf, redis.conf" # 업로드할 파일 목록
+          source: "compose.yaml, nginx.conf, redis.conf, app-secret.yml" # 업로드할 파일 목록
           target: "~/deploy/${{ env.STACK_NAME }}"      # 서버 내 저장 경로
 
       - name: Deploy                       # Swarm 배포 실행
@@ -130,12 +133,26 @@ jobs:
             export NGINX_CONF_HASH=$(md5sum nginx.conf | cut -c1-8)
             export REDIS_CONF_HASH=$(md5sum redis.conf | cut -c1-8)
 
+            # app-secret.yml 해시 버전 관리
+            export APP_SECRET_HASH=$(md5sum app-secret.yml | cut -c1-8)
+
             docker stack deploy -c /home/ubuntu/deploy/fitu/compose.yaml --with-registry-auth ${{ env.STACK_NAME }}
 
-            # 미사용 config 정리 (서비스가 참조 중인 config는 삭제 불가하므로 안전)
+            # 배포 후 서버 디스크에서 secret 파일 즉시 삭제
+            rm -f app-secret.yml
+
+            # 미사용 config/secret 정리 (서비스가 참조 중인 것은 삭제 불가하므로 안전)
             docker config ls --format '{{.Name}}' | grep -E '^(nginx_conf-|redis_conf-)' | while read cfg; do
               docker config rm "$cfg" 2>/dev/null || true
             done
+            docker secret ls --format '{{.Name}}' | grep -E '^app-secret-' | while read sec; do
+              docker secret rm "$sec" 2>/dev/null || true
+            done
+
+      # CI 러너에서 secret 파일 삭제 (실패 시에도 실행됨)
+      - name: Cleanup secret file
+        if: always()
+        run: rm -f app-secret.yml
 
       # 배포 후 보안 그룹 규칙 삭제 (실패 시에도 실행됨)
       - name: Remove Github Actions IP from Security group
