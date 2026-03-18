@@ -78,7 +78,7 @@ public class RedisMessageSubscriber implements MessageListener {
 
         // 채팅방 구독자에게 메시지 전달
         send("/sub/chat/room/" + brokerMessage.getRoomId(), serialized);
-        
+
     }
 
     private void send(String destination, byte[] payload) {

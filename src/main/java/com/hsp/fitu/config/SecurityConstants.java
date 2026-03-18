@@ -28,6 +28,7 @@ public final class SecurityConstants {
             new AntPathRequestMatcher("/swagger-ui.html"),
             new AntPathRequestMatcher("/actuator/health/**"),
             new AntPathRequestMatcher("/actuator/**"),
-            new AntPathRequestMatcher("/ws/**")
+            new AntPathRequestMatcher("/ws/**"),
+            new AntPathRequestMatcher("/ping", "GET")
     );
 }
