@@ -4,30 +4,28 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hsp.fitu.dto.ChatMessageResponseDTO;
 import com.hsp.fitu.messaging.ChatBrokerMessage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageType;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
  * Redis Pub/Sub 구독자.
  * Redis에서 메시지를 수신하여 WebSocket 클라이언트에 브로드캐스트한다.
  *
- * 모든 앱 인스턴스가 동일 채널을 구독하므로,
- * 어느 인스턴스에 연결된 클라이언트든 메시지를 수신할 수 있다.
- *
- * [팬아웃 최적화]
- * - onMessage(): 역직렬화만 수행 후 broadcastExecutor에 위임 → redis-listener 스레드 즉시 해방
- * - broadcast(): DTO를 1회만 직렬화한 byte[]를 모든 convertAndSend에 재사용
+ * 모든 서버 인스턴스가 Redis를 구독하므로,
+ * 어느 인스턴스로 WebSocket 연결된 클라이언트든 메시지를 수신할 수 있다.
  */
 @Slf4j
 @Component
@@ -46,19 +44,18 @@ public class RedisMessageSubscriber implements MessageListener {
         this.broadcastExecutor = broadcastExecutor;
     }
 
-    /** redis-listener 스레드에서 실행. 역직렬화 후 broadcastExecutor에 위임하고 즉시 반환한다. */
     @Override
     public void onMessage(Message message, byte[] pattern) {
         String payload = new String(message.getBody(), StandardCharsets.UTF_8);
         try {
             ChatBrokerMessage brokerMessage = objectMapper.readValue(payload, ChatBrokerMessage.class);
+            // redis-listener 스레드 즉시 해방 — 팬아웃은 broadcastExecutor에 위임
             broadcastExecutor.execute(() -> broadcast(brokerMessage));
         } catch (JsonProcessingException e) {
             log.error("Redis 채팅 메시지 역직렬화 실패: payload={}", payload, e);
         }
     }
 
-    /** broadcastExecutor 스레드에서 실행. DTO를 1회만 직렬화한 byte[]를 모든 convertAndSend에 재사용한다. */
     private void broadcast(ChatBrokerMessage brokerMessage) {
         ChatMessageResponseDTO responseDTO = ChatMessageResponseDTO.builder()
                 .roomId(brokerMessage.getRoomId())
@@ -66,24 +63,31 @@ public class RedisMessageSubscriber implements MessageListener {
                 .senderName(brokerMessage.getSenderName())
                 .message(brokerMessage.getContent())
                 .sendTime(brokerMessage.getSendTime())
-                .vuId(brokerMessage.getVuId())
-                .seq(brokerMessage.getSeq())
+                ._vuId(brokerMessage.get_vuId())
+                ._seq(brokerMessage.get_seq())
                 .build();
 
+        // DTO를 byte[]로 1회만 직렬화 — 이후 모든 목적지에 동일 bytes 재사용
+        byte[] serialized;
         try {
-            // 직렬화 1회 → 이후 모든 convertAndSend에 byte[] 재사용 (기존: N+1회 반복 직렬화)
-            byte[] jsonBytes = objectMapper.writeValueAsBytes(responseDTO);
-            Map<String, Object> headerMap = new HashMap<>();
-            headerMap.put(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
-            MessageHeaders headers = new MessageHeaders(headerMap);
-
-            messagingTemplate.convertAndSend(
-                    "/sub/chat/room/" + brokerMessage.getRoomId(),
-                    jsonBytes,
-                    headers
-            );
+            serialized = objectMapper.writeValueAsBytes(responseDTO);
         } catch (JsonProcessingException e) {
-            log.error("채팅 브로드캐스트 직렬화 실패: roomId={}", brokerMessage.getRoomId(), e);
+            log.error("채팅 메시지 직렬화 실패: roomId={}", brokerMessage.getRoomId(), e);
+            return;
         }
+
+        // 채팅방 구독자에게 메시지 전달
+        send("/sub/chat/room/" + brokerMessage.getRoomId(), serialized);
+
+    }
+
+    private void send(String destination, byte[] payload) {
+        SimpMessageHeaderAccessor accessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
+        accessor.setDestination(destination);
+        accessor.setContentType(MimeTypeUtils.APPLICATION_JSON);
+        accessor.setLeaveMutable(true);
+        org.springframework.messaging.Message<byte[]> msg =
+                MessageBuilder.createMessage(payload, accessor.getMessageHeaders());
+        messagingTemplate.send(destination, msg);
     }
 }

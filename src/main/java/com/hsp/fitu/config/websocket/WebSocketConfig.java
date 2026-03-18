@@ -48,34 +48,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(webSocketAuthChannelInterceptor);
-        // 0.6 vCPU 제한 환경에서 스레드 폭발 방지
-        // core=4: 평상시 처리 (0.6코어 기준 적정)
-        // max=8: 연결 폭증 구간 처리 (2× 여유)
-        // queue=200: 150 VU 버스트 버퍼
+        // 0.6 vCPU 환경에서 스레드 폭발 방지 — 큐 상한으로 무제한 적재 차단
         registration.taskExecutor()
                 .corePoolSize(4)
                 .maxPoolSize(8)
                 .queueCapacity(200);
-    }
-
-    /**
-     * 아웃바운드 채널 스레드풀 설정.
-     * broadcast() 팬아웃 시 convertAndSend 호출량(방 인원 수 × 메시지 수)을 처리.
-     * inbound보다 큐를 크게 설정 — 팬아웃 태스크가 순간 대량 적재되기 때문.
-     *
-     * 모니터링 목적:
-     *   설정 시 Spring Boot Actuator가 자동으로 executor 메트릭 노출
-     *   → Prometheus executor_queued_tasks{name="clientOutboundChannel-N"} 로 팬아웃 병목 관찰 가능
-     */
-    @Override
-    public void configureClientOutboundChannel(ChannelRegistration registration) {
-        // core=4: 평상시 클라이언트 전송 처리
-        // max=16: 팬아웃 burst 시 병렬 전송 (inbound보다 높게 — 전송 태스크가 빠르고 많음)
-        // queue=1000: 팬아웃 적재 버퍼 (방 인원 × 동시 메시지 수 흡수용)
-        registration.taskExecutor()
-                .corePoolSize(4)
-                .maxPoolSize(16)
-                .queueCapacity(1000);
     }
 }
 

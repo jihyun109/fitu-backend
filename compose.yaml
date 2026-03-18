@@ -30,10 +30,9 @@ services:
       - app-secret.yml
     environment:
       SPRING_CONFIG_LOCATION: /run/secrets/app-secret.yml
-      # G1GC: WebSocket 저지연 필수 (SerialGC STW 수백ms → 1006 발생)
-      # ParallelGCThreads=1, ConcGCThreads=1: 0.6 vCPU 환경에서 GC 스레드 경합 방지
-      # Xmx400m: 컨테이너 512M 내에서 스레드 스택/Metaspace 여유분 확보
       TZ: Asia/Seoul
+      # G1GC: WebSocket 저지연 필수 / Xmx400m: 컨테이너 600M 내 여유 확보
+      # ParallelGCThreads=1, ConcGCThreads=1: 0.6 vCPU 환경에서 GC 스레드 경합 방지
       JAVA_TOOL_OPTIONS: "-Duser.timezone=Asia/Seoul -Xms128m -Xmx400m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
     deploy:
       replicas: 2             # 백엔드 인스턴스 수
@@ -50,18 +49,17 @@ services:
         limits:
 #          cpus: "1.0"
           cpus: "0.6"
-#          memory: 650M          # JVM Heap(400) + Metaspace/Stack 여유분
-          memory: 512M
+          memory: 600M          # Xmx400m + Metaspace/Stack/Native 여유분
         reservations:
           cpus: "0.05"
           memory: 256M
 
     # health check
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/ping" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 3
       start_period: 90s
     networks:
       - fitu-prod-web
@@ -90,26 +88,8 @@ services:
     networks:
       - fitu-prod-web
 
-  blackbox-exporter:
-    image: prom/blackbox-exporter:v0.25.0
-    expose:
-      - "9115"
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-      resources:
-        limits:
-          cpus: "0.05"
-          memory: 32M
-        reservations:
-          memory: 16M
-    networks:
-      - fitu-prod-web
-      - monitoring-bridge
-
   redis-exporter:
-    image: oliver006/redis_exporter:v1.62.0
+    image: oliver006/redis_exporter:latest
     environment:
       REDIS_ADDR: "redis://redis:6379"
       REDIS_PASSWORD: "wlgus34Wkd!"
@@ -128,8 +108,6 @@ services:
     networks:
       - fitu-prod-web
       - monitoring-bridge
-    depends_on:
-      - redis
 
 networks:
   fitu-prod-web:
@@ -146,11 +124,9 @@ configs:
     file: ./redis.conf
 
 secrets:
-  redis_acl:
-    external: true
-
   app-secret.yml:
-    external: true
+    name: app-secret-${APP_SECRET_HASH:-default}
+    file: ./app-secret.yml
 
 volumes:
   redis-data:

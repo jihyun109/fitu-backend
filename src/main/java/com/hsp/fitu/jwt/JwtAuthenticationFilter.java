@@ -1,5 +1,6 @@
 package com.hsp.fitu.jwt;
 
+import com.hsp.fitu.config.SecurityConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -9,6 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -20,10 +23,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenService jwtTokenService;
     private final HandlerExceptionResolver exceptionResolver;
+    private final RequestMatcher permitAllMatcher = new OrRequestMatcher(SecurityConstants.PERMIT_ALL_MATCHERS);
 
     public JwtAuthenticationFilter(JwtTokenService jwtTokenService, @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver) {
         this.jwtTokenService = jwtTokenService;
         this.exceptionResolver = exceptionResolver;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return permitAllMatcher.matches(request);
     }
 
     @Override

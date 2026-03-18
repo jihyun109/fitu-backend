@@ -17,6 +17,10 @@ import org.springframework.stereotype.Component;
  * STOMP CONNECT 프레임의 Authorization 헤더에서 JWT를 검증하고,
  * 인증된 userId를 세션 속성과 Principal에 저장한다.
  * 이후 메시지 핸들러(MessageController)에서 세션 속성으로 userId를 꺼내 사용한다.
+ *
+ * [개선] CONNECT 시 DB 조회 제거:
+ * JWT 서명 검증(HMAC-SHA384)이 이미 토큰의 무결성과 만료 여부를 보장하므로
+ * userRepository.findById() 조회는 불필요. Claims에서 userId를 직접 사용한다.
  */
 @Component
 @RequiredArgsConstructor
@@ -38,6 +42,7 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
             if (token.startsWith("Bearer ")) token = token.substring(7);
 
             // JWT 서명 검증 및 Claims 추출 (만료·변조 시 예외 발생)
+            // DB 조회 없이 Claims의 userId를 신뢰: 서명이 유효하면 발급 당시 인증된 사용자임이 보장됨
             Claims claims = jwtUtil.validateAndGetClaims(token);
             Long userId = claims.get("userId", Long.class);
 
