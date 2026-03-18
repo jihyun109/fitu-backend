@@ -124,11 +124,9 @@ configs:
     file: ./redis.conf
 
 secrets:
-  redis_acl:
-    external: true
-
   app-secret.yml:
-    external: true
+    name: app-secret-${APP_SECRET_HASH:-default}
+    file: ./app-secret.yml
 
 volumes:
   redis-data:

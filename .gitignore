@@ -38,5 +38,8 @@ out/
 .yml
 src/main/resources/application.yml
 
+### Environment ###
+.env
+
 ### Local docs ###
 docs/
