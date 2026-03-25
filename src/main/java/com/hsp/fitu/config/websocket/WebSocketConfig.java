@@ -1,9 +1,12 @@
 package com.hsp.fitu.config.websocket;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -38,7 +41,23 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/pub");
-        registry.enableSimpleBroker("/sub");
+        // heartbeat: [서버→클라이언트, 클라이언트→서버] 각 25초 간격으로 핑/퐁 교환
+        // 일정 시간 응답이 없으면 죽은 연결로 판단하여 자동으로 정리한다
+        registry.enableSimpleBroker("/sub")
+                .setHeartbeatValue(new long[]{25000, 25000})
+                .setTaskScheduler(heartbeatScheduler());
+    }
+
+    /**
+     * heartbeat 전송을 담당하는 스케줄러.
+     * SimpleBroker가 주기적으로 heartbeat 프레임을 보내려면 TaskScheduler가 필요하다.
+     */
+    @Bean
+    public TaskScheduler heartbeatScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(1); // heartbeat 전송 전용이므로 1개면 충분
+        scheduler.setThreadNamePrefix("ws-heartbeat-");
+        return scheduler;
     }
 
     /**
