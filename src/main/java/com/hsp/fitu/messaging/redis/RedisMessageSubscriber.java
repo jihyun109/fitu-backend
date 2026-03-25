@@ -4,7 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hsp.fitu.dto.ChatMessageResponseDTO;
 import com.hsp.fitu.messaging.ChatBrokerMessage;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.Message;
@@ -12,7 +13,6 @@ import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeTypeUtils;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageType;
@@ -34,14 +34,17 @@ public class RedisMessageSubscriber implements MessageListener {
     private final SimpMessageSendingOperations messagingTemplate;
     private final ObjectMapper objectMapper;
     private final Executor broadcastExecutor;
+    private final Counter broadcastCounter;
 
     public RedisMessageSubscriber(
             SimpMessageSendingOperations messagingTemplate,
             ObjectMapper objectMapper,
-            @Qualifier("broadcastExecutor") Executor broadcastExecutor) {
+            @Qualifier("broadcastExecutor") Executor broadcastExecutor,
+            MeterRegistry meterRegistry) {
         this.messagingTemplate = messagingTemplate;
         this.objectMapper = objectMapper;
         this.broadcastExecutor = broadcastExecutor;
+        this.broadcastCounter = meterRegistry.counter("chat.messages.broadcast");
     }
 
     @Override
@@ -78,7 +81,7 @@ public class RedisMessageSubscriber implements MessageListener {
 
         // 채팅방 구독자에게 메시지 전달
         send("/sub/chat/room/" + brokerMessage.getRoomId(), serialized);
-
+        broadcastCounter.increment();
     }
 
     private void send(String destination, byte[] payload) {

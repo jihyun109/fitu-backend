@@ -7,7 +7,9 @@ import com.hsp.fitu.entity.ChatMessageEntity;
 import com.hsp.fitu.messaging.ChatBrokerMessage;
 import com.hsp.fitu.messaging.MessageBrokerPort;
 import com.hsp.fitu.repository.ChatMessageRepository;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +18,35 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ChatMessageServiceImpl implements ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
     private final ChatCacheService chatCacheService;
     private final MessageBrokerPort messageBrokerPort;
 
+    // Micrometer 메트릭: Prometheus에서 수집되어 Grafana 대시보드에 표시된다
+    private final Counter messagesSentCounter;   // 전송 처리량 (TPS 계산용)
+    private final Timer messageSendTimer;        // 전송 처리 시간 (p50/p95/p99 분포)
+
+    public ChatMessageServiceImpl(
+            ChatMessageRepository chatMessageRepository,
+            ChatCacheService chatCacheService,
+            MessageBrokerPort messageBrokerPort,
+            MeterRegistry meterRegistry) {
+        this.chatMessageRepository = chatMessageRepository;
+        this.chatCacheService = chatCacheService;
+        this.messageBrokerPort = messageBrokerPort;
+
+        this.messagesSentCounter = meterRegistry.counter("chat.messages.sent");
+        this.messageSendTimer = meterRegistry.timer("chat.message.send.duration");
+    }
+
     @Override
     public void sendMessage(ChatMessageRequestDTO message, long userId) {
+        messageSendTimer.record(() -> doSendMessage(message, userId));
+    }
+
+    private void doSendMessage(ChatMessageRequestDTO message, long userId) {
         // 1. 메시지를 DB에 영구 저장 (메시지 이력 보존 및 조회에 사용)
         ChatMessageEntity saved = chatMessageRepository.save(ChatMessageEntity.builder()
                 .chatRoomId(message.getRoomId())
@@ -55,6 +77,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         } catch (Exception e) {
             log.warn("Redis 메시지 발행 실패 — DB 저장은 완료됨. roomId={}, senderId={}", saved.getChatRoomId(), userId, e);
         }
+
+        messagesSentCounter.increment();
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.hsp.fitu.config;
 
 import com.hsp.fitu.messaging.redis.RedisMessageSubscriber;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -36,7 +38,7 @@ public class ChatMessageBrokerConfig {
      * 메시지 유실보다 지연 처리가 낫다.
      */
     @Bean
-    public Executor broadcastExecutor() {
+    public Executor broadcastExecutor(MeterRegistry meterRegistry) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(4);
         executor.setMaxPoolSize(8);
@@ -45,9 +47,15 @@ public class ChatMessageBrokerConfig {
         executor.setRejectedExecutionHandler((runnable, pool) -> {
             log.warn("broadcastExecutor 큐 포화 — CallerRunsPolicy 적용. poolSize={}, queueSize={}",
                     pool.getPoolSize(), pool.getQueue().size());
+            meterRegistry.counter("chat.broadcast.rejected").increment();
             new ThreadPoolExecutor.CallerRunsPolicy().rejectedExecution(runnable, pool);
         });
         executor.initialize();
+
+        // broadcastExecutor의 active/queue/pool 상태를 Prometheus에 자동 노출
+        // executor.chat.broadcast.pool.size, executor.chat.broadcast.queue.remaining 등
+        ExecutorServiceMetrics.monitor(meterRegistry, executor.getThreadPoolExecutor(), "chat.broadcast");
+
         return executor;
     }
 
