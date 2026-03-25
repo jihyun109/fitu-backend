@@ -1,0 +1,78 @@
+# Redis StatefulSet
+# Deployment가 아닌 StatefulSet을 쓰는 이유:
+#   - Redis는 AOF/RDB로 디스크에 데이터를 저장함
+#   - Pod가 재시작돼도 같은 디스크(PVC)가 다시 연결되어야 함
+#   - StatefulSet은 Pod와 PVC를 1:1로 고정 연결해줌
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: fitu
+spec:
+  # serviceName: StatefulSet의 Pod에 고정 DNS 이름을 부여하기 위해 필요
+  # redis-0.redis.fitu.svc.cluster.local 형태로 접근 가능
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fitu-redis
+  template:
+    metadata:
+      labels:
+        app: fitu-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          # command + args: shell을 통해 환경변수($REDIS_PASSWORD)를 해석하여 실행
+          # redis.conf의 maxmemory 256mb를 128mb로 오버라이드
+          # requirepass는 redis-secret(Secret)에서 환경변수로 주입
+          command: ["sh", "-c"]
+          args:
+            - redis-server /usr/local/etc/redis/redis.conf
+              --maxmemory 128mb
+              --maxmemory-policy allkeys-lru
+              --requirepass $REDIS_PASSWORD
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret       # kubectl create secret으로 생성한 Secret
+                  key: password            # Secret의 password 키에서 비밀번호 읽기
+          resources:
+            requests:
+              cpu: "0.05"
+              memory: 50Mi
+            limits:
+              cpu: "0.2"
+              memory: 150Mi
+          volumeMounts:
+            # Redis 데이터 디렉토리 — AOF/RDB 파일이 여기에 저장됨
+            - name: redis-data
+              mountPath: /data
+            # redis.conf 파일 마운트
+            # subPath: ConfigMap의 특정 키 하나만 파일로 마운트
+            # 이걸 안 쓰면 디렉토리 전체가 ConfigMap으로 덮어써짐
+            - name: redis-conf
+              mountPath: /usr/local/etc/redis/redis.conf
+              subPath: redis.conf
+              readOnly: true
+      volumes:
+        - name: redis-conf
+          configMap:
+            name: redis-conf
+  # volumeClaimTemplates: StatefulSet 전용 PVC 자동 생성
+  # Pod마다 독립적인 디스크를 할당함 (redis-data-redis-0 형태로 생성)
+  # Pod가 삭제돼도 PVC는 남아있어서 데이터 보존
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        # ReadWriteOnce: 하나의 Pod만 읽기/쓰기 가능 (Redis는 1개이므로 충분)
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            # 디스크 1GB 요청 (AOF + RDB 파일 저장용)
+            storage: 1Gi
