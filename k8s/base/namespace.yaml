@@ -1,0 +1,18 @@
+# FitU 전용 Namespace
+# K8s에서 리소스를 논리적으로 격리하는 단위
+# 모든 FitU 리소스(Pod, Service, ConfigMap 등)를 fitu 네임스페이스 안에 생성
+# 다른 앱과 리소스가 섞이지 않도록 분리하는 역할
+
+# apiVersion: 이 리소스가 어떤 K8s API 버전을 사용하는지 지정
+# v1은 K8s의 가장 기본 API 그룹 (Namespace, Pod, Service, ConfigMap, Secret 등)
+apiVersion: v1
+
+# kind: 어떤 종류의 K8s 리소스를 만들지 지정
+# Namespace, Deployment, Service, ConfigMap 등이 올 수 있음
+kind: Namespace
+
+# metadata: 이 리소스의 식별 정보 (이름, 라벨 등)
+metadata:
+  # name: 이 Namespace의 이름
+  # 이후 모든 명령에서 -n fitu 또는 namespace: fitu로 참조됨
+  name: fitu

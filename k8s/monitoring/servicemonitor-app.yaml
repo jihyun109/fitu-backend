@@ -1,0 +1,18 @@
+# FitU 앱(Spring Boot)의 메트릭을 Prometheus가 수집하도록 설정하는 ServiceMonitor
+# Prometheus Operator가 이 리소스를 감지하여 Prometheus 설정에 자동 반영
+# 기존: monitoring-values.yaml의 additionalScrapeConfigs에서 job_name: 'fitu-app'으로 수동 설정
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fitu-app-monitor
+  namespace: fitu                      # 앱이 있는 네임스페이스에 생성
+spec:
+  # 어떤 Service를 수집 대상으로 할지 — Service의 label로 매칭
+  selector:
+    matchLabels:
+      app: fitu-app                    # service-app.yaml의 selector.app과 동일
+  # 메트릭 수집 설정
+  endpoints:
+    - port: http                        # Service의 포트 이름 (service-app.yaml: name: http)
+      path: /actuator/prometheus       # Spring Actuator가 Prometheus 포맷으로 메트릭 노출하는 경로
+      interval: 15s                    # 15초마다 메트릭 수집

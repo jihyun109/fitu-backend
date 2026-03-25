@@ -1,0 +1,114 @@
+# Spring Boot 앱 Deployment
+# Docker Swarm의 app 서비스에 해당
+# Deployment: 상태가 없는(stateless) 앱을 선언적으로 관리하는 K8s 리소스
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: fitu
+  # label: K8s에서 리소스를 식별/분류하는 태그 (key: value 형태)
+  # Service가 이 label을 보고 어떤 Pod에 트래픽을 보낼지 결정함
+  labels:
+    app: fitu-app
+spec:
+  # Pod를 2개 유지 (Swarm의 deploy.replicas: 2와 동일)
+  replicas: 2
+  # selector: 이 Deployment가 관리할 Pod를 label로 식별
+  # template.metadata.labels와 반드시 일치해야 함
+  selector:
+    matchLabels:
+      app: fitu-app
+  # 롤링 업데이트 전략 (Swarm의 update_config에 해당)
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # maxSurge: 업데이트 중 replicas 수보다 몇 개 더 띄울 수 있는지
+      # 1이면 새 Pod 1개를 먼저 띄움 (Swarm의 order: start-first와 동일)
+      maxSurge: 1
+      # maxUnavailable: 업데이트 중 몇 개까지 동시에 죽일 수 있는지
+      # 0이면 기존 Pod를 먼저 죽이지 않음 (항상 replicas 수 이상 유지)
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: fitu-app
+    spec:
+      # terminationGracePeriodSeconds: Pod 종료 시 기존 요청을 처리할 유예 시간
+      # WebSocket 연결된 클라이언트에게 종료를 알리고 정리할 시간 확보
+      # 이 시간이 지나면 SIGKILL로 강제 종료됨
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: app
+          image: jihyun923/fitu:latest
+          # imagePullPolicy: latest 태그는 로컬에 캐시된 이미지를 쓸 수 있으므로
+          # Always로 지정해서 항상 최신 이미지를 pull하도록 강제
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            # Secret 파일이 마운트되는 경로를 Spring에게 알려줌
+            # Swarm에서는 /run/secrets/app-secret.yml이었음
+            - name: SPRING_CONFIG_LOCATION
+              value: /config/app-secret.yml
+            - name: TZ
+              value: Asia/Seoul
+            # JVM 옵션: G1GC + 메모리 제한 + GC 스레드 제한
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Duser.timezone=Asia/Seoul -Xms128m -Xmx400m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
+            # Graceful Shutdown: Pod 종료 시 진행 중인 요청을 완료한 후 종료
+            # WebSocket 연결 끊김을 최소화하기 위해 필요
+            - name: SERVER_SHUTDOWN
+              value: "graceful"
+            # 종료 유예 시간: 20초 동안 기존 요청 처리 후 종료
+            # terminationGracePeriodSeconds(30초)보다 짧아야 함
+            - name: SPRING_LIFECYCLE_TIMEOUT_PER_SHUTDOWN_PHASE
+              value: "20s"
+          # 리소스 제한 (Swarm의 deploy.resources에 해당)
+          resources:
+            # requests: 최소 보장 자원 (Scheduler가 노드 선택 시 참고)
+            requests:
+              cpu: "0.05"
+              memory: 256Mi
+            # limits: 최대 사용 가능 자원 (초과 시 OOMKill/CPU 쓰로틀링)
+            limits:
+              cpu: "0.6"
+              memory: 600Mi
+          # livenessProbe: Pod가 살아있는지 확인
+          # 실패하면 Pod를 재시작함
+          # /actuator/health/liveness: 앱 프로세스 자체만 확인 (DB, Redis 무관)
+          # → RDS가 일시적으로 끊겨도 불필요한 Pod 재시작을 방지
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            # initialDelaySeconds: 컨테이너 시작 후 첫 체크까지 대기 시간
+            # Spring Boot 초기화에 시간이 걸리므로 90초 대기
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          # readinessProbe: Pod가 트래픽을 받을 준비가 됐는지 확인
+          # 실패하면 Service에서 이 Pod로 트래픽을 보내지 않음 (재시작은 안 함)
+          # /actuator/health/readiness: DB, Redis 등 의존성까지 확인
+          # → 의존성 장애 시 트래픽만 차단하고 Pod는 유지
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # volumeMounts: 컨테이너 안의 특정 경로에 볼륨을 연결
+          volumeMounts:
+            - name: app-secret
+              # app-secret Secret의 내용이 /config 디렉토리에 파일로 마운트됨
+              mountPath: /config
+              readOnly: true
+      # volumes: Pod에서 사용할 볼륨 정의
+      volumes:
+        - name: app-secret
+          # Secret 리소스를 볼륨으로 마운트
+          # kubectl create secret으로 생성한 app-secret을 참조
+          secret:
+            secretName: app-secret

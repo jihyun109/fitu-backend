@@ -1,0 +1,33 @@
+# Redis 설정을 K8s ConfigMap으로 관리
+# Docker Swarm의 docker config에 해당
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-conf
+  namespace: fitu
+data:
+  # | 뒤에 오는 텍스트가 그대로 redis.conf 파일 내용이 됨
+  # Pod에 볼륨 마운트되어 /usr/local/etc/redis/redis.conf 경로에 생성됨
+  redis.conf: |
+    # 모든 인터페이스에서 접속 허용 (클러스터 내부 통신용)
+    bind 0.0.0.0
+    protected-mode yes
+    port 6379
+
+    # AOF(Append Only File) 영속화 — 모든 쓰기 명령을 로그로 기록
+    appendonly yes
+    # 매초 디스크에 동기화 (성능과 안정성의 균형)
+    appendfsync everysec
+
+    # RDB 스냅샷 — 메모리 전체를 주기적으로 디스크에 저장
+    # 900초(15분) 동안 1번 이상 변경 시 저장
+    save 900 1
+    # 300초(5분) 동안 10번 이상 변경 시 저장
+    save 300 10
+    # 60초(1분) 동안 10000번 이상 변경 시 저장
+    save 60 10000
+
+    # compose.yaml의 --maxmemory 128mb로 오버라이드됨
+    maxmemory 256mb
+    # 메모리 초과 시 가장 오래 안 쓴 키부터 삭제
+    maxmemory-policy allkeys-lru
