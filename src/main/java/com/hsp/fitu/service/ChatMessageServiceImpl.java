@@ -8,11 +8,13 @@ import com.hsp.fitu.messaging.ChatBrokerMessage;
 import com.hsp.fitu.messaging.MessageBrokerPort;
 import com.hsp.fitu.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatMessageServiceImpl implements ChatMessageService {
@@ -38,16 +40,21 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         // 3. Redis Pub/Sub을 통해 전체 서버 인스턴스에 메시지 발행
         //    어느 인스턴스에 WebSocket이 연결된 클라이언트든 수신 가능하게 한다
-        messageBrokerPort.publish(ChatBrokerMessage.builder()
-                .roomId(saved.getChatRoomId())
-                .senderId(userId)
-                .senderName(senderName)
-                .content(saved.getContent())
-                .sendTime(saved.getCreatedAt())
-                .roomMemberIds(roomMemberIds)
-                ._vuId(message.get_vuId())
-                ._seq(message.get_seq())
-                .build());
+        //    Redis 장애 시에도 DB에는 이미 저장되었으므로, 수신자는 재연결 시 REST API로 복구 가능
+        try {
+            messageBrokerPort.publish(ChatBrokerMessage.builder()
+                    .roomId(saved.getChatRoomId())
+                    .senderId(userId)
+                    .senderName(senderName)
+                    .content(saved.getContent())
+                    .sendTime(saved.getCreatedAt())
+                    .roomMemberIds(roomMemberIds)
+                    ._vuId(message.get_vuId())
+                    ._seq(message.get_seq())
+                    .build());
+        } catch (Exception e) {
+            log.warn("Redis 메시지 발행 실패 — DB 저장은 완료됨. roomId={}, senderId={}", saved.getChatRoomId(), userId, e);
+        }
     }
 
     /**

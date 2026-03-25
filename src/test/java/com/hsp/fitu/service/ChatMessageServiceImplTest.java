@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -163,8 +162,8 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    @DisplayName("Redis publish 실패 시 BusinessException이 발생하지만, DB 저장은 이미 완료된 상태이다")
-    void sendMessage_publishFails_dbSaveAlreadyCommitted() {
+    @DisplayName("Redis publish 실패 시 예외 없이 정상 반환된다 (graceful degradation)")
+    void sendMessage_publishFails_noExceptionThrown() {
         // === given ===
         ChatMessageRequestDTO request = createRequest(1L, "메시지");
         ChatMessageEntity saved = createSavedEntity(1L, 100L, "메시지");
@@ -173,22 +172,20 @@ class ChatMessageServiceImplTest {
         when(chatCacheService.getSenderName(100L)).thenReturn("이름");
         when(chatCacheService.getRoomMemberIds(1L)).thenReturn(List.of(100L));
 
-        // doThrow(): "이 메서드가 호출되면 예외를 던져라" — publish 실패를 시뮬레이션
+        // doThrow(): "이 메서드가 호출되면 예외를 던져라" — Redis 장애를 시뮬레이션
         // void 메서드는 when().thenThrow() 대신 doThrow().when() 형태를 사용해야 한다
         doThrow(new BusinessException(ErrorCode.CHAT_MESSAGE_PUBLISH_FAILED))
                 .when(messageBrokerPort).publish(any());
 
-        // === when & then ===
-        // assertThatThrownBy(): 람다 안의 코드가 예외를 던지는지 검증
-        assertThatThrownBy(() -> chatMessageService.sendMessage(request, 100L))
-                // 발생한 예외가 BusinessException 타입인지 확인
-                .isInstanceOf(BusinessException.class)
-                // 예외 객체의 errorCode가 CHAT_MESSAGE_PUBLISH_FAILED인지 확인
-                .satisfies(ex -> assertThat(((BusinessException) ex).getErrorCode())
-                        .isEqualTo(ErrorCode.CHAT_MESSAGE_PUBLISH_FAILED));
+        // === when ===
+        // graceful degradation: Redis가 실패해도 예외가 밖으로 전파되지 않는다
+        // try-catch로 감싸서 warn 로그만 남기고 정상 반환하기 때문
+        chatMessageService.sendMessage(request, 100L);
 
-        // 핵심 검증: publish()가 실패해도 save()는 그 전에 이미 호출됨
-        // → 메시지는 DB에 저장된 상태. Redis만 실패한 것이므로 재연결 시 복구 가능
+        // === then ===
+        // 핵심 검증 1: DB 저장은 publish 이전에 수행되므로 정상 호출됨
         verify(chatMessageRepository).save(any());
+        // 핵심 검증 2: publish()도 호출은 시도됨 (내부에서 예외를 catch한 것)
+        verify(messageBrokerPort).publish(any());
     }
 }
