@@ -7,11 +7,12 @@ import com.hsp.fitu.error.ErrorCode;
 import com.hsp.fitu.messaging.ChatBrokerMessage;
 import com.hsp.fitu.messaging.MessageBrokerPort;
 import com.hsp.fitu.repository.ChatMessageRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -29,10 +30,7 @@ import static org.mockito.Mockito.*;
  *    - when(mock.method()).thenReturn(값) → mock 메서드 호출 시 지정한 값을 반환하도록 설정
  *    - verify(mock).method() → 해당 메서드가 실제로 호출되었는지 검증
  *
- * 2. @InjectMocks: 위에서 만든 @Mock 객체들을 자동으로 주입하여 테스트 대상 객체를 생성한다.
- *    → 즉, ChatMessageServiceImpl의 생성자에 mock들이 들어간다.
- *
- * 3. 테스트 패턴 (Given-When-Then):
+ * 2. 테스트 패턴 (Given-When-Then):
  *    - given: 테스트 조건 설정 (mock 반환값 지정)
  *    - when: 테스트 대상 메서드 호출
  *    - then: 결과 검증 (반환값 확인, 메서드 호출 여부 확인)
@@ -52,10 +50,21 @@ class ChatMessageServiceImplTest {
     @Mock
     private MessageBrokerPort messageBrokerPort;
 
-    // @InjectMocks: 위 3개의 Mock을 주입받아 실제 ChatMessageServiceImpl 인스턴스를 생성한다.
-    // 테스트 대상 클래스만 진짜이고, 의존하는 객체들은 모두 가짜이다.
-    @InjectMocks
+    // 테스트 대상 클래스. 위 Mock들 + SimpleMeterRegistry를 주입받는다.
     private ChatMessageServiceImpl chatMessageService;
+
+    // @BeforeEach: 각 테스트 메서드가 실행되기 전에 매번 호출된다.
+    // MeterRegistry는 Mock이 아닌 실제 구현체(SimpleMeterRegistry)를 사용한다.
+    // SimpleMeterRegistry: 테스트용 경량 MeterRegistry. Prometheus 없이 메트릭 동작을 검증할 수 있다.
+    @BeforeEach
+    void setUp() {
+        chatMessageService = new ChatMessageServiceImpl(
+                chatMessageRepository,
+                chatCacheService,
+                messageBrokerPort,
+                new SimpleMeterRegistry()
+        );
+    }
 
     /**
      * 테스트용 ChatMessageRequestDTO를 생성하는 헬퍼 메서드.
