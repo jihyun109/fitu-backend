@@ -1,0 +1,19 @@
+# Redis Exporter Service
+# Redis 자체는 Prometheus 포맷의 메트릭을 노출하지 않으므로,
+# Redis Exporter Pod이 Redis에 접속 → 상태를 읽어 Prometheus 포맷으로 변환·노출
+# 이 Service는 Prometheus가 Redis Exporter Pod에 접근하여 메트릭을 수집할 때 사용
+# (service-redis.yaml은 앱이 Redis 데이터를 읽기/쓰기할 때 사용 — 역할이 다름)
+apiVersion: v1              # K8s 핵심(core) API 그룹
+kind: Service                # 리소스 종류: Pod 앞에 두는 고정 DNS 주소
+metadata:
+  name: redis-exporter       # Service 이름 — 클러스터 내에서 "redis-exporter"로 접근 가능
+  namespace: fitu            # fitu 네임스페이스에 생성
+spec:
+  type: ClusterIP            # 클러스터 내부에서만 접근 가능 (외부 노출 불필요 — Prometheus만 접근)
+  selector:
+    app: fitu-redis-exporter  # 이 라벨이 붙은 Pod에 트래픽 전달 (deployment-redis-exporter.yaml의 라벨과 일치)
+  ports:
+    - name: metrics           # 포트 이름 — ServiceMonitor가 이 이름으로 포트를 참조
+      port: 9121              # Service가 받는 포트 (다른 Pod에서 redis-exporter:9121 로 접근)
+      targetPort: 9121        # 실제 Pod(Redis Exporter)로 전달하는 포트 (Redis Exporter 기본 포트)
+      protocol: TCP           # 통신 프로토콜

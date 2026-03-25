@@ -1,0 +1,43 @@
+# Redis Exporter — Redis 메트릭을 Prometheus 형식으로 수집
+# Prometheus가 /metrics 엔드포인트를 스크래핑하면 Redis 상태를 모니터링할 수 있음
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-exporter
+  namespace: fitu
+  labels:
+    app: fitu-redis-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fitu-redis-exporter
+  template:
+    metadata:
+      labels:
+        app: fitu-redis-exporter
+    spec:
+      containers:
+        - name: redis-exporter
+          image: oliver006/redis_exporter:latest
+          ports:
+            - containerPort: 9121
+          env:
+            # Redis 접속 주소 — Service 이름으로 통신
+            - name: REDIS_ADDR
+              value: "redis://redis:6379"
+            # Redis 비밀번호를 Secret에서 가져옴
+            # Swarm에서는 compose.yaml에 평문이었지만, K8s에서는 Secret 참조
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  # kubectl create secret으로 생성한 redis-secret의 password 키
+                  name: redis-secret
+                  key: password
+          resources:
+            requests:
+              cpu: "0.02"
+              memory: 16Mi
+            limits:
+              cpu: "0.05"
+              memory: 32Mi
