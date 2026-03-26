@@ -57,7 +57,8 @@ jobs:
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
 
-  deploy: # 2. 배포 단계
+  deploy: # 2. 배포 단계 (EC2 배포 일시 비활성화)
+    if: false
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
