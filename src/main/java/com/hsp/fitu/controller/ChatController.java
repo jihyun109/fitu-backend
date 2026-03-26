@@ -51,18 +51,23 @@ public class ChatController {
     }
 
     /**
-     * 특정 채팅방의 메시지 이력 조회.
-     * after 파라미터가 있으면 해당 시각 이후 메시지만 반환한다 (재연결 후 누락 메시지 보충용).
+     * 특정 채팅방의 메시지 이력 조회 (커서 기반 페이지네이션).
+     *
+     * - after: 재연결 후 누락 메시지 보충용. 해당 시각 이후 메시지를 시간순으로 반환.
+     * - before: 이전 메시지 로드용. 해당 시각 이전 메시지를 최신순 limit건 반환.
+     * - 둘 다 없으면: 최신 메시지 limit건 반환.
      */
     @GetMapping("/message/{chatRoomId}")
     @Operation(summary = "채팅방 메시지 조회 by 장지현")
     public ResponseEntity<ChatRoomMessageResponseDTO> getChatMessage(
             @PathVariable Long chatRoomId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime after,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime before,
+            @RequestParam(defaultValue = "50") int limit) {
 
         if (after != null) {
             return ResponseEntity.ok(chatMessageService.getChatRoomMessageAfter(chatRoomId, after));
         }
-        return ResponseEntity.ok(chatMessageService.getChatRoomMessage(chatRoomId));
+        return ResponseEntity.ok(chatMessageService.getChatRoomMessages(chatRoomId, before, limit));
     }
 }

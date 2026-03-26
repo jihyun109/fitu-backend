@@ -9,7 +9,7 @@ public interface ChatMessageService {
 
     void sendMessage(ChatMessageRequestDTO message, long userId);
 
-    ChatRoomMessageResponseDTO getChatRoomMessage(Long chatRoomId);
+    ChatRoomMessageResponseDTO getChatRoomMessages(Long chatRoomId, LocalDateTime before, int limit);
 
     ChatRoomMessageResponseDTO getChatRoomMessageAfter(Long chatRoomId, LocalDateTime after);
 }
