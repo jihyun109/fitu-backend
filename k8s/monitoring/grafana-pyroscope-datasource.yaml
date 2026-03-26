@@ -1,0 +1,20 @@
+# Pyroscope 데이터소스를 Grafana에 프로비저닝하는 ConfigMap
+# grafana_datasource: "1" 라벨이 있으면 Grafana sidecar가 자동으로 감지하여 데이터소스 등록
+# Pod가 재시작되어도 유지됨
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-pyroscope-datasource
+  namespace: monitoring
+  labels:
+    grafana_datasource: "1"
+data:
+  pyroscope-datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Pyroscope
+        type: grafana-pyroscope-datasource
+        uid: pyroscope
+        url: http://pyroscope.monitoring.svc.cluster.local:4040
+        access: proxy
+        isDefault: false
