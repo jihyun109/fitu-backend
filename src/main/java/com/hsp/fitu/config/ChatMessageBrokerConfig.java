@@ -1,7 +1,6 @@
 package com.hsp.fitu.config;
 
 import com.hsp.fitu.messaging.redis.RedisMessageSubscriber;
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +9,6 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +36,7 @@ public class ChatMessageBrokerConfig {
      * 메시지 유실보다 지연 처리가 낫다.
      */
     @Bean
-    public Executor broadcastExecutor(MeterRegistry meterRegistry) {
+    public ThreadPoolTaskExecutor broadcastExecutor(MeterRegistry meterRegistry) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(4);
         executor.setMaxPoolSize(8);
@@ -51,20 +49,6 @@ public class ChatMessageBrokerConfig {
             new ThreadPoolExecutor.CallerRunsPolicy().rejectedExecution(runnable, pool);
         });
         executor.initialize();
-
-        // ThreadPoolTaskExecutor 내부의 ThreadPoolExecutor를 직접 참조하여 Gauge 등록
-        // ExecutorServiceMetrics.monitor()는 일부 메트릭이 NaN으로 나오는 문제가 있어서
-        // 필요한 지표만 직접 Gauge로 등록한다
-        ThreadPoolExecutor pool = executor.getThreadPoolExecutor();
-        Gauge.builder("chat.broadcast.pool.active", pool, ThreadPoolExecutor::getActiveCount)
-                .description("브로드캐스트 스레드풀 활성 스레드 수").register(meterRegistry);
-        Gauge.builder("chat.broadcast.pool.size", pool, ThreadPoolExecutor::getPoolSize)
-                .description("브로드캐스트 스레드풀 현재 크기").register(meterRegistry);
-        Gauge.builder("chat.broadcast.pool.max", pool, e -> e.getMaximumPoolSize())
-                .description("브로드캐스트 스레드풀 최대 크기").register(meterRegistry);
-        Gauge.builder("chat.broadcast.queue.size", pool, e -> e.getQueue().size())
-                .description("브로드캐스트 큐 대기 작업 수").register(meterRegistry);
-
         return executor;
     }
 
