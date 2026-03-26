@@ -41,6 +41,15 @@ prometheus:
     # PodMonitor도 마찬가지로 모든 네임스페이스에서 수집하도록 설정
     podMonitorSelectorNilUsesHelmValues: false
 
+    # Service 메타데이터(라벨 등)를 Endpoint discovery에 전달
+    # 이 설정이 없으면 ServiceMonitor의 selector.matchLabels가 Service 라벨을 매칭해도
+    # Prometheus가 실제 scrape 대상 결정 시 __meta_kubernetes_service_label_*이 비어서 drop됨
+    # K8s 1.33+의 EndpointSlice 기반 discovery에서 필요
+    enableFeatures:
+      - service-discovery-manager
+    attachMetadata:
+      node: true
+
     # ── 메트릭 수집 대상 설정 ──
     # 기존에는 여기에 additionalScrapeConfigs로 fitu-app, redis-exporter 수집 설정을 직접 작성했으나,
     # ServiceMonitor(CRD)로 변환하여 앱과 같은 위치에서 선언적으로 관리하도록 변경

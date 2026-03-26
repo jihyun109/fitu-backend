@@ -52,9 +52,21 @@ spec:
               value: /config/app-secret.yml
             - name: TZ
               value: Asia/Seoul
-            # JVM 옵션: G1GC + 메모리 제한 + GC 스레드 제한
+            # JVM 옵션: G1GC + 메모리 제한 + GC 스레드 제한 + Pyroscope agent
             - name: JAVA_TOOL_OPTIONS
-              value: "-Duser.timezone=Asia/Seoul -Xms128m -Xmx400m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
+              value: "-javaagent:/opt/pyroscope.jar -Duser.timezone=Asia/Seoul -Xms128m -Xmx400m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
+            # Pyroscope CPU 프로파일링 설정
+            # APPLICATION_NAME: Grafana에서 이 앱을 식별하는 이름
+            - name: PYROSCOPE_APPLICATION_NAME
+              value: "fitu-app"
+            # SERVER_ADDRESS: 프로파일링 데이터를 전송할 Pyroscope 서버 주소
+            # monitoring 네임스페이스의 pyroscope 서비스를 K8s 내부 DNS로 참조
+            - name: PYROSCOPE_SERVER_ADDRESS
+              value: "http://pyroscope.monitoring.svc.cluster.local:4040"
+            # FORMAT: jfr(Java Flight Recorder) 형식으로 전송
+            # jfr을 써야 CPU, 메모리, lock 등 여러 이벤트를 동시에 프로파일링 가능
+            - name: PYROSCOPE_FORMAT
+              value: "jfr"
             # Graceful Shutdown: Pod 종료 시 진행 중인 요청을 완료한 후 종료
             # WebSocket 연결 끊김을 최소화하기 위해 필요
             - name: SERVER_SHUTDOWN
