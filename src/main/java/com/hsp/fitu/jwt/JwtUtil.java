@@ -117,6 +117,16 @@ public class JwtUtil {
         redisTemplate.opsForValue().set("blacklist: " + token, value, Duration.ofMillis(expiration));
     }
 
+    /** Claims에서 추출한 만료 시각(epoch millis)이 현재 시각을 지났는지 확인한다 */
+    public boolean isExpired(long tokenExpiryMillis) {
+        return System.currentTimeMillis() > tokenExpiryMillis;
+    }
+
+    /** Claims에서 만료 시각을 epoch millis로 추출한다 */
+    public long getExpiryMillis(Claims claims) {
+        return claims.getExpiration().getTime();
+    }
+
     // jwt의 만료시간 get
     private Date getExpiration(String token) {
         Claims claims = Jwts.parserBuilder()
