@@ -84,7 +84,7 @@ spec:
             # limits: 최대 사용 가능 자원 (초과 시 OOMKill/CPU 쓰로틀링)
             limits:
               cpu: "0.6"
-              memory: 600Mi
+              memory: 700Mi
           # livenessProbe: Pod가 살아있는지 확인
           # 실패하면 Pod를 재시작함
           # /actuator/health/liveness: 앱 프로세스 자체만 확인 (DB, Redis 무관)

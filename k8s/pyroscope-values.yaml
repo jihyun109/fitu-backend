@@ -1,0 +1,17 @@
+# Pyroscope Helm Chart values
+# CPU 프로파일링 서버 설정
+# 설치: helm install pyroscope grafana/pyroscope -n monitoring -f pyroscope-values.yaml
+# 업그레이드: helm upgrade pyroscope grafana/pyroscope -n monitoring -f pyroscope-values.yaml
+
+pyroscope:
+  resources:
+    requests:
+      cpu: "50m"
+      memory: 256Mi
+    limits:
+      cpu: "100m"
+      memory: 512Mi
+  # 프로파일링 데이터를 디스크에 영구 저장
+  # false면 Pod 재시작 시 데이터 유실
+  persistence:
+    enabled: true
