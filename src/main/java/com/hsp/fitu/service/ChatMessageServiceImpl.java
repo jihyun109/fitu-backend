@@ -11,6 +11,8 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -82,14 +84,27 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     /**
-     * 채팅방 입장 시 과거 메시지 이력을 반환한다.
-     * WebSocket 실시간 메시지와 달리, 이 메서드는 REST API로 호출된다.
+     * 채팅방 메시지 이력을 커서 기반 페이지네이션으로 반환한다.
+     * before가 null이면 최신 메시지부터, 있으면 해당 시각 이전 메시지부터 limit건을 반환한다.
+     * DB에서 역순(최신→과거)으로 가져온 뒤, 클라이언트 표시를 위해 시간순으로 뒤집는다.
      */
     @Override
-    public ChatRoomMessageResponseDTO getChatRoomMessage(Long chatRoomId) {
-        List<ChatMessage> chatMessageList = chatMessageRepository.findChatMessagesByChatRoomId(chatRoomId);
+    public ChatRoomMessageResponseDTO getChatRoomMessages(Long chatRoomId, LocalDateTime before, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<ChatMessage> messages;
+
+        if (before != null) {
+            messages = chatMessageRepository.findMessagesBefore(chatRoomId, before, pageable);
+        } else {
+            messages = chatMessageRepository.findRecentMessages(chatRoomId, pageable);
+        }
+
+        // DB에서 DESC로 가져왔으므로 시간순(ASC)으로 뒤집어서 반환
+        List<ChatMessage> reversed = new java.util.ArrayList<>(messages);
+        java.util.Collections.reverse(reversed);
+
         return ChatRoomMessageResponseDTO.builder()
-                .messages(chatMessageList).build();
+                .messages(reversed).build();
     }
 
     /**
