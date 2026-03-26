@@ -3,8 +3,11 @@ package com.hsp.fitu.controller;
 import com.hsp.fitu.dto.ChatMessageRequestDTO;
 import com.hsp.fitu.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -13,6 +16,7 @@ import java.util.Map;
  * STOMP 메시지 컨트롤러.
  * 클라이언트가 /pub/chat/message 로 SEND한 메시지를 수신한다.
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class MessageController {
@@ -34,5 +38,19 @@ public class MessageController {
         Long userId = (Long) sessionAttrs.get("userId");
 
         chatMessageService.sendMessage(message, userId);
+    }
+
+    /**
+     * @MessageMapping 핸들러에서 예외가 발생하면 이 메서드가 처리한다.
+     * 클라이언트의 /user/queue/errors 구독 경로로 에러 메시지를 전달한다.
+     *
+     * GlobalExceptionHandler(@RestControllerAdvice)는 HTTP 요청만 처리하므로,
+     * STOMP 메시지 처리 중 발생하는 예외는 별도로 처리해야 한다.
+     */
+    @MessageExceptionHandler
+    @SendToUser("/queue/errors")
+    public String handleException(Exception e) {
+        log.error("STOMP 메시지 처리 중 예외 발생", e);
+        return e.getMessage();
     }
 }
