@@ -57,6 +57,12 @@ WORKDIR /app
 # build stage에서 빌드된 app.jar만 가져오기
 COPY --from=build /build/app.jar app.jar
 
+# Pyroscope Java agent (CPU 프로파일링용)
+USER root
+RUN curl -fsSL https://github.com/grafana/pyroscope-java/releases/latest/download/pyroscope.jar \
+    -o /opt/pyroscope.jar
+USER appuser
+
 # 컨테이너에서 외부로 노출할 포트
 EXPOSE 8080
 

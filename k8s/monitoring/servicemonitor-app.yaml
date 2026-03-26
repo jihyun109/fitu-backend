@@ -1,18 +1,29 @@
 # FitU 앱(Spring Boot)의 메트릭을 Prometheus가 수집하도록 설정하는 ServiceMonitor
 # Prometheus Operator가 이 리소스를 감지하여 Prometheus 설정에 자동 반영
-# 기존: monitoring-values.yaml의 additionalScrapeConfigs에서 job_name: 'fitu-app'으로 수동 설정
+#
+# [주의] K8s 1.33+에서 EndpointSlice 기반 discovery로 전환되면서
+# __meta_kubernetes_service_label_* 메타데이터가 비어있는 문제가 있음.
+# selector.matchLabels만으로는 keep 규칙에서 drop되므로,
+# relabelings에서 Service 이름 기반 필터링을 추가하여 해결.
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: fitu-app-monitor
-  namespace: fitu                      # 앱이 있는 네임스페이스에 생성
+  namespace: fitu
 spec:
-  # 어떤 Service를 수집 대상으로 할지 — Service의 label로 매칭
-  selector:
-    matchLabels:
-      app: fitu-app                    # service-app.yaml의 selector.app과 동일
-  # 메트릭 수집 설정
+  # selector를 빈 값으로 설정하여 Operator가 자동 생성하는
+  # service_label 기반 keep 규칙을 제거한다.
+  # K8s 1.33+의 EndpointSlice discovery에서 Service 라벨이 전달되지 않는 문제 때문에
+  # selector.matchLabels 대신 relabelings에서 Service 이름으로 직접 필터링한다.
+  selector: {}
+  namespaceSelector:
+    matchNames:
+      - fitu
   endpoints:
-    - port: http                        # Service의 포트 이름 (service-app.yaml: name: http)
-      path: /actuator/prometheus       # Spring Actuator가 Prometheus 포맷으로 메트릭 노출하는 경로
-      interval: 15s                    # 15초마다 메트릭 수집
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          regex: app
+          action: keep
