@@ -50,6 +50,9 @@ class ChatMessageServiceImplTest {
     @Mock
     private MessageBrokerPort messageBrokerPort;
 
+    @Mock
+    private com.hsp.fitu.messaging.ChatMessagePersistBuffer chatMessagePersistBuffer;
+
     // 테스트 대상 클래스. 위 Mock들 + SimpleMeterRegistry를 주입받는다.
     private ChatMessageServiceImpl chatMessageService;
 
@@ -62,6 +65,7 @@ class ChatMessageServiceImplTest {
                 chatMessageRepository,
                 chatCacheService,
                 messageBrokerPort,
+                chatMessagePersistBuffer,
                 new SimpleMeterRegistry()
         );
     }
@@ -106,44 +110,34 @@ class ChatMessageServiceImplTest {
     }
 
     @Test
-    @DisplayName("정상 메시지 전송: DB 저장 → 캐시 조회 → 브로커 발행이 순서대로 수행된다")
-    void sendMessage_success_savesAndPublishes() {
-        // === given: 테스트 조건 설정 ===
+    @DisplayName("정상 메시지 전송: 캐시 조회 → 브로커 발행 → Redis Stream 저장이 수행된다")
+    void sendMessage_success_publishesAndEnqueues() {
+        // === given ===
         long roomId = 1L;
         long userId = 100L;
         ChatMessageRequestDTO request = createRequest(roomId, "안녕하세요");
-        ChatMessageEntity saved = createSavedEntity(roomId, userId, "안녕하세요");
 
-        // when().thenReturn(): "이 메서드가 호출되면 이 값을 반환해라"라는 행동 규칙 설정
-        // any(ChatMessageEntity.class) → 어떤 ChatMessageEntity가 들어와도 saved를 반환
-        when(chatMessageRepository.save(any(ChatMessageEntity.class))).thenReturn(saved);
-        // getSenderName(100L)이 호출되면 "홍길동"을 반환
         when(chatCacheService.getSenderName(userId)).thenReturn("홍길동");
-        // getRoomMemberIds(1L)이 호출되면 [100, 200] 반환
-        when(chatCacheService.getRoomMemberIds(roomId)).thenReturn(List.of(100L, 200L));
 
-        // === when: 테스트 대상 메서드 실행 ===
+        // === when ===
         chatMessageService.sendMessage(request, userId);
 
-        // === then: 결과 검증 ===
-
-        // verify(): "이 mock의 이 메서드가 실제로 호출되었는가?" 검증
-        // → chatMessageRepository.save()가 1번 호출되었는지 확인
-        verify(chatMessageRepository).save(any(ChatMessageEntity.class));
-
-        // ArgumentCaptor: publish()에 전달된 인자를 "캡처"해서 내용을 검증할 수 있다.
-        // → messageBrokerPort.publish(???)에서 ???에 뭐가 들어갔는지 잡아낸다.
+        // === then ===
+        // 1. Redis Pub/Sub 발행 검증
         ArgumentCaptor<ChatBrokerMessage> captor = ArgumentCaptor.forClass(ChatBrokerMessage.class);
-        verify(messageBrokerPort).publish(captor.capture()); // publish 호출을 검증하면서 인자를 캡처
+        verify(messageBrokerPort).publish(captor.capture());
 
-        // 캡처한 ChatBrokerMessage의 필드값들이 올바른지 하나씩 검증
         ChatBrokerMessage published = captor.getValue();
         assertThat(published.getRoomId()).isEqualTo(roomId);
         assertThat(published.getSenderId()).isEqualTo(userId);
         assertThat(published.getSenderName()).isEqualTo("홍길동");
         assertThat(published.getContent()).isEqualTo("안녕하세요");
-        assertThat(published.getRoomMemberIds()).containsExactly(100L, 200L);
-        assertThat(published.getSendTime()).isEqualTo(saved.getCreatedAt());
+
+        // 2. Redis Stream에 DB 저장 요청이 들어갔는지 검증
+        verify(chatMessagePersistBuffer).enqueue(eq(roomId), eq(userId), eq("안녕하세요"), any(LocalDateTime.class));
+
+        // 3. DB에 직접 save하지 않았는지 검증 (DB 저장은 Consumer가 비동기로 처리)
+        verifyNoInteractions(chatMessageRepository);
     }
 
     @Test
@@ -151,50 +145,34 @@ class ChatMessageServiceImplTest {
     void sendMessage_cacheHit_noAdditionalDbCall() {
         // === given ===
         ChatMessageRequestDTO request = createRequest(1L, "테스트");
-        ChatMessageEntity saved = createSavedEntity(1L, 100L, "테스트");
 
-        when(chatMessageRepository.save(any())).thenReturn(saved);
         when(chatCacheService.getSenderName(100L)).thenReturn("캐시된이름");
-        when(chatCacheService.getRoomMemberIds(1L)).thenReturn(List.of(100L, 200L));
 
         // === when ===
         chatMessageService.sendMessage(request, 100L);
 
         // === then ===
-        // verify(): 각 캐시 메서드가 정확히 1번 호출되었는지 확인
         verify(chatCacheService).getSenderName(100L);
-        verify(chatCacheService).getRoomMemberIds(1L);
-
-        // only(): chatMessageRepository에서 save() 외에 다른 메서드는 호출되지 않았는지 확인
-        // → 캐시가 동작해서 추가 DB 조회(findNameById 등)가 일어나지 않았음을 보장
-        verify(chatMessageRepository, only()).save(any());
+        // DB 직접 접근 없음 (Consumer가 비동기로 처리)
+        verifyNoInteractions(chatMessageRepository);
     }
 
     @Test
-    @DisplayName("Redis publish 실패 시 예외 없이 정상 반환된다 (graceful degradation)")
-    void sendMessage_publishFails_noExceptionThrown() {
+    @DisplayName("Redis publish 실패 시 예외 없이 정상 반환되고, Stream 저장은 계속 진행된다")
+    void sendMessage_publishFails_enqueueStillCalled() {
         // === given ===
         ChatMessageRequestDTO request = createRequest(1L, "메시지");
-        ChatMessageEntity saved = createSavedEntity(1L, 100L, "메시지");
 
-        when(chatMessageRepository.save(any())).thenReturn(saved);
         when(chatCacheService.getSenderName(100L)).thenReturn("이름");
-        when(chatCacheService.getRoomMemberIds(1L)).thenReturn(List.of(100L));
-
-        // doThrow(): "이 메서드가 호출되면 예외를 던져라" — Redis 장애를 시뮬레이션
-        // void 메서드는 when().thenThrow() 대신 doThrow().when() 형태를 사용해야 한다
         doThrow(new BusinessException(ErrorCode.CHAT_MESSAGE_PUBLISH_FAILED))
                 .when(messageBrokerPort).publish(any());
 
         // === when ===
-        // graceful degradation: Redis가 실패해도 예외가 밖으로 전파되지 않는다
-        // try-catch로 감싸서 warn 로그만 남기고 정상 반환하기 때문
         chatMessageService.sendMessage(request, 100L);
 
         // === then ===
-        // 핵심 검증 1: DB 저장은 publish 이전에 수행되므로 정상 호출됨
-        verify(chatMessageRepository).save(any());
-        // 핵심 검증 2: publish()도 호출은 시도됨 (내부에서 예외를 catch한 것)
+        // publish가 실패해도 예외가 전파되지 않고, Stream 저장은 계속 진행됨
         verify(messageBrokerPort).publish(any());
+        verify(chatMessagePersistBuffer).enqueue(eq(1L), eq(100L), eq("메시지"), any(LocalDateTime.class));
     }
 }
