@@ -5,6 +5,7 @@ import com.hsp.fitu.dto.ChatMessageRequestDTO;
 import com.hsp.fitu.dto.ChatRoomMessageResponseDTO;
 import com.hsp.fitu.entity.ChatMessageEntity;
 import com.hsp.fitu.messaging.ChatBrokerMessage;
+import com.hsp.fitu.messaging.ChatMessagePersistBuffer;
 import com.hsp.fitu.messaging.MessageBrokerPort;
 import com.hsp.fitu.repository.ChatMessageRepository;
 import io.micrometer.core.instrument.Counter;
@@ -25,6 +26,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatCacheService chatCacheService;
     private final MessageBrokerPort messageBrokerPort;
+    private final ChatMessagePersistBuffer chatMessagePersistBuffer;
 
     // Micrometer 메트릭: Prometheus에서 수집되어 Grafana 대시보드에 표시된다
     private final Counter messagesSentCounter;   // 전송 처리량 (TPS 계산용)
@@ -34,10 +36,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             ChatMessageRepository chatMessageRepository,
             ChatCacheService chatCacheService,
             MessageBrokerPort messageBrokerPort,
+            ChatMessagePersistBuffer chatMessagePersistBuffer,
             MeterRegistry meterRegistry) {
         this.chatMessageRepository = chatMessageRepository;
         this.chatCacheService = chatCacheService;
         this.messageBrokerPort = messageBrokerPort;
+        this.chatMessagePersistBuffer = chatMessagePersistBuffer;
 
         this.messagesSentCounter = meterRegistry.counter("chat.messages.sent");
         this.messageSendTimer = meterRegistry.timer("chat.message.send.duration");
@@ -49,35 +53,35 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     private void doSendMessage(ChatMessageRequestDTO message, long userId) {
-        // 1. 메시지를 DB에 영구 저장 (메시지 이력 보존 및 조회에 사용)
-        ChatMessageEntity saved = chatMessageRepository.save(ChatMessageEntity.builder()
-                .chatRoomId(message.getRoomId())
-                .content(message.getMessage())
-                .messageType(ChatMessageEntity.ChatMessageType.TALK)
-                .senderId(userId)
-                .build());
+        LocalDateTime sendTime = LocalDateTime.now();
 
-        // 2. 발신자 이름, 방 멤버 목록 — Redis 캐시에서 조회 (TTL 24h, 캐시 미스 시 DB 폴백)
-        //    메시지 전송마다 발생하던 DB 조회 2건 제거
+        // 1. 발신자 이름 — Redis 캐시에서 조회 (TTL 24h, 캐시 미스 시 DB 폴백)
         String senderName = chatCacheService.getSenderName(userId);
-        List<Long> roomMemberIds = chatCacheService.getRoomMemberIds(saved.getChatRoomId());
 
-        // 3. Redis Pub/Sub을 통해 전체 서버 인스턴스에 메시지 발행
-        //    어느 인스턴스에 WebSocket이 연결된 클라이언트든 수신 가능하게 한다
-        //    Redis 장애 시에도 DB에는 이미 저장되었으므로, 수신자는 재연결 시 REST API로 복구 가능
+        // 2. Redis Pub/Sub으로 실시간 메시지 전달
+        //    해당 채팅방을 구독 중인 모든 WebSocket 클라이언트가 수신
         try {
             messageBrokerPort.publish(ChatBrokerMessage.builder()
-                    .roomId(saved.getChatRoomId())
+                    .roomId(message.getRoomId())
                     .senderId(userId)
                     .senderName(senderName)
-                    .content(saved.getContent())
-                    .sendTime(saved.getCreatedAt())
-                    .roomMemberIds(roomMemberIds)
+                    .content(message.getMessage())
+                    .sendTime(sendTime)
                     ._vuId(message.get_vuId())
                     ._seq(message.get_seq())
                     .build());
         } catch (Exception e) {
-            log.warn("Redis 메시지 발행 실패 — DB 저장은 완료됨. roomId={}, senderId={}", saved.getChatRoomId(), userId, e);
+            log.warn("Redis 메시지 발행 실패. roomId={}, senderId={}", message.getRoomId(), userId, e);
+        }
+
+        // 3. DB 저장을 Redis Stream에 위임 (비동기)
+        //    ChatMessagePersistConsumer가 Stream에서 꺼내서 배치 INSERT
+        //    메시지 전송 경로에서 DB 의존성을 제거
+        try {
+            chatMessagePersistBuffer.enqueue(message.getRoomId(), userId, message.getMessage(), sendTime);
+        } catch (Exception e) {
+            log.warn("메시지 영구 저장 큐 추가 실패 — 실시간 전달은 완료됨. roomId={}, senderId={}",
+                    message.getRoomId(), userId, e);
         }
 
         messagesSentCounter.increment();
