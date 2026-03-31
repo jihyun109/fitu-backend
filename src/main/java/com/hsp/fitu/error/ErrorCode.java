@@ -10,6 +10,7 @@ public enum ErrorCode {
     // 공통 에러 (COMMON)
     NOT_FOUND(404, "COMMON-404", "요청한 리소스를 찾을 수 없습니다"),
     INTER_SERVER_ERROR(500, "COMMON-500", "서버 내부 오류가 발생했습니다"),
+    EXTERNAL_API_FAILED(502, "COMMON-502", "외부 API 호출에 실패했습니다"),
     METHOD_ARGUMENT_NOT_VALID(400, "COMMON-400", "잘못된 요청 파라미터입니다"),
 
     // 인증/인가 에러 (AUTH)
