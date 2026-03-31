@@ -2,16 +2,16 @@ package com.hsp.fitu.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
 import com.hsp.fitu.dto.KakaoDTO;
+import com.hsp.fitu.error.BusinessException;
+import com.hsp.fitu.error.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Arrays;
 
 @Slf4j
 @Component
@@ -24,9 +24,15 @@ public class KakaoUtil {
     @Value(("${spring.kakao.auth.client_secret}"))
     private String clientSecret;
 
-    public KakaoDTO.OAuthToken requestToken(String accessCode) {
-        RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
+    public KakaoUtil(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
+
+    public KakaoDTO.OAuthToken requestToken(String accessCode) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.add("Accept", "application/json");
@@ -42,25 +48,20 @@ public class KakaoUtil {
 
         ResponseEntity<String> response = restTemplate.postForEntity("https://kauth.kakao.com/oauth/token", kakaoTokenRequest, String.class);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        KakaoDTO.OAuthToken oAuthToken = null;
         try {
-            oAuthToken = objectMapper.readValue(response.getBody(), KakaoDTO.OAuthToken.class);
+            return objectMapper.readValue(response.getBody(), KakaoDTO.OAuthToken.class);
         } catch (JsonProcessingException e) {
-            log.warn("failed");
-//            throw new AuthHandler(ErrorStatus._PARSING_ERROR);
+            log.error("카카오 토큰 응답 파싱 실패: {}", e.getMessage());
+            throw new BusinessException(ErrorCode.EXTERNAL_API_FAILED);
         }
-        return oAuthToken;
     }
 
     public KakaoDTO.KakaoProfile requestProfile(KakaoDTO.OAuthToken oAuthToken) {
-        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
         headers.add("Authorization","Bearer "+ oAuthToken.getAccess_token());
 
-        HttpEntity<MultiValueMap<String,String>> kakaoProfileRequest = new HttpEntity <>(headers);
+        HttpEntity<MultiValueMap<String,String>> kakaoProfileRequest = new HttpEntity<>(headers);
 
         ResponseEntity<String> response =
                 restTemplate.exchange(
@@ -68,18 +69,12 @@ public class KakaoUtil {
                 HttpMethod.GET,
                 kakaoProfileRequest,
                 String.class);
-        log.warn(response.toString());
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        KakaoDTO.KakaoProfile kakaoProfile = null;
         try {
-            kakaoProfile = objectMapper.readValue(response.getBody(), KakaoDTO.KakaoProfile.class);
+            return objectMapper.readValue(response.getBody(), KakaoDTO.KakaoProfile.class);
         } catch (JsonProcessingException e) {
-            log.info(Arrays.toString(e.getStackTrace()));
-            log.warn("failed request Profile");
-//            throw new AuthHandler(ErrorStatus._PARSING_ERROR);
+            log.error("카카오 프로필 응답 파싱 실패: {}", e.getMessage());
+            throw new BusinessException(ErrorCode.EXTERNAL_API_FAILED);
         }
-
-        return kakaoProfile;
     }
 }
