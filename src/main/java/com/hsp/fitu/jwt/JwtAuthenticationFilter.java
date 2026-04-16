@@ -49,6 +49,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (token != null) {
                 Claims claims = jwtTokenService.validateToken(token);
 
+                // RT가 AT로 사용되는 것을 방지 (키 분리 + type 이중 방어)
+                String type = claims.get("type", String.class);
+                if ("REFRESH".equals(type)) {
+                    throw new JwtException("Refresh token cannot be used as access token");
+                }
+
                 // SecurityContext 에 Authentication 인스턴스 추가
                 Authentication auth = jwtTokenService.createAuthentication(claims);
                 SecurityContextHolder.getContext().setAuthentication(auth);
