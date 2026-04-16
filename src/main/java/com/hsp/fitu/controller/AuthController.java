@@ -5,8 +5,6 @@ import com.hsp.fitu.dto.TokenResponseDTO;
 import com.hsp.fitu.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,23 +32,18 @@ public class AuthController {
     }
 
     @GetMapping("/reissue")
-    public ResponseEntity<TokenResponseDTO> reissue(@CookieValue("refreshToken") String refreshToken) {
-        TokenResponseDTO tokenResponseDTO = authService.reissue(refreshToken);
-
+    public ResponseEntity<TokenResponseDTO> reissue(
+            @CookieValue("refreshToken") String refreshToken,
+            HttpServletResponse response) {
+        TokenResponseDTO tokenResponseDTO = authService.reissue(refreshToken, response);
         return ResponseEntity.ok(tokenResponseDTO);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@CookieValue("refreshToken") String refreshToken, HttpServletResponse response) {
-        // 쿠키 삭제
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(0)
-                .sameSite("None")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+    public ResponseEntity<String> logout(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse response) {
+        authService.logout(refreshToken, response);
         return ResponseEntity.ok("Logout completed.");
     }
 }

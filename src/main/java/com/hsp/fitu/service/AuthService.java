@@ -7,5 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
     LoginDTO oAuthLogin(String accessCode, HttpServletResponse httpServletResponse);
-    TokenResponseDTO reissue(String refreshToken);
+    TokenResponseDTO reissue(String refreshToken, HttpServletResponse response);
+    void logout(String refreshToken, HttpServletResponse response);
 }

@@ -5,6 +5,7 @@ import com.hsp.fitu.dto.TokenResponseDTO;
 import com.hsp.fitu.entity.UserEntity;
 import com.hsp.fitu.entity.enums.Role;
 import com.hsp.fitu.jwt.JwtUtil;
+import com.hsp.fitu.jwt.RefreshTokenStore;
 import com.hsp.fitu.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Profile("dev")
 @RestController
 @RequestMapping("/auth")
@@ -23,9 +26,13 @@ public class DevAuthController {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenStore refreshTokenStore;
 
     @Value("${jwt.token.refresh-expiration-time}")
     private Long refreshExpMs;
+
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
 
     @PostMapping("/login/local")
     public ResponseEntity<TokenResponseDTO> localLogin(@RequestBody LocalLoginRequestDTO request, HttpServletResponse httpServletResponse) {
@@ -49,15 +56,19 @@ public class DevAuthController {
         Long universityId = userEntity.getUniversityId();
 
         String accessToken = jwtUtil.createAccessToken(userId, role, universityId);
-        String refreshToken = jwtUtil.createRefreshToken(userId);
+
+        String familyId = UUID.randomUUID().toString();
+        String jti = UUID.randomUUID().toString();
+        String refreshToken = jwtUtil.createRefreshToken(userId, familyId, jti);
+        refreshTokenStore.issue(userId, familyId, jti, refreshExpMs);
 
         httpServletResponse.setHeader("Authorization", "Bearer " + accessToken);
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .path("/")
-                .maxAge(refreshExpMs)
+                .maxAge(refreshExpMs / 1000)
                 .sameSite("Lax")
                 .build();
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
