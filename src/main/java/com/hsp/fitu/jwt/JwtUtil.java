@@ -21,18 +21,22 @@ import java.util.Map;
 @Slf4j
 @Component
 public class JwtUtil {
-    private final SecretKey secretKey;
+    private final SecretKey accessKey;
+    private final SecretKey refreshKey;
     private final Long accessExpMs;
     private final Long refreshExpMs;
     private final StringRedisTemplate redisTemplate;
 
     public JwtUtil(
-            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.access-secret}") String accessSecret,
+            @Value("${jwt.refresh-secret}") String refreshSecret,
             @Value("${jwt.token.access-expiration-time}") Long access,
-            @Value("${jwt.token.refresh-expiration-time}") Long refresh, StringRedisTemplate redisTemplate) {
-        secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        accessExpMs = access;
-        refreshExpMs = refresh;
+            @Value("${jwt.token.refresh-expiration-time}") Long refresh,
+            StringRedisTemplate redisTemplate) {
+        this.accessKey = Keys.hmacShaKeyFor(accessSecret.getBytes(StandardCharsets.UTF_8));
+        this.refreshKey = Keys.hmacShaKeyFor(refreshSecret.getBytes(StandardCharsets.UTF_8));
+        this.accessExpMs = access;
+        this.refreshExpMs = refresh;
         this.redisTemplate = redisTemplate;
     }
 
@@ -40,10 +44,10 @@ public class JwtUtil {
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(accessExpMs);
 
-        // claim
         Claims claims = Jwts.claims();
         claims.put("userId", userId);
         claims.put("universityId", universityId);
+        claims.put("type", "ACCESS");
         if (role != null) {
             claims.put("role", role.toString());
         }
@@ -53,37 +57,41 @@ public class JwtUtil {
                 .addClaims(claims)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(expiration))
-                .signWith(secretKey)
+                .signWith(accessKey)
                 .compact();
     }
 
-    public String createRefreshToken(long userId) {
+    public String createRefreshToken(long userId, String familyId, String jti) {
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(refreshExpMs);
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
-                .addClaims(Map.of("userId", userId))
+                .setId(jti)
+                .addClaims(Map.of(
+                        "userId", userId,
+                        "type", "REFRESH",
+                        "fid", familyId
+                ))
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(expiration))
-                .signWith(secretKey)
+                .signWith(refreshKey)
                 .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(accessKey).build().parseClaimsJws(token);
             return true;
         } catch (JwtException e) {
             return false;
         }
     }
 
-    // 2) 토큰 유효성 검증 + Claims 반환
     public Claims validateAndGetClaims(String token) throws Exception {
         try {
             return Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
+                    .setSigningKey(accessKey)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -97,40 +105,60 @@ public class JwtUtil {
         } catch (UnsupportedJwtException e) {
             throw new BusinessException(ErrorCode.JWT_UNSUPPORTED);
         } catch (Exception e) {
-            log.error("JWT parsing error", e); // 서버 에러는 로그 남기기
+            log.error("JWT parsing error", e);
             throw new BusinessException(ErrorCode.INTER_SERVER_ERROR);
         }
     }
 
-    public Long getUserId(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    public Claims parseRefreshClaims(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(refreshKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String type = claims.get("type", String.class);
+            if (!"REFRESH".equals(type)) {
+                throw new BusinessException(ErrorCode.UNAUTHORIZED);
+            }
+            return claims;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (JwtException e) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
+    }
+
+    public Long getUserId(Claims claims) {
         return claims.get("userId", Long.class);
     }
 
-    // token 무효화
+    public String getJti(Claims claims) {
+        return claims.getId();
+    }
+
+    public String getFamilyId(Claims claims) {
+        return claims.get("fid", String.class);
+    }
+
+    // token 무효화 (AT 블랙리스트용)
     public void invalidateToken(String token, String value) {
         long expiration = getExpiration(token.substring(7)).getTime();
         redisTemplate.opsForValue().set("blacklist: " + token, value, Duration.ofMillis(expiration));
     }
 
-    /** Claims에서 추출한 만료 시각(epoch millis)이 현재 시각을 지났는지 확인한다 */
     public boolean isExpired(long tokenExpiryMillis) {
         return System.currentTimeMillis() > tokenExpiryMillis;
     }
 
-    /** Claims에서 만료 시각을 epoch millis로 추출한다 */
     public long getExpiryMillis(Claims claims) {
         return claims.getExpiration().getTime();
     }
 
-    // jwt의 만료시간 get
     private Date getExpiration(String token) {
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
+                .setSigningKey(accessKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

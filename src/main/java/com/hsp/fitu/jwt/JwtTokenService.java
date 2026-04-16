@@ -4,7 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -16,11 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class JwtTokenService {
 
     private final TokenBlackListService tokenBlackListService;
     private final SecretKey secretKey;
+
+    public JwtTokenService(TokenBlackListService tokenBlackListService,
+                           @Qualifier("accessSecretKey") SecretKey secretKey) {
+        this.tokenBlackListService = tokenBlackListService;
+        this.secretKey = secretKey;
+    }
 
     public String extractTokenFromHeader(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
