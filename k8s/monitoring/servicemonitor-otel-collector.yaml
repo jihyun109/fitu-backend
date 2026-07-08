@@ -1,0 +1,29 @@
+# OTel Collector 자체 메트릭을 Prometheus가 수집하도록 설정하는 ServiceMonitor
+# Collector의 service.telemetry.metrics(8888 포트)를 통해 노출되는 메트릭을 긁음.
+# 수집 대상 메트릭 예:
+#   otelcol_receiver_accepted_spans, otelcol_receiver_refused_spans
+#   otelcol_exporter_sent_spans, otelcol_exporter_send_failed_spans
+#   otelcol_processor_batch_batch_send_size
+#   otelcol_processor_dropped_spans
+# Operator가 만드는 monitoring 전용 Service 이름은 "<crd-name>-collector-monitoring".
+#
+# [주의] 다른 ServiceMonitor와 동일하게 K8s 1.33+ EndpointSlice discovery 이슈로
+# selector를 빈 값으로 두고 relabelings에서 Service 이름으로 직접 필터링.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: otel-collector-monitor
+  namespace: monitoring
+spec:
+  selector: {}
+  namespaceSelector:
+    matchNames:
+      - monitoring
+  endpoints:
+    - port: monitoring          # Operator가 8888 포트에 'monitoring' 이름으로 매핑
+      interval: 15s
+      path: /metrics
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          regex: otel-collector-collector-monitoring
+          action: keep

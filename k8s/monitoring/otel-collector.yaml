@@ -1,0 +1,125 @@
+# OpenTelemetryCollector CRD
+# OTel Operator가 이 리소스를 보고 Collector Deployment + Service + ConfigMap을 자동 생성·관리.
+# 앱 OTel agent → Collector → Tempo 흐름의 가운데 게이트웨이.
+#
+# 적용:
+#   kubectl apply -f otel-collector.yaml
+# 변경 시:
+#   같은 명령으로 다시 apply → Operator가 변경 감지하여 Pod 재배포
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-collector
+  namespace: monitoring
+spec:
+  # mode: deployment — 일반 K8s Deployment로 띄움 (daemonset/sidecar 대안)
+  # head sampling이라 stateless → replicas 자유 확장 가능
+  mode: deployment
+  replicas: 2
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: 128Mi
+    limits:
+      cpu: "300m"
+      memory: 256Mi
+
+  # 두 replica를 다른 노드에 분산 (가용성 ↑)
+  # 단일 노드 k3s에선 무시되지만 멀티 노드 확장 시 효과
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: opentelemetry-collector
+            topologyKey: kubernetes.io/hostname
+
+  # ── Collector 파이프라인 정의 ──────────────────────────────
+  # receivers → processors → exporters
+  config:
+    receivers:
+      # OTLP — 앱 agent가 trace를 push하는 표준 프로토콜
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      # 메모리 한계 보호 — limit_percentage 도달 시 새 데이터 거부 (OOM 방지)
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 25
+
+      # 배치 — 여러 trace를 모아 한 번에 Tempo로 전송 (효율 ↑)
+      batch:
+        send_batch_size: 1024
+        timeout: 1s
+
+      # PII / 민감 정보 제거
+      # OTel agent의 자동 캡처에 노출될 수 있는 헤더·쿠키·이메일 등 redaction
+      attributes:
+        actions:
+          # HTTP 헤더 — JWT 토큰 등 인증 헤더 통째로 제거
+          - key: http.request.header.authorization
+            action: delete
+          - key: http.request.header.cookie
+            action: delete
+          - key: http.response.header.set_cookie
+            action: delete
+          # 이메일 같은 식별 가능 정보는 해시로 변환
+          - key: user.email
+            action: hash
+          - key: enduser.id
+            action: hash
+
+      # 리소스 attributes 일관화 (서비스 간 표준)
+      resource:
+        attributes:
+          - key: deployment.environment
+            value: prod
+            action: upsert
+          - key: cluster
+            value: fitu-k3s
+            action: upsert
+
+    exporters:
+      # Tempo로 OTLP gRPC 전송 (같은 monitoring 네임스페이스 ClusterIP)
+      otlp/tempo:
+        endpoint: tempo.monitoring.svc.cluster.local:4317
+        tls:
+          insecure: true        # 같은 클러스터 내부라 TLS 불필요
+        sending_queue:
+          enabled: true         # Tempo 일시 다운 시 메모리 큐에 버퍼링
+          queue_size: 1000
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+
+    service:
+      # 텔레메트리 (Collector 자체 메트릭 노출 — ServiceMonitor가 수집)
+      # 메트릭 예: otelcol_receiver_accepted_spans, otelcol_exporter_sent_spans,
+      #            otelcol_processor_batch_batch_send_size
+      # v0.110+ 부터 readers 배열 형식 사용 (구버전 metrics.address는 deprecated)
+      telemetry:
+        metrics:
+          readers:
+            - pull:
+                exporter:
+                  prometheus:
+                    host: 0.0.0.0
+                    port: 8888
+
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, attributes, batch]
+          exporters: [otlp/tempo]
+        # metrics 파이프라인은 일단 안 만듦 (Prometheus가 /actuator/prometheus pull 그대로)
+        # logs 파이프라인은 Loki 도입 시 추가
