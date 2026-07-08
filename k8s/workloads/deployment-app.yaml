@@ -32,6 +32,15 @@ spec:
     metadata:
       labels:
         app: fitu-app
+      annotations:
+        # OTel Operator가 이 Pod에 OTel Java agent 자동 주입
+        # 형식: "<namespace>/<Instrumentation 이름>"
+        # → fitu 네임스페이스의 Instrumentation "fitu-java" 설정 적용
+        # Operator가 mutating webhook으로 다음을 자동 수행:
+        #   - initContainer 추가 (agent jar를 emptyDir에 복사)
+        #   - JAVA_TOOL_OPTIONS에 -javaagent:/otel-auto-instrumentation/javaagent.jar prepend
+        #   - OTEL_* 환경변수 자동 주입 (sampler, exporter endpoint 등)
+        instrumentation.opentelemetry.io/inject-java: "fitu/fitu-java"
     spec:
       # terminationGracePeriodSeconds: Pod 종료 시 기존 요청을 처리할 유예 시간
       # WebSocket 연결된 클라이언트에게 종료를 알리고 정리할 시간 확보
@@ -39,19 +48,24 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: app
-          image: jihyun923/fitu:latest
-          # imagePullPolicy: latest 태그는 로컬에 캐시된 이미지를 쓸 수 있으므로
-          # Always로 지정해서 항상 최신 이미지를 pull하도록 강제
-          imagePullPolicy: Always
+          image: jihyun923/fitu:otel-local2
+          # 로컬 빌드 image (k3d import 완료) — Hub의 latest는 OTel agent와 startup hang 발생해서 보류
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
-            # Secret 파일이 마운트되는 경로를 Spring에게 알려줌
-            # Swarm에서는 /run/secrets/app-secret.yml이었음
-            - name: SPRING_CONFIG_LOCATION
+            # Secret 파일을 application.yml의 *추가*로 로드
+            # SPRING_CONFIG_LOCATION을 쓰면 application.yml이 무시되어
+            # 거기 정의된 jwt.access-secret 같은 default가 사라짐
+            # ADDITIONAL_LOCATION은 default + secret override 패턴이라 안전
+            - name: SPRING_CONFIG_ADDITIONAL_LOCATION
               value: /config/app-secret.yml
             - name: TZ
               value: Asia/Seoul
+            # OTel Operator가 trace에 service.name attribute로 사용
+            # 같은 Instrumentation CRD를 공유해도 서비스마다 다른 이름이 박힘
+            - name: OTEL_SERVICE_NAME
+              value: "fitu-app"
             # JVM 옵션: G1GC + 메모리 제한 + GC 스레드 제한 + Pyroscope agent
             - name: JAVA_TOOL_OPTIONS
               value: "-javaagent:/opt/pyroscope.jar -Duser.timezone=Asia/Seoul -Xms128m -Xmx400m -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:ParallelGCThreads=1 -XX:ConcGCThreads=1"
@@ -85,6 +99,15 @@ spec:
             limits:
               cpu: "0.6"
               memory: 700Mi
+          # OTel agent + Pyroscope agent 두 개 부착으로 부팅이 늦어질 수 있음
+          # startupProbe가 성공할 때까지 liveness/readiness 검사 안 함
+          # (5s × 36회 = 최대 3분 시작 대기)
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 36
           # livenessProbe: Pod가 살아있는지 확인
           # 실패하면 Pod를 재시작함
           # /actuator/health/liveness: 앱 프로세스 자체만 확인 (DB, Redis 무관)
