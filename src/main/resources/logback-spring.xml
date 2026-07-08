@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  로그 포맷에 traceId / spanId 주입.
+  Spring Boot Micrometer Tracing이 OTel 컨텍스트와 연동되어 MDC에
+    traceId, spanId
+  키를 자동으로 채움. 패턴에서 %X{traceId:-} 로 꺼내 출력.
+
+  로그 예시:
+    2026-05-04 10:00:00.123 INFO  [4bf92f3577b34da6a3ce929d0e0e4736,00f067aa0ba902b7] c.h.f.controller.PostController - 게시글 생성
+
+  대괄호 첫 값(traceId)을 Grafana Tempo에 검색 → 해당 trace로 점프 가능.
+  Loki 도입 후엔 trace ↔ log 양방향 점프.
+-->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- 로그 패턴: 날짜 / 레벨 / [traceId,spanId] / 로거 / 메시지 -->
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{trace_id:-},%X{span_id:-}] %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- 라이브러리 별 로그 레벨 (필요시 조정) -->
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="INFO"/>
+    <logger name="com.hsp.fitu" level="INFO"/>
+</configuration>
