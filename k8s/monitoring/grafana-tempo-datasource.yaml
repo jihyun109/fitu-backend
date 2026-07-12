@@ -1,0 +1,54 @@
+# Tempo 데이터소스를 Grafana에 프로비저닝하는 ConfigMap
+# grafana_datasource: "1" 라벨이 있으면 Grafana sidecar가 자동으로 감지하여 데이터소스 등록
+# Pod가 재시작되어도 유지됨
+# 패턴 참고: grafana-pyroscope-datasource.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-tempo-datasource
+  namespace: monitoring
+  labels:
+    grafana_datasource: "1"
+data:
+  tempo-datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        url: http://tempo.monitoring.svc.cluster.local:3200
+        access: proxy
+        isDefault: false
+        jsonData:
+          # trace ↔ logs 연결 (Loki 도입 후 활성)
+          # tracesToLogsV2:
+          #   datasourceUid: loki
+          #   spanStartTimeShift: '-5m'
+          #   spanEndTimeShift: '5m'
+          #   tags: [{key: 'service.name', value: 'service'}]
+          #   filterByTraceID: true
+
+          # trace ↔ metrics 연결 (Prometheus exemplar 활용)
+          tracesToMetrics:
+            datasourceUid: prometheus
+            spanStartTimeShift: '-5m'
+            spanEndTimeShift: '5m'
+            tags:
+              - key: service.name
+                value: service
+
+          # service graph 활용 (Tempo의 metrics-generator 활성 시)
+          serviceMap:
+            datasourceUid: prometheus
+
+          # 노드 상세 정보
+          nodeGraph:
+            enabled: true
+
+          # 검색 가능한 트레이스 attribute 표시
+          search:
+            hide: false
+
+          # 검색 시 사용할 default 시간 윈도우
+          lokiSearch:
+            datasourceUid: loki   # 추후 Loki 도입 시 활성

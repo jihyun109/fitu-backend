@@ -1,6 +1,8 @@
 package com.hsp.fitu.error;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,23 @@ import java.util.List;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * 현재 trace span에 예외 기록.
+     * - status=ERROR 표시 → Tempo에서 5xx trace로 검색 가능
+     * - exception 이벤트 추가 → trace 상세 화면에 stack trace 표시
+     *
+     * 한계: head sampling으로 이미 drop된 trace는 살릴 수 없음 (sampling 결정은 root span에서 끝).
+     * 살아남은 sample trace 중 에러가 포함된 것을 검색·분석하는 용도.
+     */
+    private void markSpanError(Throwable e) {
+        Span span = Span.current();
+        if (span != null && span.isRecording()) {
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            span.setStatus(StatusCode.ERROR, msg);
+            span.recordException(e);
+        }
+    }
 
     /**
      * @Valid 또는 @Validated 바인딩 에러 처리 (필드 유효성 검증 실패)
@@ -42,6 +61,8 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e, HttpServletRequest request) {
         log.warn("BusinessException: {}", e.getErrorCode().getMessage());
 
+        markSpanError(e);
+
         ErrorCode errorCode = e.getErrorCode();
         ErrorResponse response = ErrorResponse.of(errorCode, request.getRequestURI());
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatus()));
@@ -63,6 +84,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e, HttpServletRequest request) {
         log.error("handleException", e.getMessage(), e);
+
+        markSpanError(e);
 
         ErrorResponse response = ErrorResponse.of(ErrorCode.INTER_SERVER_ERROR, request.getRequestURI());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);

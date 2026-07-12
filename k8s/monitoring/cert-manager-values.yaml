@@ -1,0 +1,44 @@
+# cert-manager Helm values
+# OpenTelemetry Operator의 mutating admission webhook 인증서를 발급해주는 컴포넌트
+# 설치:
+#   kubectl create namespace cert-manager
+#   helm repo add jetstack https://charts.jetstack.io
+#   helm install cert-manager jetstack/cert-manager -n cert-manager -f cert-manager-values.yaml
+# 업그레이드:
+#   helm upgrade cert-manager jetstack/cert-manager -n cert-manager -f cert-manager-values.yaml
+
+# CRD 등록까지 한 번에 처리 (별도로 kubectl apply 안 해도 됨)
+installCRDs: true
+
+# cert-manager 메인 controller 리소스
+resources:
+  requests:
+    cpu: "20m"
+    memory: 64Mi
+  limits:
+    cpu: "100m"
+    memory: 128Mi
+
+# webhook (Operator의 admission webhook 인증)
+webhook:
+  resources:
+    requests:
+      cpu: "10m"
+      memory: 32Mi
+    limits:
+      cpu: "50m"
+      memory: 64Mi
+
+# CA injector (CRD에 CA bundle 자동 주입)
+cainjector:
+  resources:
+    requests:
+      cpu: "10m"
+      memory: 32Mi
+    limits:
+      cpu: "50m"
+      memory: 64Mi
+
+# Prometheus 메트릭 수집 비활성 (kube-prometheus-stack에서 cert-manager 메트릭 안 봐도 됨)
+prometheus:
+  enabled: false

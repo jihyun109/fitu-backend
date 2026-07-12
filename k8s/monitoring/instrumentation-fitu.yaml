@@ -1,0 +1,98 @@
+# Instrumentation CRD — fitu 네임스페이스의 Java Pod에 OTel agent 자동 주입 정의
+# Pod template metadata.annotations에
+#   instrumentation.opentelemetry.io/inject-java: "fitu/fitu-java"
+# 한 줄 추가하면 Operator가 mutating webhook으로 다음을 자동 수행:
+#   1. initContainer 추가 — agent jar를 emptyDir 볼륨에 복사
+#   2. JAVA_TOOL_OPTIONS에 -javaagent:/otel-auto-instrumentation/javaagent.jar prepend
+#   3. OTEL_* 환경변수 자동 주입 (sampler·exporter·resource attributes 등)
+#   4. emptyDir 볼륨을 메인 컨테이너에 mount
+#
+# 적용:
+#   kubectl apply -f instrumentation-fitu.yaml
+# 새 서비스 추가 시:
+#   해당 Deployment에 위 annotation 한 줄만 추가하면 끝 (Instrumentation은 그대로 재사용)
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: fitu-java
+  namespace: fitu
+spec:
+  # OTLP 전송 대상 — 같은 monitoring 네임스페이스의 Collector
+  # Operator가 만드는 메인 Service 이름 = "<OpenTelemetryCollector-name>-collector"
+  # 즉 OpenTelemetryCollector "otel-collector" → Service "otel-collector-collector"
+  exporter:
+    endpoint: http://otel-collector-collector.monitoring.svc.cluster.local:4318
+
+  # W3C Trace Context (기본 표준) + Baggage 전파
+  # 다른 언어 서비스가 끼어도 같은 traceparent 헤더로 trace 이어짐
+  propagators:
+    - tracecontext
+    - baggage
+
+  # ── Sampling 정책 ────────────────────────────────────────
+  # parentbased_traceidratio:
+  #   루트 서비스가 traceId 해시로 결정 → 자식 서비스는 부모 결정 따름
+  #   cross-service 일관성 보장 (한 trace가 통째로 keep 또는 통째로 drop)
+  # 비율 0.2 = 20% sampling
+  sampler:
+    type: parentbased_traceidratio
+    argument: "0.2"   # 운영 기본값 20%
+
+  # K8s 메타데이터를 trace resource attribute에 자동 추가
+  # service.namespace, k8s.namespace.name, k8s.pod.name, k8s.pod.uid 등
+  resource:
+    addK8sUIDAttributes: true
+
+  # ── Java 자동 계측 설정 ──────────────────────────────────
+  java:
+    # OTel 공식 자동 계측 이미지 — agent jar + initContainer 명세 포함
+    image: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java:latest
+
+    # initContainer 리소스 (agent jar 복사 후 종료, 거의 사용 안 함)
+    resources:
+      requests:
+        cpu: "10m"
+        memory: 32Mi
+      limits:
+        cpu: "50m"
+        memory: 64Mi
+
+    # 메인 컨테이너에 주입될 OTel 관련 환경변수
+    env:
+      # PII / 보안 — HTTP 헤더 자동 캡처 비활성 (Authorization·Cookie 등 노출 차단)
+      - name: OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_REQUEST
+        value: ""
+      - name: OTEL_INSTRUMENTATION_HTTP_CAPTURE_HEADERS_SERVER_RESPONSE
+        value: ""
+
+      # PII — DB 쿼리 파라미터를 자동으로 ?로 마스킹 (비밀번호·이메일 보호)
+      - name: OTEL_INSTRUMENTATION_COMMON_DB_STATEMENT_SANITIZER_ENABLED
+        value: "true"
+
+      # span batch 전송 정책
+      # 1초마다 flush → 재시작 시 손실 최소화
+      - name: OTEL_BSP_SCHEDULE_DELAY
+        value: "1000"
+      # Collector 일시 다운 시 메모리 큐 크기
+      - name: OTEL_BSP_MAX_QUEUE_SIZE
+        value: "4096"
+      - name: OTEL_BSP_MAX_EXPORT_BATCH_SIZE
+        value: "512"
+
+      # Resource attributes — 모든 trace에 자동 부착
+      # service.name은 Pod의 OTEL_SERVICE_NAME env로 별도 지정 (서비스마다 다름)
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: "service.namespace=fitu,deployment.environment=prod"
+
+      # Metric 자동 수집은 일단 비활성 (Prometheus 메트릭 파이프라인 그대로 유지)
+      # 추후 OTLP 메트릭으로 통합하면 활성
+      - name: OTEL_METRICS_EXPORTER
+        value: "none"
+
+      # Log 자동 수집도 비활성 (로깅은 stdout 유지, MDC traceId 주입은 Logback에서)
+      - name: OTEL_LOGS_EXPORTER
+        value: "none"
+
+      # Trace만 활성
+      - name: OTEL_TRACES_EXPORTER
+        value: "otlp"

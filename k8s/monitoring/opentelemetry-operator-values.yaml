@@ -1,0 +1,40 @@
+# OpenTelemetry Operator Helm values
+# Pod에 OTel Java agent를 자동 주입하는 mutating webhook 운영
+# 설치:
+#   helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+#   helm install opentelemetry-operator open-telemetry/opentelemetry-operator -n monitoring -f opentelemetry-operator-values.yaml
+# 업그레이드:
+#   helm upgrade opentelemetry-operator open-telemetry/opentelemetry-operator -n monitoring -f opentelemetry-operator-values.yaml
+
+# Operator manager (Pod 생성 시점에 webhook으로 OTel agent 주입)
+manager:
+  resources:
+    requests:
+      cpu: "50m"
+      memory: 64Mi
+    limits:
+      cpu: "100m"
+      memory: 128Mi
+  # Operator가 동작할 때 사용하는 Collector 이미지 기본값 (CRD에서 override 가능)
+  collectorImage:
+    repository: otel/opentelemetry-collector-contrib
+  # 자동 주입 시 사용할 Java agent 이미지 기본값 (Instrumentation CRD에서 override 가능)
+  autoInstrumentationImage:
+    java:
+      repository: ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-java
+
+  # kube-prometheus-stack이 Operator 메트릭 자동 수집하지 않게
+  # (필요해지면 true + relabelings 추가하여 메트릭 수집 시작 가능)
+  serviceMonitor:
+    enabled: false
+  # 알람 규칙도 미사용 (Operator 자체 알람 불필요)
+  prometheusRule:
+    enabled: false
+
+# admission webhook 인증서를 cert-manager에 위임
+admissionWebhooks:
+  certManager:
+    enabled: true                # cert-manager가 발급하는 Issuer/Certificate 사용
+  # webhook 실패 시 정책: Pod 생성 자체는 막지 않음 (OTel 주입만 실패)
+  # webhook이 다운되어도 앱 배포는 정상 진행
+  failurePolicy: Ignore
