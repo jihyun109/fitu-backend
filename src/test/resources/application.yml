@@ -36,12 +36,15 @@ spring:
       port: 6379
 
 jwt:
-  secret: testSecretKey20240316testSecretKey20240316testSecretKey20240316
+  access-secret: testAccessSecretKey20240316testAccessSecretKey20240316testAccessSecret
+  refresh-secret: testRefreshSecretKey20240316testRefreshSecretKey20240316testRefreshSecret
   token:
     access-expiration-time: 3600000
     refresh-expiration-time: 86400000
-  signing:
-    key: sldkfkdfjekldlsdkfdksldkfdjksldfjksdjlfjskldjflksdjlkdflsjdlfk
+
+app:
+  cookie:
+    secure: false
 
 cloud:
   aws:

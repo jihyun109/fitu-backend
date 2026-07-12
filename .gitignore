@@ -47,3 +47,6 @@ k8s/app-secret.yml
 
 ### Local docs ###
 docs/
+
+### Local runtime data ###
+srv/
